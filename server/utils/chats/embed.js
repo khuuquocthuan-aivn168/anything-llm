@@ -159,7 +159,7 @@ async function streamChatWithForEmbed(
       type: "textResponse",
       textResponse:
         embed.workspace?.queryRefusalResponse ??
-        "There is no relevant information in this workspace to answer your query.",
+        "Không có thông tin liên quan trong không gian làm việc này để trả lời câu hỏi của bạn.",
       sources: [],
       close: true,
       error: null,

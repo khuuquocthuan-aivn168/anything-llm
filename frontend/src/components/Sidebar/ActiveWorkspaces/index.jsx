@@ -14,10 +14,12 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import showToast from "@/utils/toast";
 import { LAST_VISITED_WORKSPACE } from "@/utils/constants";
 import { safeJsonParse } from "@/utils/request";
+import { useVisibility } from "@/VisibilityContext";
 
 export default function ActiveWorkspaces() {
   const navigate = useNavigate();
   const { slug } = useParams();
+  const { isVisible } = useVisibility();
   const [loading, setLoading] = useState(true);
   const [workspaces, setWorkspaces] = useState([]);
   const [selectedWs, setSelectedWs] = useState(null);
@@ -206,7 +208,7 @@ export default function ActiveWorkspaces() {
                           </div>
                         </Link>
                       </div>
-                      {isActive && (
+                      {isVisible("threads") && isActive && (
                         <ThreadContainer
                           workspace={workspace}
                           isActive={isActive}

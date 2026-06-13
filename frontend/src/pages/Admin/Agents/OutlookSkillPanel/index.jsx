@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import Toggle, { SimpleToggleSwitch } from "@/components/lib/Toggle";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import debounce from "lodash.debounce";
 import {
   MagnifyingGlass,
@@ -24,8 +24,6 @@ import OutlookAgent from "@/models/outlookAgent";
 import { getOutlookSkills, filterSkillCategories } from "./utils";
 import OutlookIcon from "./outlook.png";
 import { Tooltip } from "react-tooltip";
-import { Link } from "react-router-dom";
-import paths from "@/utils/paths";
 
 export default function OutlookSkillPanel({
   title,
@@ -219,18 +217,7 @@ export default function OutlookSkillPanel({
         )}
 
         <p className="text-theme-text-secondary text-opacity-60 text-xs font-medium">
-          <Trans
-            i18nKey="agent.skill.outlook.description"
-            components={{
-              a: (
-                <Link
-                  className="text-sky-400 hover:text-sky-500 text-xs font-medium underline"
-                  to={paths.docs("/agent/usage/outlook-agent")}
-                  target="_blank"
-                />
-              ),
-            }}
-          />
+          {t("agent.skill.outlook.description").replace(/<a[^>]*>|<\/a>/g, "")}
         </p>
 
         {enabled && !isMultiUserMode && (

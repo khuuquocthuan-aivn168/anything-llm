@@ -15,10 +15,12 @@ import { useSidebarToggle, ToggleSidebarButton } from "./SidebarToggle";
 import SearchBox from "./SearchBox";
 import { Tooltip } from "react-tooltip";
 import { createPortal } from "react-dom";
+import { useVisibility } from "@/VisibilityContext";
 
 export default function Sidebar() {
   const { user } = useUser();
-  const { logo } = useLogo();
+  const { isVisible } = useVisibility();
+  const { logo, isCustomLogo } = useLogo();
   const sidebarRef = useRef(null);
   const { showSidebar, setShowSidebar, canToggleSidebar } = useSidebarToggle();
   const {
@@ -62,8 +64,8 @@ export default function Sidebar() {
               <div className="flex-grow flex flex-col min-w-[235px] min-h-0">
                 <div className="relative h-[calc(100%-60px)] flex flex-col w-full justify-between pt-[10px] overflow-y-scroll no-scroll">
                   <div className="flex flex-col gap-y-[14px]">
-                    <SearchBox user={user} showNewWsModal={showNewWsModal} />
-                    <ActiveWorkspaces />
+                    {isVisible("search-box") && <SearchBox user={user} showNewWsModal={showNewWsModal} />}
+                    {isVisible("active-workspaces") && <ActiveWorkspaces />}
                   </div>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 pb-3 rounded-b-[16px] bg-theme-bg-sidebar light:bg-slate-200 bg-opacity-80 backdrop-filter backdrop-blur-md z-10">
@@ -81,7 +83,7 @@ export default function Sidebar() {
 }
 
 export function SidebarMobileHeader() {
-  const { logo } = useLogo();
+  const { logo, isCustomLogo } = useLogo();
   const sidebarRef = useRef(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showBgOverlay, setShowBgOverlay] = useState(false);
@@ -91,6 +93,7 @@ export function SidebarMobileHeader() {
     hideModal: hideNewWsModal,
   } = useNewWorkspaceModal();
   const { user } = useUser();
+  const { isVisible } = useVisibility();
 
   useEffect(() => {
     // Darkens the rest of the screen
@@ -169,11 +172,13 @@ export function SidebarMobileHeader() {
             <div className="h-full flex flex-col w-full justify-between pt-4 ">
               <div className="h-auto md:sidebar-items">
                 <div className=" flex flex-col gap-y-4 overflow-y-scroll no-scroll pb-[60px]">
-                  <NewWorkspaceButton
-                    user={user}
-                    showNewWsModal={showNewWsModal}
-                  />
-                  <ActiveWorkspaces />
+                  {isVisible("new-workspace-button") && (
+                    <NewWorkspaceButton
+                      user={user}
+                      showNewWsModal={showNewWsModal}
+                    />
+                  )}
+                  {isVisible("active-workspaces") && <ActiveWorkspaces />}
                 </div>
               </div>
               <div className="z-99 absolute bottom-0 left-0 right-0 pt-2 pb-6 rounded-br-[26px] bg-theme-bg-sidebar bg-opacity-80 backdrop-filter backdrop-blur-md">

@@ -8,6 +8,7 @@ import i18n from "./i18n";
 
 import { PfpProvider } from "./PfpContext";
 import { LogoProvider } from "./LogoContext";
+import { VisibilityProvider } from "./VisibilityContext";
 import { FullScreenLoader } from "./components/Preloader";
 import { ThemeProvider } from "./ThemeContext";
 import { PWAModeProvider } from "./PWAContext";
@@ -28,16 +29,18 @@ export default function App() {
         <PWAModeProvider>
           <Suspense fallback={<FullScreenLoader />}>
             <AuthProvider>
-              <LogoProvider>
-                <PfpProvider>
-                  <I18nextProvider i18n={i18n}>
-                    <Outlet />
-                    <ToastContainer />
-                    <KeyboardShortcutsHelp />
-                    <ImageLightbox />
-                  </I18nextProvider>
-                </PfpProvider>
-              </LogoProvider>
+              <VisibilityProvider>
+                <LogoProvider>
+                  <PfpProvider>
+                    <I18nextProvider i18n={i18n}>
+                      <Outlet />
+                      <ToastContainer />
+                      <KeyboardShortcutsHelp />
+                      <ImageLightbox />
+                    </I18nextProvider>
+                  </PfpProvider>
+                </LogoProvider>
+              </VisibilityProvider>
             </AuthProvider>
           </Suspense>
         </PWAModeProvider>

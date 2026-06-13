@@ -244,7 +244,7 @@ function LanguagePreference() {
       <select
         name="userLang"
         className="border-none bg-theme-settings-input-bg w-fit mt-2 px-4 focus:outline-primary-button active:outline-primary-button outline-none text-white text-sm rounded-lg block py-2"
-        defaultValue={currentLanguage || "en"}
+        defaultValue={currentLanguage || "vi"}
         onChange={(e) => changeLanguage(e.target.value)}
       >
         {supportedLanguages.map((lang) => {

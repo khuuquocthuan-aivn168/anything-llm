@@ -94,7 +94,7 @@ async function streamChatWithWorkspace(
   if ((!hasVectorizedSpace || embeddingsCount === 0) && chatMode === "query") {
     const textResponse =
       workspace?.queryRefusalResponse ??
-      "There is no relevant information in this workspace to answer your query.";
+      "Không có thông tin liên quan trong không gian làm việc này để trả lời câu hỏi của bạn.";
     writeResponseChunk(response, {
       id: uuid,
       type: "textResponse",
@@ -227,7 +227,7 @@ async function streamChatWithWorkspace(
   if (chatMode === "query" && contextTexts.length === 0) {
     const textResponse =
       workspace?.queryRefusalResponse ??
-      "There is no relevant information in this workspace to answer your query.";
+      "Không có thông tin liên quan trong không gian làm việc này để trả lời câu hỏi của bạn.";
     writeResponseChunk(response, {
       id: uuid,
       type: "textResponse",

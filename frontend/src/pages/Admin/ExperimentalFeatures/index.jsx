@@ -258,21 +258,7 @@ function FeatureVerification({ children }) {
                   </div>
 
                   <p>
-                    Access to any features requires approval of this modal. If
-                    you would like to read more you can refer to{" "}
-                    <a
-                      href="https://docs.anythingllm.com/beta-preview/overview"
-                      className="underline text-blue-500"
-                    >
-                      docs.anythingllm.com
-                    </a>{" "}
-                    or email{" "}
-                    <a
-                      href="mailto:team@mintplexlabs.com"
-                      className="underline text-blue-500"
-                    >
-                      team@mintplexlabs.com
-                    </a>
+                    Access to any features requires approval of this modal.
                   </p>
                 </div>
               </div>

@@ -27,8 +27,8 @@ class MetaGenerator {
   #customConfig = null;
 
   #defaultManifest = {
-    name: "AnythingLLM",
-    short_name: "AnythingLLM",
+    name: "GOV AI VN168",
+    short_name: "GOV AI VN168",
     display: "standalone",
     orientation: "portrait",
     start_url: "/",
@@ -53,27 +53,27 @@ class MetaGenerator {
     return [
       {
         tag: "link",
-        props: { type: "image/svg+xml", href: "/favicon.png" },
+        props: { type: "image/png", href: "/favicon.png" },
         content: null,
       },
       {
         tag: "title",
         props: null,
-        content: "AnythingLLM | Your personal LLM trained on anything",
+        content: "GOV AI VN168",
       },
 
       {
         tag: "meta",
         props: {
           name: "title",
-          content: "AnythingLLM | Your personal LLM trained on anything",
+          content: "GOV AI VN168",
         },
       },
       {
         tag: "meta",
         props: {
           description: "title",
-          content: "AnythingLLM | Your personal LLM trained on anything",
+          content: "GOV AI VN168",
         },
       },
 
@@ -87,14 +87,14 @@ class MetaGenerator {
         tag: "meta",
         props: {
           property: "og:title",
-          content: "AnythingLLM | Your personal LLM trained on anything",
+          content: "GOV AI VN168",
         },
       },
       {
         tag: "meta",
         props: {
           property: "og:description",
-          content: "AnythingLLM | Your personal LLM trained on anything",
+          content: "GOV AI VN168",
         },
       },
       {
@@ -119,14 +119,14 @@ class MetaGenerator {
         tag: "meta",
         props: {
           property: "twitter:title",
-          content: "AnythingLLM | Your personal LLM trained on anything",
+          content: "GOV AI VN168",
         },
       },
       {
         tag: "meta",
         props: {
           property: "twitter:description",
-          content: "AnythingLLM | Your personal LLM trained on anything",
+          content: "GOV AI VN168",
         },
       },
       {
@@ -229,7 +229,7 @@ class MetaGenerator {
             props: null,
             content:
               customTitle ??
-              "AnythingLLM | Your personal LLM trained on anything",
+              "GOV AI VN168",
           };
         }
         // Override meta title
@@ -240,7 +240,7 @@ class MetaGenerator {
               name: "title",
               content:
                 customTitle ??
-                "AnythingLLM | Your personal LLM trained on anything",
+                "GOV AI VN168",
             },
           };
         }
@@ -252,7 +252,7 @@ class MetaGenerator {
               property: "og:title",
               content:
                 customTitle ??
-                "AnythingLLM | Your personal LLM trained on anything",
+                "GOV AI VN168",
             },
           };
         }
@@ -264,7 +264,7 @@ class MetaGenerator {
               property: "twitter:title",
               content:
                 customTitle ??
-                "AnythingLLM | Your personal LLM trained on anything",
+                "GOV AI VN168",
             },
           };
         }
@@ -330,7 +330,7 @@ class MetaGenerator {
       const { SystemSettings } = require("../../models/systemSettings");
       const manifestName = await SystemSettings.getValueOrFallback(
         { label: "meta_page_title" },
-        "AnythingLLM"
+        "GOV AI VN168"
       );
       const faviconURL = await SystemSettings.getValueOrFallback(
         { label: "meta_page_favicon" },

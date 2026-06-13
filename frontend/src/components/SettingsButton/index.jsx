@@ -3,12 +3,15 @@ import paths from "@/utils/paths";
 import { ArrowUUpLeft, Wrench } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { useMatch } from "react-router-dom";
+import { useVisibility } from "@/VisibilityContext";
 
 export default function SettingsButton() {
   const isInSettings = !!useMatch("/settings/*");
   const { user } = useUser();
+  const { isVisible } = useVisibility();
 
   if (user && user?.role === "default") return null;
+  if (!isInSettings && !isVisible("settings-button")) return null;
 
   if (isInSettings)
     return (

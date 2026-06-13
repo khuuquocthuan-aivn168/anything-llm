@@ -63,6 +63,15 @@ const router = createBrowserRouter([
       },
       // Admin routes
       {
+        path: "/settings/visibility",
+        lazy: async () => {
+          const { default: VisibilityConfig } = await import(
+            "@/pages/Admin/VisibilityConfig"
+          );
+          return { element: <VisibilityConfig /> };
+        },
+      },
+      {
         path: "/settings/llm-preference",
         lazy: async () => {
           const { default: GeneralLLMPreference } = await import(

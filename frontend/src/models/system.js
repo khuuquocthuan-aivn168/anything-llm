@@ -439,7 +439,7 @@ const System = {
           const logoURL = URL.createObjectURL(blob);
           return { isCustomLogo, logoURL };
         }
-        throw new Error("Failed to fetch logo!");
+        return { isCustomLogo: false, logoURL: null };
       })
       .catch((e) => {
         console.log(e);

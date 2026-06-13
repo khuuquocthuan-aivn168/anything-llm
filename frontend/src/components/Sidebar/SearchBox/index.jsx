@@ -7,6 +7,7 @@ import Preloader from "@/components/Preloader";
 import debounce from "lodash.debounce";
 import Workspace from "@/models/workspace";
 import { Tooltip } from "react-tooltip";
+import { useVisibility } from "@/VisibilityContext";
 
 const DEFAULT_SEARCH_RESULTS = {
   workspaces: [],
@@ -189,7 +190,9 @@ function SearchResultItem({ to, name, hint }) {
 
 function ShortWidthNewWorkspaceButton({ user, showNewWsModal }) {
   const { t } = useTranslation();
+  const { isVisible } = useVisibility();
   if (!!user && user?.role === "default") return null;
+  if (!isVisible("new-workspace-button")) return null;
 
   return (
     <>

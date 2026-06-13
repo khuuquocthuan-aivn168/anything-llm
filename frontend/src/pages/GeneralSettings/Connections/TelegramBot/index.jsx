@@ -80,14 +80,6 @@ function ConnectionsLayout({ children, fullPage = false }) {
               <p className="text-xs leading-4 text-zinc-400 light:text-slate-600 max-w-[700px]">
                 {t("telegram.description")}
               </p>
-              <a
-                href={paths.docs("/channels/telegram")}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs leading-4 text-white light:text-slate-900 underline w-fit"
-              >
-                View Documentation
-              </a>
             </div>
             {children}
           </div>

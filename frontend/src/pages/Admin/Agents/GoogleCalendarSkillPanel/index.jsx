@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import Toggle, { SimpleToggleSwitch } from "@/components/lib/Toggle";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import debounce from "lodash.debounce";
 import {
   MagnifyingGlass,
@@ -21,8 +21,6 @@ import System from "@/models/system";
 import GoogleAgentSkills from "@/models/googleAgentSkills";
 import { getGoogleCalendarSkills, filterSkillCategories } from "./utils";
 import { Tooltip } from "react-tooltip";
-import { Link } from "react-router-dom";
-import paths from "@/utils/paths";
 import GoogleCalendarIcon from "./google-calendar.png";
 
 export default function GoogleCalendarSkillPanel({
@@ -137,18 +135,7 @@ export default function GoogleCalendarSkillPanel({
         )}
 
         <p className="text-theme-text-secondary text-opacity-60 text-xs font-medium">
-          <Trans
-            i18nKey="agent.skill.googleCalendar.description"
-            components={{
-              a: (
-                <Link
-                  className="text-sky-400 hover:text-sky-500 text-xs font-medium underline"
-                  to={paths.docs("/agent/usage/google-calendar-agent")}
-                  target="_blank"
-                />
-              ),
-            }}
-          />
+          {t("agent.skill.googleCalendar.description").replace(/<a[^>]*>|<\/a>/g, "")}
         </p>
 
         {enabled && !isMultiUserMode && (

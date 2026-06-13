@@ -191,13 +191,13 @@ export default function handleChat(
 export function getWorkspaceSystemPrompt(workspace) {
   return (
     workspace?.openAiPrompt ??
-    "Given the following conversation, relevant context, and a follow up question, reply with an answer to the current question the user is asking. Return only your response to the question given the above information following the users instructions as needed."
+    "Dựa trên cuộc hội thoại dưới đây, ngữ cảnh liên quan và câu hỏi tiếp theo, hãy trả lời câu hỏi hiện tại mà người dùng đang hỏi. Chỉ trả về phản hồi của bạn cho câu hỏi dựa trên thông tin trên và làm theo hướng dẫn của người dùng nếu cần."
   );
 }
 
 export function chatQueryRefusalResponse(workspace) {
   return (
     workspace?.queryRefusalResponse ??
-    "There is no relevant information in this workspace to answer your query."
+    "Không có thông tin liên quan trong không gian làm việc này để trả lời câu hỏi của bạn."
   );
 }

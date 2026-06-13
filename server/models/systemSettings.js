@@ -36,7 +36,7 @@ function mergeStringField(target, source, fieldName, validator = null) {
 const SystemSettings = {
   /** A default system prompt that is used when no other system prompt is set or available to the function caller. */
   saneDefaultSystemPrompt:
-    "Given the following conversation, relevant context, and a follow up question, reply with an answer to the current question the user is asking. Return only your response to the question given the above information following the users instructions as needed.",
+    "Dựa trên cuộc hội thoại dưới đây, ngữ cảnh liên quan và câu hỏi tiếp theo, hãy trả lời câu hỏi hiện tại mà người dùng đang hỏi. Chỉ trả về phản hồi của bạn cho câu hỏi dựa trên thông tin trên và làm theo hướng dẫn của người dùng nếu cần.",
   protectedFields: ["multi_user_mode", "hub_api_key", "onboarding_complete"],
   publicFields: [
     "footer_data",
@@ -65,6 +65,7 @@ const SystemSettings = {
     "meta_page_favicon",
     "memory_enabled",
     "memory_auto_extraction",
+    "sidebar_visibility_config",
   ],
   supportedFields: [
     "logo_filename",
@@ -94,6 +95,10 @@ const SystemSettings = {
     // Meta page customization
     "meta_page_title",
     "meta_page_favicon",
+
+    // Visibility config
+    "sidebar_visibility_config",
+    "sidebar_visibility_password",
 
     // beta feature flags
     "experimental_live_file_sync",

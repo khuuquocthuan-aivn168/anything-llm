@@ -96,7 +96,7 @@ async function grepAgents({
       id: uuid,
       type: "statusResponse",
       textResponse:
-        "@agent: Swapping over to agent chat. Type /exit to exit agent execution loop early.",
+        "@agent: Chuyển sang trò chuyện với agent. Nhập /exit để thoát khỏi vòng lặp thực thi của agent sớm.",
       sources: [],
       close: true,
       error: null,
