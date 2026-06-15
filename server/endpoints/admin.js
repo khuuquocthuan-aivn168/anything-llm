@@ -330,7 +330,7 @@ function adminEndpoints(app) {
   // System preferences but only by array of labels
   app.get(
     "/admin/system-preferences-for",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager])],
+    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
     async (request, response) => {
       try {
         const user = await userFromSession(request, response);
@@ -349,14 +349,22 @@ function adminEndpoints(app) {
           "meta_page_favicon",
         ];
 
-        // Managers can only read a limited set of settings.
-        // These match the ManagerRoute pages in the frontend.
+        // Managers and default users can only read a limited set of settings.
         const managerAllowedFields = [
           "custom_app_name",
           "footer_data",
           "support_email",
           "meta_page_title",
           "meta_page_favicon",
+          "default_agent_skills",
+          "disabled_agent_skills",
+          "imported_agent_skills",
+        ];
+
+        const defaultUserAllowedFields = [
+          "default_agent_skills",
+          "disabled_agent_skills",
+          "imported_agent_skills",
         ];
 
         for (const label of labels) {
@@ -367,6 +375,13 @@ function adminEndpoints(app) {
           if (
             user?.role === ROLES.manager &&
             !managerAllowedFields.includes(label)
+          )
+            continue;
+
+          // Default users can only read default-user allowed fields
+          if (
+            user?.role === ROLES.default &&
+            !defaultUserAllowedFields.includes(label)
           )
             continue;
 
@@ -461,15 +476,13 @@ function adminEndpoints(app) {
 
   app.post(
     "/admin/system-preferences",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager])],
+    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
     async (request, response) => {
       try {
         const user = await userFromSession(request, response);
         let updates = reqBody(request);
 
         // Managers can only update a limited set of settings.
-        // These match the ManagerRoute pages in the frontend.
-        // Admin users can update all supportedFields without restriction.
         if (user?.role === ROLES.manager) {
           const managerAllowedFields = [
             "custom_app_name",
@@ -477,10 +490,29 @@ function adminEndpoints(app) {
             "support_email",
             "meta_page_title",
             "meta_page_favicon",
+            "default_agent_skills",
+            "disabled_agent_skills",
+            "imported_agent_skills",
           ];
           const filteredUpdates = {};
           for (const key of Object.keys(updates)) {
             if (managerAllowedFields.includes(key)) {
+              filteredUpdates[key] = updates[key];
+            }
+          }
+          updates = filteredUpdates;
+        }
+
+        // Default users can only update agent skill preferences
+        if (user?.role === ROLES.default) {
+          const defaultUserAllowedFields = [
+            "default_agent_skills",
+            "disabled_agent_skills",
+            "imported_agent_skills",
+          ];
+          const filteredUpdates = {};
+          for (const key of Object.keys(updates)) {
+            if (defaultUserAllowedFields.includes(key)) {
               filteredUpdates[key] = updates[key];
             }
           }

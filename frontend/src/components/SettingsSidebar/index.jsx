@@ -338,7 +338,7 @@ const SidebarOptions = ({ user = null, t }) => {
             href={paths.settings.agentSkills()}
             user={user}
             flex={true}
-            roles={["admin"]}
+            roles={["admin", "manager", "default"]}
             hidden={!isVisible("agent-skills")}
           />
 

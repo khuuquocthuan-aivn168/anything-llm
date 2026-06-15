@@ -55,8 +55,7 @@ class CreateFilesManager {
    * @returns {boolean} True if tools are available
    */
   isToolAvailable() {
-    if (process.env.NODE_ENV === "development") return true;
-    return process.env.ANYTHING_LLM_RUNTIME === "docker";
+    return true;
   }
 
   /**

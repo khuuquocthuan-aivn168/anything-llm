@@ -38,8 +38,7 @@ class FilesystemManager {
    * @returns {boolean} True if the tool is available
    */
   isToolAvailable() {
-    if (process.env.NODE_ENV === "development") return true;
-    return process.env.ANYTHING_LLM_RUNTIME === "docker";
+    return true;
   }
 
   #allowedDirectories = [];

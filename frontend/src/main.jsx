@@ -139,7 +139,7 @@ const router = createBrowserRouter([
         path: "/settings/agents",
         lazy: async () => {
           const { default: AdminAgents } = await import("@/pages/Admin/Agents");
-          return { element: <AdminRoute Component={AdminAgents} /> };
+          return { element: <PrivateRoute Component={AdminAgents} /> };
         },
       },
       {
@@ -150,7 +150,7 @@ const router = createBrowserRouter([
           );
           return {
             element: (
-              <AdminRoute Component={AgentBuilder} hideUserMenu={true} />
+              <PrivateRoute Component={AgentBuilder} hideUserMenu={true} />
             ),
           };
         },
@@ -163,7 +163,7 @@ const router = createBrowserRouter([
           );
           return {
             element: (
-              <AdminRoute Component={AgentBuilder} hideUserMenu={true} />
+              <PrivateRoute Component={AgentBuilder} hideUserMenu={true} />
             ),
           };
         },

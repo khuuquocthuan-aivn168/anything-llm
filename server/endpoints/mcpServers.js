@@ -11,7 +11,7 @@ function mcpServersEndpoints(app) {
 
   app.get(
     "/mcp-servers/force-reload",
-    [validatedRequest, flexUserRoleValid([ROLES.admin])],
+    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
     async (_request, response) => {
       try {
         const mcp = new MCPCompatibilityLayer();
@@ -34,7 +34,7 @@ function mcpServersEndpoints(app) {
 
   app.get(
     "/mcp-servers/list",
-    [validatedRequest, flexUserRoleValid([ROLES.admin])],
+    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
     async (_request, response) => {
       try {
         const servers = await new MCPCompatibilityLayer().servers();
@@ -54,7 +54,7 @@ function mcpServersEndpoints(app) {
 
   app.post(
     "/mcp-servers/toggle",
-    [validatedRequest, flexUserRoleValid([ROLES.admin])],
+    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
     async (request, response) => {
       try {
         const { name } = reqBody(request);
@@ -77,7 +77,7 @@ function mcpServersEndpoints(app) {
 
   app.post(
     "/mcp-servers/delete",
-    [validatedRequest, flexUserRoleValid([ROLES.admin])],
+    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
     async (request, response) => {
       try {
         const { name } = reqBody(request);
@@ -98,7 +98,7 @@ function mcpServersEndpoints(app) {
 
   app.post(
     "/mcp-servers/toggle-tool",
-    [validatedRequest, flexUserRoleValid([ROLES.admin])],
+    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
     async (request, response) => {
       try {
         const { serverName, toolName, enabled } = reqBody(request);
@@ -125,7 +125,7 @@ function mcpServersEndpoints(app) {
 
   app.post(
     "/mcp-servers/create",
-    [validatedRequest, flexUserRoleValid([ROLES.admin])],
+    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
     async (request, response) => {
       try {
         const { name, type, url, command, args, env, openApiJson, openApiToken } = reqBody(request);

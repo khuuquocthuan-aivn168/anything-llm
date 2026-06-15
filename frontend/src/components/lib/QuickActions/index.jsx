@@ -23,7 +23,7 @@ export default function QuickActions({
       <QuickActionButton
         label={t("main-page.quickActions.createAgent")}
         onClick={onCreateAgent}
-        show={!user || ["admin"].includes(user?.role)}
+        show={true}
       />
       <QuickActionButton
         label={t("main-page.quickActions.editWorkspace")}
