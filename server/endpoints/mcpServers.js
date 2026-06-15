@@ -128,7 +128,7 @@ function mcpServersEndpoints(app) {
     [validatedRequest, flexUserRoleValid([ROLES.admin])],
     async (request, response) => {
       try {
-        const { name, type, url, command, args, env } = reqBody(request);
+        const { name, type, url, command, args, env, openApiJson, openApiToken } = reqBody(request);
         
         // Name validation
         if (!name || !/^[a-zA-Z0-9-]+$/.test(name)) {
@@ -150,6 +150,28 @@ function mcpServersEndpoints(app) {
             command,
             args: args ? (Array.isArray(args) ? args : args.split(",").map((a) => a.trim()).filter((a) => a)) : [],
             env: env ? (typeof env === "object" ? env : JSON.parse(env)) : {},
+          };
+        } else if (type === "openapi") {
+          if (!openApiJson) throw new Error("OpenAPI JSON is required");
+          
+          const fs = require("fs");
+          const path = require("path");
+          
+          const openApiDir = path.resolve(__dirname, "../storage/plugins/openapi");
+          if (!fs.existsSync(openApiDir)) {
+            fs.mkdirSync(openApiDir, { recursive: true });
+          }
+          
+          const schemaFile = path.resolve(openApiDir, `${name}.json`);
+          fs.writeFileSync(schemaFile, typeof openApiJson === "string" ? openApiJson : JSON.stringify(openApiJson, null, 2));
+
+          config = {
+            command: "node",
+            args: [
+              path.resolve(__dirname, "../utils/MCP/openapi_server.js"),
+              schemaFile
+            ],
+            env: openApiToken ? { OPENAPI_BEARER_TOKEN: openApiToken } : {}
           };
         } else {
           throw new Error("Invalid transport type");
