@@ -62,6 +62,7 @@ export default function VisibilityConfig() {
     "api-keys": true,
     "system-prompt-variables": true,
     "browser-extension": true,
+    "experimental-features": true,
     
     "privacy": true,
     "support-email": true,
@@ -382,6 +383,7 @@ export default function VisibilityConfig() {
                   <ToggleItem label="Developer API Keys" active={visibilityMap["api-keys"]} onToggle={() => toggleKey("api-keys")} />
                   <ToggleItem label="Biến System Prompt" active={visibilityMap["system-prompt-variables"]} onToggle={() => toggleKey("system-prompt-variables")} />
                   <ToggleItem label="Tiện ích trình duyệt (Browser Extension)" active={visibilityMap["browser-extension"]} onToggle={() => toggleKey("browser-extension")} />
+                  <ToggleItem label="Tính năng thử nghiệm / Beta (Experimental)" active={visibilityMap["experimental-features"]} onToggle={() => toggleKey("experimental-features")} />
                 </div>
               </div>
 

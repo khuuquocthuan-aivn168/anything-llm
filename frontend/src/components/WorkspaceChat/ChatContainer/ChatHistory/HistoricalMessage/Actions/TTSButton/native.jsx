@@ -27,6 +27,8 @@ export default function NativeTTSMessage({ chatId, message }) {
 
     if (window.speechSynthesis.speaking && !speaking) return;
     const utterance = new SpeechSynthesisUtterance(messageToSpeech(message));
+    const currentLang = window.localStorage.getItem("i18nextLng") || "vi";
+    utterance.lang = currentLang.startsWith("vi") ? "vi-VN" : "en-US";
     utterance.addEventListener("end", endSpeechUtterance);
     window.speechSynthesis.speak(utterance);
     setSpeaking(true);
