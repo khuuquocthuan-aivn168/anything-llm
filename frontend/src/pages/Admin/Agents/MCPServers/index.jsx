@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { titleCase } from "text-case";
-import { ArrowClockwise, Warning } from "@phosphor-icons/react";
+import { ArrowClockwise, Warning, Plus } from "@phosphor-icons/react";
 import { Tooltip } from "react-tooltip";
 import MCPLogo from "@/media/agents/mcp-logo.svg";
 import MCPServers from "@/models/mcpServers";
 import showToast from "@/utils/toast";
 import { useTranslation } from "react-i18next";
+import NewMCPServerModal from "./NewMCPServerModal";
 
 export function MCPServerHeader({
   setMcpServers,
@@ -14,6 +15,8 @@ export function MCPServerHeader({
 }) {
   const { t } = useTranslation();
   const [loadingMcpServers, setLoadingMcpServers] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+
   useEffect(() => {
     async function fetchMCPServers() {
       setLoadingMcpServers(true);
@@ -47,6 +50,11 @@ export function MCPServerHeader({
     }
   };
 
+  const handleFetchMCPServersSilent = async () => {
+    const { servers = [] } = await MCPServers.listServers();
+    setMcpServers(servers);
+  };
+
   return (
     <>
       <div className="text-theme-text-primary flex items-center justify-between gap-x-2 mt-4">
@@ -55,7 +63,14 @@ export function MCPServerHeader({
           <p className="text-lg font-medium">{t("agent.mcp.title")}</p>
         </div>
         <div className="flex items-center gap-x-3">
-
+          <button
+            type="button"
+            onClick={() => setShowAddModal(true)}
+            className="border-none text-theme-text-secondary hover:text-cta-button flex items-center gap-x-1"
+          >
+            <Plus size={16} />
+            <p className="text-sm">Thêm Máy chủ</p>
+          </button>
           <button
             type="button"
             onClick={refreshMCPServers}
@@ -74,6 +89,11 @@ export function MCPServerHeader({
           </button>
         </div>
       </div>
+      <NewMCPServerModal
+        isOpen={showAddModal}
+        closeModal={() => setShowAddModal(false)}
+        onSuccess={handleFetchMCPServersSilent}
+      />
       {children({ loadingMcpServers })}
     </>
   );

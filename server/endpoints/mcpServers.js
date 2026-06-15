@@ -122,6 +122,63 @@ function mcpServersEndpoints(app) {
       }
     }
   );
+
+  app.post(
+    "/mcp-servers/create",
+    [validatedRequest, flexUserRoleValid([ROLES.admin])],
+    async (request, response) => {
+      try {
+        const { name, type, url, command, args, env } = reqBody(request);
+        
+        // Name validation
+        if (!name || !/^[a-zA-Z0-9-]+$/.test(name)) {
+          return response.status(400).json({
+            success: false,
+            error: "Tên máy chủ không hợp lệ. Chỉ chấp nhận chữ cái, số và dấu gạch ngang.",
+          });
+        }
+
+        const mcp = new MCPCompatibilityLayer();
+        
+        let config = {};
+        if (type === "sse") {
+          if (!url) throw new Error("URL is required for SSE transport");
+          config = { type: "sse", url };
+        } else if (type === "stdio") {
+          if (!command) throw new Error("Command is required for Stdio transport");
+          config = {
+            command,
+            args: args ? (Array.isArray(args) ? args : args.split(",").map((a) => a.trim()).filter((a) => a)) : [],
+            env: env ? (typeof env === "object" ? env : JSON.parse(env)) : {},
+          };
+        } else {
+          throw new Error("Invalid transport type");
+        }
+
+        const added = mcp.addMCPServerToConfig(name, config);
+        if (!added) {
+          return response.status(400).json({
+            success: false,
+            error: "A server with this name already exists.",
+          });
+        }
+
+        // Try to start the newly added server
+        await mcp.startMCPServer(name);
+
+        return response.status(200).json({
+          success: true,
+          error: null,
+        });
+      } catch (error) {
+        console.error("Error creating MCP server:", error);
+        return response.status(500).json({
+          success: false,
+          error: error.message,
+        });
+      }
+    }
+  );
 }
 
 module.exports = { mcpServersEndpoints };

@@ -109,6 +109,29 @@ class MCPHypervisor {
   }
 
   /**
+   * Add a new MCP server to the config file
+   * @param {string} name - The name of the MCP server to add
+   * @param {Object} config - The configuration for the MCP server
+   * @returns {boolean} - True if the MCP server was added, false otherwise
+   */
+  addMCPServerToConfig(name, config) {
+    const servers = safeJsonParse(
+      fs.readFileSync(this.mcpServerJSONPath, "utf8"),
+      { mcpServers: {} }
+    );
+    if (servers.mcpServers[name]) return false;
+
+    servers.mcpServers[name] = config;
+    fs.writeFileSync(
+      this.mcpServerJSONPath,
+      JSON.stringify(servers, null, 2),
+      "utf8"
+    );
+    this.log(`MCP server ${name} added to config file`);
+    return true;
+  }
+
+  /**
    * Remove the MCP server from the config file
    * @param {string} name - The name of the MCP server to remove
    * @returns {boolean} - True if the MCP server was removed, false otherwise
