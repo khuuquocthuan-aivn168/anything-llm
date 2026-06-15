@@ -44,7 +44,7 @@ export default function NewEmbedModal({ closeModal }) {
         <div className="relative p-6 border-b rounded-t border-theme-modal-border">
           <div className="w-full flex gap-x-2 items-center">
             <h3 className="text-xl font-semibold text-white overflow-hidden overflow-ellipsis whitespace-nowrap">
-              Create new embed for workspace
+              Tạo mã nhúng mới
             </h3>
           </div>
           <button
@@ -63,44 +63,43 @@ export default function NewEmbedModal({ closeModal }) {
               <PermittedDomains />
               <NumberInput
                 name="max_chats_per_day"
-                title="Max chats per day"
-                hint="Limit the amount of chats this embedded chat can process in a 24 hour period. Zero is unlimited."
+                title="Số lần chat tối đa mỗi ngày"
+                hint="Giới hạn số lượng tin nhắn chatbot này có thể xử lý trong 24 giờ. Số 0 là không giới hạn."
               />
               <NumberInput
                 name="max_chats_per_session"
-                title="Max chats per session"
-                hint="Limit the amount of chats a session user can send with this embed in a 24 hour period. Zero is unlimited."
+                title="Số lần chat tối đa mỗi phiên"
+                hint="Giới hạn số lượng tin nhắn mà mỗi người dùng có thể gửi trong 24 giờ. Số 0 là không giới hạn."
               />
               <NumberInput
                 name="message_limit"
-                title="Message History Limit"
-                hint="The number of previous messages to include in the chat context. Default is 20."
+                title="Giới hạn lịch sử tin nhắn"
+                hint="Số lượng tin nhắn cũ được bao gồm trong ngữ cảnh chat. Mặc định là 20."
                 defaultValue={20}
               />
               <BooleanInput
                 name="allow_model_override"
-                title="Enable dynamic model use"
-                hint="Allow setting of the preferred LLM model to override the workspace default."
+                title="Cho phép ghi đè mô hình (LLM)"
+                hint="Cho phép mã nhúng ghi đè mô hình LLM mặc định của workspace."
               />
               <BooleanInput
                 name="allow_temperature_override"
-                title="Enable dynamic LLM temperature"
-                hint="Allow setting of the LLM temperature to override the workspace default."
+                title="Cho phép ghi đè nhiệt độ (Temperature)"
+                hint="Cho phép mã nhúng ghi đè nhiệt độ LLM mặc định của workspace."
               />
               <BooleanInput
                 name="allow_prompt_override"
-                title="Enable Prompt Override"
-                hint="Allow setting of the system prompt to override the workspace default."
+                title="Cho phép ghi đè Prompt"
+                hint="Cho phép mã nhúng ghi đè system prompt mặc định của workspace."
               />
 
               {error && <p className="text-red-400 text-sm">Error: {error}</p>}
               <p className="text-white text-opacity-60 text-xs md:text-sm">
-                After creating an embed you will be provided a link that you can
-                publish on your website with a simple
+                Sau khi tạo mã nhúng, bạn sẽ nhận được một đường link để gắn lên website thông qua thẻ
                 <code className="light:bg-stone-300 bg-stone-900 text-white mx-1 px-1 rounded-sm">
                   &lt;script&gt;
                 </code>{" "}
-                tag.
+                .
               </p>
             </div>
             <div className="flex justify-between items-center mt-6 pt-6 border-t border-theme-modal-border">
@@ -109,13 +108,13 @@ export default function NewEmbedModal({ closeModal }) {
                 type="button"
                 className="transition-all duration-300 text-white hover:bg-zinc-700 px-4 py-2 rounded-lg text-sm"
               >
-                Cancel
+                Huỷ
               </button>
               <button
                 type="submit"
                 className="transition-all duration-300 bg-white text-black hover:opacity-60 px-4 py-2 rounded-lg text-sm"
               >
-                Create embed
+                Tạo mã nhúng
               </button>
             </div>
           </form>
@@ -142,11 +141,10 @@ export const WorkspaceSelection = ({ defaultValue = null }) => {
           htmlFor="workspace_id"
           className="block  text-sm font-medium text-white"
         >
-          Workspace
+          Workspace (Không gian làm việc)
         </label>
         <p className="text-theme-text-secondary text-xs">
-          This is the workspace your chat window will be based on. All defaults
-          will be inherited from the workspace unless overridden by this config.
+          Đây là workspace mà cửa sổ chat của bạn sẽ dựa vào. Tất cả cấu hình mặc định sẽ được kế thừa từ workspace này trừ khi bạn ghi đè bằng cấu hình của mã nhúng.
         </p>
       </div>
       <select
@@ -181,14 +179,12 @@ export const ChatModeSelection = ({ defaultValue = null }) => {
           className="block text-sm font-medium text-white"
           htmlFor="chat_mode"
         >
-          Allowed chat method
+          Phương thức chat
         </label>
         <p className="text-theme-text-secondary text-xs">
-          Set how your chatbot should operate. Query means it will only respond
-          if a document helps answer the query.
+          Cài đặt cách chatbot hoạt động. Query (Truy vấn) nghĩa là chatbot chỉ phản hồi dựa trên các tài liệu trong workspace.
           <br />
-          Chat opens the chat to even general questions and can answer totally
-          unrelated queries to your workspace.
+          Chat (Trò chuyện) sẽ cho phép chatbot trả lời cả các câu hỏi chung bên ngoài ngữ cảnh.
         </p>
       </div>
       <div className="mt-2 gap-y-3 flex flex-col">
@@ -215,7 +211,7 @@ export const ChatModeSelection = ({ defaultValue = null }) => {
             }`}
           ></div>
           <div className="text-theme-text-primary text-sm font-medium font-['Plus Jakarta Sans'] leading-tight">
-            Chat: Respond to all questions regardless of context
+            Chat: Phản hồi mọi câu hỏi bất kể ngữ cảnh
           </div>
         </label>
         <label
@@ -241,7 +237,7 @@ export const ChatModeSelection = ({ defaultValue = null }) => {
             }`}
           ></div>
           <div className="text-theme-text-primary text-sm font-medium font-['Plus Jakarta Sans'] leading-tight">
-            Query: Only respond to chats related to documents in workspace
+            Truy vấn: Chỉ phản hồi các câu hỏi liên quan tới tài liệu
           </div>
         </label>
       </div>
@@ -294,13 +290,12 @@ export const PermittedDomains = ({ defaultValue = [] }) => {
           htmlFor="allowlist_domains"
           className="block text-sm font-medium text-white"
         >
-          Restrict requests from domains
+          Giới hạn tên miền (Domain)
         </label>
         <p className="text-theme-text-secondary text-xs">
-          This filter will block any requests that come from a domain other than
-          the list below.
+          Bộ lọc này sẽ chặn các yêu cầu đến từ tên miền không có trong danh sách bên dưới.
           <br />
-          Leaving this empty means anyone can use your embed on any site.
+          Để trống nghĩa là ai cũng có thể sử dụng mã nhúng này trên bất kỳ trang web nào.
         </p>
       </div>
       <input type="hidden" name="allowlist_domains" value={domains.join(",")} />
