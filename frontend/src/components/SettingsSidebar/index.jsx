@@ -11,13 +11,14 @@ import {
   Nut,
   Toolbox,
   Plugs,
+  X,
 } from "@phosphor-icons/react";
 import AgentIcon from "@/media/animations/agent-static.png";
 import CommunityHubIcon from "@/media/illustrations/community-hub.png";
 import useUser from "@/hooks/useUser";
-import { isMobile } from "react-device-detect";
+import useMobile from "@/hooks/useMobile";
 import Footer from "../Footer";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import showToast from "@/utils/toast";
 import System from "@/models/system";
@@ -34,6 +35,12 @@ export default function SettingsSidebar() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showBgOverlay, setShowBgOverlay] = useState(false);
   const { isVisible } = useVisibility();
+  const isMobile = useMobile();
+  const location = useLocation();
+
+  useEffect(() => {
+    setShowSidebar(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     function handleBg() {
@@ -84,7 +91,7 @@ export default function SettingsSidebar() {
           />
           <div
             ref={sidebarRef}
-            className="h-[100vh] fixed top-0 left-0 rounded-r-[26px] bg-theme-bg-sidebar w-[80%] p-[18px]"
+            className="h-[100vh] fixed top-0 left-0 rounded-r-[26px] bg-theme-bg-sidebar w-[80%] max-w-[320px] p-[18px]"
           >
             <div className="w-full h-full flex flex-col overflow-x-hidden items-between">
               {/* Header Information */}
@@ -104,6 +111,14 @@ export default function SettingsSidebar() {
                   >
                     <House className="h-4 w-4" />
                   </a>
+                  <button
+                    type="button"
+                    onClick={() => setShowSidebar(false)}
+                    className="p-1 rounded-md text-slate-500 hover:text-white transition-colors"
+                    aria-label="Close sidebar"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
                 </div>
               </div>
 

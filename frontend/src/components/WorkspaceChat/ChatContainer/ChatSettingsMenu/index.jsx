@@ -30,7 +30,7 @@ export default function ChatSettingsMenu() {
 
   return (
     <div
-      className={`absolute top-3 md:top-5 z-30 ${hasUserIcon ? "right-[55px] md:right-[67px]" : "right-4 md:right-6"}`}
+      className={`absolute top-3 lg:top-5 z-30 ${hasUserIcon ? "right-[55px] lg:right-[67px]" : "right-4 lg:right-6"}`}
     >
       <button
         ref={buttonRef}

@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { default as WorkspaceChatContainer } from "@/components/WorkspaceChat";
-import Sidebar from "@/components/Sidebar";
+import Sidebar, { SidebarMobileHeader } from "@/components/Sidebar";
 import { useParams } from "react-router-dom";
 import Workspace from "@/models/workspace";
+import useMobile from "@/hooks/useMobile";
 import PasswordModal, { usePasswordModal } from "@/components/Modals/Password";
-import { isMobile } from "react-device-detect";
 import { FullScreenLoader } from "@/components/Preloader";
 import { LAST_VISITED_WORKSPACE } from "@/utils/constants";
 
 export default function WorkspaceChat() {
   const { loading, requiresAuth, mode } = usePasswordModal();
+  const isMobile = useMobile();
 
   if (loading) return <FullScreenLoader />;
   if (requiresAuth !== false) {
@@ -18,7 +19,7 @@ export default function WorkspaceChat() {
 
   return (
     <div className="w-screen h-screen overflow-hidden bg-zinc-950 light:bg-slate-50 flex">
-      {!isMobile && <Sidebar />}
+      {!isMobile ? <Sidebar /> : <SidebarMobileHeader />}
       <ShowWorkspaceChat />
     </div>
   );

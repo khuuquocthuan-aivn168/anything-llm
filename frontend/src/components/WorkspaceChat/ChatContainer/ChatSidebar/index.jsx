@@ -69,10 +69,12 @@ export function useMemoriesSidebar() {
  * @param {React.ReactNode} props.children
  */
 export default function ChatSidebar({ isOpen, children }) {
+  const isMobileSize = typeof window !== "undefined" ? window.innerWidth < 640 : false;
+  const width = isMobileSize ? "100vw" : "366px";
   return (
     <div
       className="h-full overflow-hidden transition-all duration-500 flex-shrink-0"
-      style={{ width: isOpen ? "366px" : "0px" }}
+      style={{ width: isOpen ? width : "0px" }}
     >
       {children}
     </div>

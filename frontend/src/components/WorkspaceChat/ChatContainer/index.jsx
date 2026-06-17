@@ -7,8 +7,7 @@ import PromptInput, {
 } from "./PromptInput";
 import Workspace from "@/models/workspace";
 import handleChat, { ABORT_STREAM_EVENT } from "@/utils/chat";
-import { isMobile } from "react-device-detect";
-import { SidebarMobileHeader } from "../../Sidebar";
+import useMobile from "@/hooks/useMobile";
 import { useNavigate } from "react-router-dom";
 import { v4 } from "uuid";
 import handleSocketResponse, {
@@ -44,6 +43,7 @@ export default function ChatContainer({
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const isMobile = useMobile();
   const [loadingResponse, setLoadingResponse] = useState(false);
   const [chatHistory, setChatHistory] = useState(knownHistory);
   const [socketId, setSocketId] = useState(null);
@@ -435,14 +435,13 @@ export default function ChatContainer({
       <ChatSidebarProvider>
         <div
           style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-          className="relative flex md:ml-[2px] md:mr-[16px] md:my-[16px] w-full h-full z-[2]"
+          className="relative flex lg:ml-[2px] lg:mr-[16px] lg:my-[16px] w-full h-full z-[2]"
         >
           <ChatSettingsMenu />
-          <div className="flex-1 min-w-0 transition-all duration-500 relative md:rounded-[16px] bg-zinc-900 light:bg-white w-full h-full overflow-hidden border-none light:border-solid light:border light:border-theme-modal-border">
-            {isMobile && <SidebarMobileHeader />}
+          <div className="flex-1 min-w-0 transition-all duration-500 relative lg:rounded-[16px] bg-zinc-900 light:bg-white w-full h-full overflow-hidden border-none light:border-solid light:border light:border-theme-modal-border">
             <WorkspaceModelPicker workspaceSlug={workspace.slug} />
             <DnDFileUploaderWrapper>
-              <div className="flex flex-col h-full w-full items-center justify-center">
+              <div className="flex flex-col h-full w-full items-center justify-center pt-16 lg:pt-0">
                 <div className="flex flex-col items-center w-full max-w-[750px]">
                   <h1 className="text-white text-xl md:text-2xl mb-11 text-center">
                     {t("main-page.greeting")}
@@ -488,14 +487,13 @@ export default function ChatContainer({
     <ChatSidebarProvider>
       <div
         style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-        className="relative flex md:ml-[2px] md:mr-[16px] md:my-[16px] w-full h-full z-[2]"
+        className="relative flex lg:ml-[2px] lg:mr-[16px] lg:my-[16px] w-full h-full z-[2]"
       >
         <ChatSettingsMenu />
-        <div className="flex-1 min-w-0 transition-all duration-500 relative md:rounded-[16px] bg-zinc-900 light:bg-white text-white light:text-slate-900 h-full overflow-hidden border-none light:border-solid light:border light:border-theme-modal-border">
-          {isMobile && <SidebarMobileHeader />}
+        <div className="flex-1 min-w-0 transition-all duration-500 relative lg:rounded-[16px] bg-zinc-900 light:bg-white text-white light:text-slate-900 h-full overflow-hidden border-none light:border-solid light:border light:border-theme-modal-border">
           <WorkspaceModelPicker workspaceSlug={workspace.slug} />
           <DnDFileUploaderWrapper>
-            <div className="flex flex-col h-full w-full pb-20 md:pb-0">
+            <div className="flex flex-col h-full w-full pb-20 lg:pb-0">
               <div className="contents">
                 <MetricsProvider>
                   <ChatHistory

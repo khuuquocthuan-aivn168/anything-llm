@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { isMobile } from "react-device-detect";
-import { SidebarMobileHeader } from "@/components/Sidebar";
+import useMobile from "@/hooks/useMobile";
 import PromptInput, {
   PROMPT_INPUT_EVENT,
   PROMPT_INPUT_ID,
@@ -56,6 +55,7 @@ async function createDefaultWorkspace(workspaceName = "My Workspace") {
 export default function Home() {
   const { t } = useTranslation();
   const { user } = useUser();
+  const isMobile = useMobile();
   const [workspace, setWorkspace] = useState(null);
   const [threadSlug, setThreadSlug] = useState(null);
   const [workspaceLoading, setWorkspaceLoading] = useState(true);
@@ -137,7 +137,7 @@ export default function Home() {
     return (
       <div
         style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-        className="transition-all duration-500 relative md:ml-[2px] md:mr-[16px] md:my-[16px] md:rounded-[16px] bg-zinc-900 light:bg-white w-full h-full overflow-hidden"
+        className="transition-all duration-500 relative lg:ml-[2px] lg:mr-[16px] lg:my-[16px] lg:rounded-[16px] bg-zinc-900 light:bg-white w-full h-full overflow-hidden"
       />
     );
   }
@@ -187,6 +187,7 @@ function HomeContent({ workspace, setWorkspace, threadSlug, setThreadSlug }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const { files, parseAttachments } = useContext(DndUploaderContext);
+  const isMobile = useMobile();
 
   useEffect(() => {
     window.dispatchEvent(
@@ -195,6 +196,7 @@ function HomeContent({ workspace, setWorkspace, threadSlug, setThreadSlug }) {
       })
     );
   }, []);
+
 
   async function submitMessage(message, attachments = []) {
     if (!message || loading) return;
@@ -284,14 +286,13 @@ function HomeContent({ workspace, setWorkspace, threadSlug, setThreadSlug }) {
     <ChatSidebarProvider>
       <div
         style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-        className="relative flex md:ml-[2px] md:mr-[16px] md:my-[16px] w-full h-full z-[2]"
+        className="relative flex lg:ml-[2px] lg:mr-[16px] lg:my-[16px] w-full h-full z-[2]"
       >
         <ChatSettingsMenu />
-        <div className="flex-1 min-w-0 transition-all duration-500 relative md:rounded-[16px] bg-zinc-900 light:bg-white w-full h-full overflow-hidden border-none light:border-solid light:border light:border-theme-modal-border">
-          {isMobile && <SidebarMobileHeader />}
+        <div className="flex-1 min-w-0 transition-all duration-500 relative lg:rounded-[16px] bg-zinc-900 light:bg-white w-full h-full overflow-hidden border-none light:border-solid light:border light:border-theme-modal-border">
           <WorkspaceModelPicker workspaceSlug={workspace?.slug} />
           <DnDFileUploaderWrapper>
-            <div className="flex flex-col h-full w-full items-center justify-center">
+            <div className="flex flex-col h-full w-full items-center justify-center pt-16 lg:pt-0">
               <div className="flex flex-col items-center w-full max-w-[750px]">
                 <h1 className="text-white text-xl md:text-2xl mb-11 text-center">
                   {t("main-page.greeting")}
@@ -331,12 +332,13 @@ function HomeContent({ workspace, setWorkspace, threadSlug, setThreadSlug }) {
 
 function NoWorkspacesAssigned() {
   const { t } = useTranslation();
+  const isMobile = useMobile();
   return (
     <div
       style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-      className="transition-all duration-500 relative md:ml-[2px] md:mr-[16px] md:my-[16px] md:rounded-[16px] bg-zinc-900 light:bg-white w-full h-full overflow-hidden"
+      className="transition-all duration-500 relative lg:ml-[2px] lg:mr-[16px] lg:my-[16px] lg:rounded-[16px] bg-zinc-900 light:bg-white w-full h-full overflow-hidden"
     >
-      <div className="flex flex-col h-full w-full items-center justify-center">
+      <div className="flex flex-col h-full w-full items-center justify-center pt-16 lg:pt-0">
         <p className="text-white/60 text-sm text-center whitespace-pre-line">
           {t("home.notAssigned")}
         </p>

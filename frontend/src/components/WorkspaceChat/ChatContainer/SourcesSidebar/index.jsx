@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { isMobile } from "react-device-detect";
+import useMobile from "@/hooks/useMobile";
 import { useTranslation } from "react-i18next";
 import { X } from "@phosphor-icons/react";
 import {
@@ -17,6 +17,7 @@ export default function SourcesSidebar() {
   const { sources, sidebarOpen, closeSidebar } = useSourcesSidebar();
   const { t } = useTranslation();
   const [selectedSource, setSelectedSource] = useState(null);
+  const isMobile = useMobile();
 
   const combined = combineLikeSources(sources);
 

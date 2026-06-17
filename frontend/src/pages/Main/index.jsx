@@ -2,11 +2,12 @@ import React from "react";
 import PasswordModal, { usePasswordModal } from "@/components/Modals/Password";
 import { FullScreenLoader } from "@/components/Preloader";
 import Home from "./Home";
-import { isMobile } from "react-device-detect";
+import useMobile from "@/hooks/useMobile";
 import Sidebar, { SidebarMobileHeader } from "@/components/Sidebar";
 
 export default function Main() {
   const { loading, requiresAuth, mode } = usePasswordModal();
+  const isMobile = useMobile();
 
   if (loading) return <FullScreenLoader />;
   if (requiresAuth !== false)

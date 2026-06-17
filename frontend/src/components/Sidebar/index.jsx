@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { List, Plus } from "@phosphor-icons/react";
+import { List, Plus, X } from "@phosphor-icons/react";
 import NewWorkspaceModal, {
   useNewWorkspaceModal,
 } from "../Modals/NewWorkspace";
@@ -8,7 +8,7 @@ import useLogo from "@/hooks/useLogo";
 import useUser from "@/hooks/useUser";
 import Footer from "../Footer";
 import SettingsButton from "../SettingsButton";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import paths from "@/utils/paths";
 import { useTranslation } from "react-i18next";
 import { useSidebarToggle, ToggleSidebarButton } from "./SidebarToggle";
@@ -94,6 +94,11 @@ export function SidebarMobileHeader() {
   } = useNewWorkspaceModal();
   const { user } = useUser();
   const { isVisible } = useVisibility();
+  const location = useLocation();
+
+  useEffect(() => {
+    setShowSidebar(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     // Darkens the rest of the screen
@@ -148,12 +153,12 @@ export function SidebarMobileHeader() {
         />
         <div
           ref={sidebarRef}
-          className="relative h-[100vh] fixed top-0 left-0  rounded-r-[26px] bg-theme-bg-sidebar w-[80%] p-[18px] "
+          className="relative h-[100vh] fixed top-0 left-0  rounded-r-[26px] bg-theme-bg-sidebar w-[80%] max-w-[320px] p-[18px] "
         >
           <div className="w-full h-full flex flex-col overflow-x-hidden items-between">
             {/* Header Information */}
             <div className="flex w-full items-center justify-between gap-x-4">
-              <div className="flex shrink-1 w-fit items-center justify-start">
+              <div className="flex shrink-1 w-[60%] items-center justify-start">
                 <img
                   src={logo}
                   alt="Logo"
@@ -161,11 +166,17 @@ export function SidebarMobileHeader() {
                   style={{ objectFit: "contain" }}
                 />
               </div>
-              {(!user || user?.role !== "default") && (
-                <div className="flex gap-x-2 items-center text-slate-500 shink-0">
-                  <SettingsButton />
-                </div>
-              )}
+              <div className="flex gap-x-3 items-center text-slate-500 shrink-0">
+                {(!user || user?.role !== "default") && <SettingsButton />}
+                <button
+                  type="button"
+                  onClick={() => setShowSidebar(false)}
+                  className="p-1 rounded-md text-slate-500 hover:text-white transition-colors"
+                  aria-label="Close sidebar"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
             </div>
 
             {/* Primary Body */}

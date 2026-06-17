@@ -1160,3 +1160,11 @@ textarea {
     "Segoe UI Symbol",
     "Noto Color Emoji" !important;
 }
+
+@media (max-width: 1023px) {
+  /* On mobile/tablet screens, ensure settings containers clear the 64px fixed header. */
+  .bg-theme-bg-secondary > div,
+  .bg-theme-bg-secondary > form > div {
+    padding-top: 5rem !important;
+  }
+}
