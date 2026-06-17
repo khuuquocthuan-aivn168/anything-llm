@@ -327,6 +327,7 @@ module.exports.CreateExcelFile = {
                 extension: "xlsx",
                 buffer: Buffer.from(buffer),
                 displayFilename,
+                workspace: this.super.handlerProps?.invocation?.workspace,
               });
 
               this.super.socket.send("fileDownloadCard", {

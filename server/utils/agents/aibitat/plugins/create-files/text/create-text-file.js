@@ -124,6 +124,7 @@ module.exports.CreateTextFile = {
                 extension: finalExtension,
                 buffer,
                 displayFilename,
+                workspace: this.super.handlerProps?.invocation?.workspace,
               });
 
               this.super.socket.send("fileDownloadCard", {

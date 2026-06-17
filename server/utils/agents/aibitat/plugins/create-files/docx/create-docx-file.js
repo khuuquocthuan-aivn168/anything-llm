@@ -265,6 +265,7 @@ module.exports.CreateDocxFile = {
                 extension: "docx",
                 buffer,
                 displayFilename,
+                workspace: this.super.handlerProps?.invocation?.workspace,
               });
 
               this.super.socket.send("fileDownloadCard", {
