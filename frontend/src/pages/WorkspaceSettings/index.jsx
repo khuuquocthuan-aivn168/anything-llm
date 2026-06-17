@@ -48,6 +48,7 @@ function ShowWorkspaceChat() {
   const { t } = useTranslation();
   const { slug, tab } = useParams();
   const { user } = useUser();
+  const isMobile = useMobile();
   const [workspace, setWorkspace] = useState(null);
   const [deletionProtected, setDeletionProtected] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -77,7 +78,6 @@ function ShowWorkspaceChat() {
   if (loading) return <FullScreenLoader />;
 
   const TabContent = TABS[tab];
-  const isMobile = useMobile();
   return (
     <div className="w-screen h-screen overflow-hidden bg-zinc-950 light:bg-slate-50 flex">
       {!isMobile && <Sidebar />}
