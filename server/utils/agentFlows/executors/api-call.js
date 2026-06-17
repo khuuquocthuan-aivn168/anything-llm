@@ -10,30 +10,45 @@ async function executeApiCall(config, context) {
   const { url, method, headers = [], body, bodyType, formData } = config;
   const { introspect, logger } = context;
   logger(`\x1b[43m[AgentFlowToolExecutor]\x1b[0m - executing API Call block`);
-  introspect(`Making ${method} request to external API...`);
+  const upperMethod = (method || "GET").toUpperCase();
+  introspect(`Making ${upperMethod} request to external API...`);
 
   const requestConfig = {
-    method,
+    method: upperMethod,
     headers: headers.reduce((acc, h) => ({ ...acc, [h.key]: h.value }), {}),
   };
 
-  if (["POST", "PUT", "PATCH"].includes(method)) {
+  if (["POST", "PUT", "PATCH"].includes(upperMethod)) {
     if (bodyType === "form") {
       const formDataObj = new URLSearchParams();
-      formData.forEach(({ key, value }) => formDataObj.append(key, value));
+      if (Array.isArray(formData)) {
+        formData.forEach(({ key, value }) => {
+          if (key) formDataObj.append(key, value || "");
+        });
+      }
       requestConfig.body = formDataObj.toString();
       requestConfig.headers["Content-Type"] =
         "application/x-www-form-urlencoded";
     } else if (bodyType === "json") {
-      const parsedBody = safeJsonParse(body, null);
-      if (parsedBody !== null) {
-        requestConfig.body = JSON.stringify(parsedBody);
+      if (body) {
+        if (typeof body === "object") {
+          requestConfig.body = JSON.stringify(body);
+        } else {
+          const parsedBody = safeJsonParse(body, null);
+          if (parsedBody !== null) {
+            requestConfig.body = JSON.stringify(parsedBody);
+          } else {
+            requestConfig.body = body; // Fallback to raw string if parsing failed
+          }
+        }
       }
       requestConfig.headers["Content-Type"] = "application/json";
     } else if (bodyType === "text") {
-      requestConfig.body = String(body);
+      requestConfig.body = String(body || "");
     } else {
-      requestConfig.body = body;
+      if (body !== undefined && body !== null) {
+        requestConfig.body = typeof body === "object" ? JSON.stringify(body) : body;
+      }
     }
   }
 

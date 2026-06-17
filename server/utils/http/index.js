@@ -76,13 +76,15 @@ function parseAuthHeader(headerValue = null, apiKey = null) {
 }
 
 function safeJsonParse(jsonString, fallback = null) {
-  if (jsonString === null) return fallback;
+  if (jsonString === null || jsonString === undefined) return fallback;
+  if (typeof jsonString === "object") return jsonString;
+  if (typeof jsonString !== "string") return fallback;
 
   try {
     return JSON.parse(jsonString);
   } catch {}
 
-  if (jsonString?.startsWith("[") || jsonString?.startsWith("{")) {
+  if (jsonString.startsWith("[") || jsonString.startsWith("{")) {
     try {
       const repairedJson = jsonrepair(jsonString);
       return JSON.parse(repairedJson);
