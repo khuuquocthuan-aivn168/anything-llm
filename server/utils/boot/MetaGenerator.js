@@ -81,7 +81,7 @@ class MetaGenerator {
       { tag: "meta", props: { property: "og:type", content: "website" } },
       {
         tag: "meta",
-        props: { property: "og:url", content: "https://anythingllm.com" },
+        props: { property: "og:url", content: "/" },
       },
       {
         tag: "meta",
@@ -101,8 +101,7 @@ class MetaGenerator {
         tag: "meta",
         props: {
           property: "og:image",
-          content:
-            "https://raw.githubusercontent.com/Mintplex-Labs/anything-llm/master/images/promo.png",
+          content: "/logo.png",
         },
       },
 
@@ -113,7 +112,7 @@ class MetaGenerator {
       },
       {
         tag: "meta",
-        props: { property: "twitter:url", content: "https://anythingllm.com" },
+        props: { property: "twitter:url", content: "/" },
       },
       {
         tag: "meta",
@@ -133,8 +132,7 @@ class MetaGenerator {
         tag: "meta",
         props: {
           property: "twitter:image",
-          content:
-            "https://raw.githubusercontent.com/Mintplex-Labs/anything-llm/master/images/promo.png",
+          content: "/logo.png",
         },
       },
 
