@@ -93,20 +93,34 @@ export default function CreateFileSkillPanel({
     );
   }
 
+  const styleTag = `
+    @keyframes cfSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .cf-animate-slide-in {
+      animation: cfSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  `;
+
   return (
-    <div className="p-2">
-      <div className="flex flex-col gap-y-[18px] max-w-[500px]">
-        <div className="flex w-full justify-between items-center">
-          <div className="flex items-center gap-x-2">
-            {icon &&
-              React.createElement(icon, {
-                size: 24,
-                color: "var(--theme-text-primary)",
-                weight: "bold",
-              })}
+    <div className="p-3">
+      <style>{styleTag}</style>
+      <div className="flex flex-col gap-y-6 max-w-[500px]">
+        {/* Header */}
+        <div className="flex w-full justify-between items-center bg-zinc-800/10 p-3 rounded-2xl border border-zinc-800/20 backdrop-blur-sm">
+          <div className="flex items-center gap-x-3">
+            <div className="p-2 bg-theme-bg-secondary rounded-xl shadow-inner border border-zinc-800/30">
+              {icon &&
+                React.createElement(icon, {
+                  size: 24,
+                  color: "var(--theme-text-primary)",
+                  weight: "bold",
+                })}
+            </div>
             <label
               htmlFor="name"
-              className="text-theme-text-primary text-md font-bold"
+              className="text-theme-text-primary text-base font-bold tracking-wide"
             >
               {title}
             </label>
@@ -119,43 +133,56 @@ export default function CreateFileSkillPanel({
           />
         </div>
 
-        <img src={image} alt={title} className="w-full rounded-md" />
-        <p className="text-theme-text-secondary text-opacity-60 text-xs font-medium">
-          {t("agent.skill.createFiles.description")}
-        </p>
+        {/* Image */}
+        <div className="overflow-hidden rounded-2xl border border-zinc-800/30 shadow-md group">
+          <img
+            src={image}
+            alt={title}
+            className="w-full transform group-hover:scale-102 transition-transform duration-700 ease-out"
+          />
+        </div>
 
+        {/* Description */}
+        <div className="flex flex-col gap-y-1">
+          <p className="text-theme-text-secondary text-opacity-80 text-xs font-medium leading-relaxed pl-1">
+            {t("agent.skill.createFiles.description")}
+          </p>
+        </div>
+
+        {/* Configuration */}
         {enabled && (
-          <>
+          <div className="cf-animate-slide-in flex flex-col gap-y-5 mt-2">
             <input
               name="system::disabled_create_files_skills"
               type="hidden"
               value={disabledSkills.join(",")}
             />
-            <div className="flex flex-col mt-2 gap-y-2">
-              <p className="text-theme-text-primary font-semibold text-sm">
+            <div className="h-[1px] bg-gradient-to-r from-zinc-800/50 via-zinc-700/50 to-transparent w-full" />
+            <div className="flex justify-between items-center">
+              <p className="text-theme-text-primary font-bold text-sm tracking-wide">
                 {t("agent.skill.createFiles.configuration")}
               </p>
-              {loading ? (
-                <div className="flex items-center justify-center py-4">
-                  <CircleNotch
-                    size={24}
-                    className="animate-spin text-theme-text-primary"
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col gap-y-2">
-                  {skills.map((fileSkill) => (
-                    <SkillRow
-                      key={fileSkill.name}
-                      skill={fileSkill}
-                      disabled={disabledSkills.includes(fileSkill.name)}
-                      onToggle={() => toggleFileSkill(fileSkill.name)}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
-          </>
+            {loading ? (
+              <div className="flex items-center justify-center py-6">
+                <CircleNotch
+                  size={28}
+                  className="animate-spin text-theme-text-primary opacity-80"
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-y-2">
+                {skills.map((fileSkill) => (
+                  <SkillRow
+                    key={fileSkill.name}
+                    skill={fileSkill}
+                    disabled={disabledSkills.includes(fileSkill.name)}
+                    onToggle={() => toggleFileSkill(fileSkill.name)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -166,22 +193,39 @@ function SkillRow({ skill, disabled, onToggle }) {
   const Icon = skill.icon;
   return (
     <div
-      className={`flex items-center justify-between p-2 rounded-lg border ${
+      className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all duration-300 transform hover:scale-[1.015] ${
         disabled
-          ? "bg-theme-bg-secondary/30 border-theme-sidebar-border/30"
-          : "bg-theme-bg-secondary/50 border-theme-sidebar-border/50"
+          ? "bg-zinc-800/10 border-zinc-800/10 opacity-40 hover:opacity-50"
+          : "bg-theme-bg-secondary/40 border-zinc-800/30 hover:border-zinc-700/60 hover:shadow-lg hover:shadow-black/5 text-theme-text-primary"
       }`}
     >
-      <div className="flex items-center gap-x-2">
-        <Icon
-          size={22}
-          className="text-slate-100 light:text-slate-900 shrink-0"
-        />
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-slate-100 light:text-slate-900">
+      <div className="flex items-center gap-x-3">
+        <div
+          className={`p-2 rounded-xl border ${
+            disabled
+              ? "bg-zinc-900/10 border-zinc-800/10"
+              : "bg-theme-bg-secondary border-zinc-800/40 text-theme-text-primary"
+          }`}
+        >
+          <Icon
+            size={18}
+            className={
+              disabled
+                ? "text-theme-text-secondary/30"
+                : "text-theme-text-primary"
+            }
+            weight="bold"
+          />
+        </div>
+        <div className="flex flex-col gap-y-0.5">
+          <span
+            className={`text-sm font-semibold tracking-wide ${disabled ? "text-theme-text-secondary/40" : "text-theme-text-primary"}`}
+          >
             {skill.title}
           </span>
-          <span className="text-xs text-slate-100/50 light:text-slate-900/50">
+          <span
+            className={`text-xxs leading-normal ${disabled ? "text-theme-text-secondary/30" : "text-theme-text-secondary/70"}`}
+          >
             {skill.description}
           </span>
         </div>

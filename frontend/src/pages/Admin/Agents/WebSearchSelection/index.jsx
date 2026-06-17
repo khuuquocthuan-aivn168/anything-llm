@@ -34,6 +34,16 @@ import {
   PerplexitySearchOptions,
 } from "./SearchProviderOptions";
 
+const PANEL_STYLES = `
+  @keyframes wsSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .ws-animate-slide-in {
+    animation: wsSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+`;
+
 const SEARCH_PROVIDERS = [
   {
     name: "DuckDuckGo",
@@ -175,18 +185,22 @@ export default function AgentWebSearchSelection({
     SEARCH_PROVIDERS[1];
 
   return (
-    <div className="p-2">
-      <div className="flex flex-col gap-y-[18px] max-w-[500px]">
-        <div className="flex w-full justify-between items-center">
-          <div className="flex items-center gap-x-2">
-            <ListMagnifyingGlass
-              size={24}
-              color="var(--theme-text-primary)"
-              weight="bold"
-            />
+    <div className="p-3">
+      <style>{PANEL_STYLES}</style>
+      <div className="ws-animate-slide-in flex flex-col gap-y-6 max-w-[500px]">
+        {/* Header */}
+        <div className="flex w-full justify-between items-center bg-zinc-800/10 p-3 rounded-2xl border border-zinc-800/20 backdrop-blur-sm">
+          <div className="flex items-center gap-x-3">
+            <div className="p-2 bg-theme-bg-secondary rounded-xl shadow-inner border border-zinc-800/30">
+              <ListMagnifyingGlass
+                size={24}
+                color="var(--theme-text-primary)"
+                weight="bold"
+              />
+            </div>
             <label
               htmlFor="name"
-              className="text-theme-text-primary text-md font-bold"
+              className="text-theme-text-primary text-base font-bold tracking-wide"
             >
               {title}
             </label>
@@ -197,14 +211,24 @@ export default function AgentWebSearchSelection({
             onChange={() => toggleSkill(skill)}
           />
         </div>
-        <img
-          src={WebSearchImage}
-          alt="Web Search"
-          className="w-full rounded-md"
-        />
-        <p className="text-theme-text-secondary text-opacity-60 text-xs font-medium py-1.5">
-          {description}
-        </p>
+
+        {/* Image */}
+        <div className="overflow-hidden rounded-2xl border border-zinc-800/30 shadow-md group">
+          <img
+            src={WebSearchImage}
+            alt="Web Search"
+            className="w-full transform group-hover:scale-102 transition-transform duration-700 ease-out"
+          />
+        </div>
+
+        {/* Description */}
+        <div className="flex flex-col gap-y-1">
+          <p className="text-theme-text-secondary text-opacity-80 text-xs font-medium leading-relaxed pl-1">
+            {description}
+          </p>
+        </div>
+
+        {/* Provider Selection */}
         <div hidden={!enabled}>
           <div className="relative">
             <input
@@ -219,9 +243,9 @@ export default function AgentWebSearchSelection({
               />
             )}
             {searchMenuOpen ? (
-              <div className="absolute top-0 left-0 w-full max-w-[640px] max-h-[310px] min-h-[64px] bg-theme-settings-input-bg rounded-lg flex flex-col justify-between cursor-pointer border-2 border-primary-button z-20">
+              <div className="absolute top-0 left-0 w-full max-w-[640px] max-h-[310px] min-h-[64px] bg-theme-settings-input-bg rounded-2xl flex flex-col justify-between cursor-pointer border-2 border-primary-button z-20 shadow-xl">
                 <div className="w-full flex flex-col gap-y-1">
-                  <div className="flex items-center sticky top-0 z-10 border-b border-[#9CA3AF] mx-4 bg-theme-settings-input-bg">
+                  <div className="flex items-center sticky top-0 z-10 border-b border-zinc-800/30 mx-4 bg-theme-settings-input-bg">
                     <MagnifyingGlass
                       size={20}
                       weight="bold"
@@ -262,7 +286,7 @@ export default function AgentWebSearchSelection({
               </div>
             ) : (
               <button
-                className="w-full max-w-[640px] h-[64px] bg-theme-settings-input-bg rounded-lg flex items-center p-[14px] justify-between cursor-pointer border-2 border-transparent hover:border-primary-button transition-all duration-300"
+                className="w-full max-w-[640px] h-[64px] bg-theme-settings-input-bg rounded-2xl flex items-center p-[14px] justify-between cursor-pointer border-2 border-transparent hover:border-primary-button transition-all duration-300 shadow-md"
                 type="button"
                 onClick={() => setSearchMenuOpen(true)}
               >
@@ -270,7 +294,7 @@ export default function AgentWebSearchSelection({
                   <img
                     src={selectedSearchProviderObject.logo}
                     alt={`${selectedSearchProviderObject.name} logo`}
-                    className="w-10 h-10 rounded-md"
+                    className="w-10 h-10 rounded-xl"
                   />
                   <div className="flex flex-col text-left">
                     <div className="text-sm font-semibold text-white">

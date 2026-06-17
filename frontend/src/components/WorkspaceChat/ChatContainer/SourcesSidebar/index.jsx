@@ -39,22 +39,22 @@ export default function SourcesSidebar() {
     <>
       <ChatSidebar isOpen={sidebarOpen}>
         <div
-          className="ml-4 w-[350px] bg-zinc-900 light:bg-white light:border-2 light:border-slate-300 md:rounded-[16px] p-4 flex flex-col gap-4 overflow-hidden mt-[72px]"
+          className="ml-4 w-[350px] bg-zinc-950/60 backdrop-blur-md light:bg-white/95 border border-zinc-800/80 light:border-slate-200/80 md:rounded-2xl p-5 flex flex-col gap-5 overflow-hidden mt-[72px] shadow-2xl"
           style={{ maxHeight: "calc(100% - 88px)" }}
         >
-          <div className="flex items-start justify-between">
-            <p className="font-medium text-base leading-6 text-white light:text-slate-900">
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-800/60 light:border-slate-200/60">
+            <p className="font-semibold text-base text-zinc-150 light:text-slate-900">
               {t("chat_window.sources")}
             </p>
             <button
               onClick={closeSidebar}
               type="button"
-              className="text-white/60 light:text-slate-400 hover:text-white light:hover:text-slate-900 transition-colors border-none bg-transparent cursor-pointer"
+              className="text-zinc-400 light:text-slate-400 hover:text-white light:hover:text-slate-900 transition-all border border-zinc-800 light:border-slate-200/60 bg-zinc-900/40 hover:bg-zinc-800 light:bg-slate-100 rounded-lg p-1.5 cursor-pointer shadow-sm"
             >
-              <X size={16} weight="bold" />
+              <X size={14} weight="bold" />
             </button>
           </div>
-          <div className="flex flex-col gap-3 overflow-y-auto no-scroll">
+          <div className="flex flex-col gap-3.5 overflow-y-auto no-scroll pr-0.5">
             {combined.map((source, idx) => (
               <SourceItem
                 key={source.title || idx}

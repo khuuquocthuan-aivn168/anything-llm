@@ -8,6 +8,16 @@ import Admin from "@/models/admin";
 import Toggle from "@/components/lib/Toggle";
 import { Tooltip } from "react-tooltip";
 
+const PANEL_STYLES = `
+  @keyframes sqlSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .sql-animate-slide-in {
+    animation: sqlSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+`;
+
 export default function AgentSQLConnectorSelection({
   skill,
   title,
@@ -94,18 +104,22 @@ export default function AgentSQLConnectorSelection({
 
   return (
     <>
-      <div className="p-2">
-        <div className="flex flex-col gap-y-[18px] max-w-[500px]">
-          <div className="flex w-full justify-between items-center">
-            <div className="flex items-center gap-x-2">
-              <Database
-                size={24}
-                color="var(--theme-text-primary)"
-                weight="bold"
-              />
+      <style>{PANEL_STYLES}</style>
+      <div className="p-3">
+        <div className="sql-animate-slide-in flex flex-col gap-y-6 max-w-[500px]">
+          {/* Header */}
+          <div className="flex w-full justify-between items-center bg-zinc-800/10 p-3 rounded-2xl border border-zinc-800/20 backdrop-blur-sm">
+            <div className="flex items-center gap-x-3">
+              <div className="p-2 bg-theme-bg-secondary rounded-xl shadow-inner border border-zinc-800/30">
+                <Database
+                  size={24}
+                  color="var(--theme-text-primary)"
+                  weight="bold"
+                />
+              </div>
               <label
                 htmlFor="name"
-                className="text-theme-text-primary text-md font-bold"
+                className="text-theme-text-primary text-base font-bold tracking-wide"
               >
                 {title}
               </label>
@@ -116,16 +130,26 @@ export default function AgentSQLConnectorSelection({
               onChange={() => toggleSkill(skill)}
             />
           </div>
-          <img
-            src={SQLAgentImage}
-            alt="SQL Agent"
-            className="w-full rounded-md"
-          />
-          <p className="text-theme-text-secondary text-opacity-60 text-xs font-medium py-1.5">
-            {description}
-          </p>
+
+          {/* Image */}
+          <div className="overflow-hidden rounded-2xl border border-zinc-800/30 shadow-md group">
+            <img
+              src={SQLAgentImage}
+              alt="SQL Agent"
+              className="w-full transform group-hover:scale-102 transition-transform duration-700 ease-out"
+            />
+          </div>
+
+          {/* Description */}
+          <div className="flex flex-col gap-y-1">
+            <p className="text-theme-text-secondary text-opacity-80 text-xs font-medium leading-relaxed pl-1">
+              {description}
+            </p>
+          </div>
+
+          {/* Configuration */}
           {enabled && (
-            <>
+            <div className="sql-animate-slide-in flex flex-col gap-y-5 mt-2">
               <input
                 name="system::agent_sql_connections"
                 type="hidden"
@@ -137,53 +161,54 @@ export default function AgentSQLConnectorSelection({
                   connections.filter((conn) => conn.action !== "remove")
                 )}
               />
-              <div className="flex flex-col mt-2 gap-y-2">
-                <p className="text-theme-text-primary font-semibold text-sm">
+              <div className="h-[1px] bg-gradient-to-r from-zinc-800/50 via-zinc-700/50 to-transparent w-full" />
+              <div className="flex justify-between items-center">
+                <p className="text-theme-text-primary font-bold text-sm tracking-wide">
                   Your database connections
                 </p>
-                <div className="flex flex-col gap-y-3">
-                  {loading ? (
-                    <div className="flex items-center justify-center py-4">
-                      <CircleNotch
-                        size={24}
-                        className="animate-spin text-theme-text-primary"
+              </div>
+              <div className="flex flex-col gap-y-3">
+                {loading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <CircleNotch
+                      size={28}
+                      className="animate-spin text-theme-text-primary opacity-80"
+                    />
+                  </div>
+                ) : (
+                  connections
+                    .filter((connection) => connection.action !== "remove")
+                    .map((connection) => (
+                      <DBConnection
+                        key={connection.database_id}
+                        connection={connection}
+                        onRemove={handleRemoveConnection}
+                        onUpdate={handleUpdateConnection}
+                        setHasChanges={setHasChanges}
+                        connections={connections}
+                      />
+                    ))
+                )}
+                <button
+                  type="button"
+                  onClick={openModal}
+                  className="w-fit relative flex h-[40px] items-center border-none hover:bg-zinc-800/20 rounded-xl transition-all duration-300"
+                >
+                  <div className="flex w-full gap-x-2 items-center p-4">
+                    <div className="bg-theme-bg-secondary p-2 rounded-xl h-[24px] w-[24px] flex items-center justify-center border border-zinc-800/30">
+                      <Plus
+                        weight="bold"
+                        size={14}
+                        className="shrink-0 text-theme-text-primary"
                       />
                     </div>
-                  ) : (
-                    connections
-                      .filter((connection) => connection.action !== "remove")
-                      .map((connection) => (
-                        <DBConnection
-                          key={connection.database_id}
-                          connection={connection}
-                          onRemove={handleRemoveConnection}
-                          onUpdate={handleUpdateConnection}
-                          setHasChanges={setHasChanges}
-                          connections={connections}
-                        />
-                      ))
-                  )}
-                  <button
-                    type="button"
-                    onClick={openModal}
-                    className="w-fit relative flex h-[40px] items-center border-none hover:bg-theme-bg-secondary rounded-lg"
-                  >
-                    <div className="flex w-full gap-x-2 items-center p-4">
-                      <div className="bg-theme-bg-secondary p-2 rounded-lg h-[24px] w-[24px] flex items-center justify-center">
-                        <Plus
-                          weight="bold"
-                          size={14}
-                          className="shrink-0 text-theme-text-primary"
-                        />
-                      </div>
-                      <p className="text-left text-theme-text-primary text-sm">
-                        New SQL connection
-                      </p>
-                    </div>
-                  </button>
-                </div>
+                    <p className="text-left text-theme-text-primary text-sm font-medium">
+                      New SQL connection
+                    </p>
+                  </div>
+                </button>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>

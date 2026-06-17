@@ -6,6 +6,16 @@ import { useNavigate } from "react-router-dom";
 import paths from "@/utils/paths";
 import Toggle from "@/components/lib/Toggle";
 
+const PANEL_STYLES = `
+  @keyframes fpSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fp-animate-slide-in {
+    animation: fpSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+`;
+
 function ManageFlowMenu({ flow, onDelete }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
@@ -48,25 +58,26 @@ function ManageFlowMenu({ flow, onDelete }) {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="p-1.5 rounded-lg text-white hover:bg-theme-action-menu-item-hover transition-colors duration-300"
+        className="p-2 rounded-xl text-theme-text-secondary hover:text-theme-text-primary hover:bg-zinc-800/20 transition-all duration-300"
       >
         <Gear className="h-5 w-5" weight="bold" />
       </button>
       {open && (
-        <div className="absolute min-w-[140px] top-full right-0 mt-1 border-[1.5px] border-white/40 rounded-lg bg-theme-action-menu-bg flex flex-col shadow-[0_4px_14px_rgba(0,0,0,0.25)] text-white z-99 md:z-10">
+        <div className="absolute min-w-[150px] top-full right-0 mt-1 border border-zinc-800/30 rounded-xl bg-theme-action-menu-bg flex flex-col shadow-[0_8px_30px_rgba(0,0,0,0.3)] text-white z-99 md:z-10 overflow-hidden">
           <button
             type="button"
             onClick={() => navigate(paths.agents.editAgent(flow.uuid))}
-            className="border-none flex items-center rounded-lg gap-x-2 hover:bg-theme-action-menu-item-hover py-1.5 px-2 transition-colors duration-200 w-full text-left"
+            className="border-none flex items-center gap-x-2 hover:bg-zinc-800/30 py-2.5 px-3 transition-all duration-200 w-full text-left"
           >
-            <span className="text-sm whitespace-nowrap">Edit Flow</span>
+            <span className="text-sm font-medium whitespace-nowrap">Edit Flow</span>
           </button>
+          <div className="h-[1px] bg-zinc-800/20 mx-2" />
           <button
             type="button"
             onClick={deleteFlow}
-            className="border-none flex items-center rounded-lg gap-x-2 hover:bg-theme-action-menu-item-hover py-1.5 px-2 transition-colors duration-200 w-full text-left"
+            className="border-none flex items-center gap-x-2 hover:bg-red-500/10 text-red-400/80 hover:text-red-400 py-2.5 px-3 transition-all duration-200 w-full text-left"
           >
-            <span className="text-sm whitespace-nowrap">Delete Flow</span>
+            <span className="text-sm font-medium whitespace-nowrap">Delete Flow</span>
           </button>
         </div>
       )}
@@ -91,12 +102,16 @@ export default function FlowPanel({ flow, toggleFlow, enabled, onDelete }) {
 
   return (
     <>
-      <div className="p-2">
-        <div className="flex flex-col gap-y-[18px] max-w-[500px]">
-          <div className="flex w-full justify-between items-center">
-            <div className="flex items-center gap-x-2">
-              <FlowArrow size={24} weight="bold" className="text-white" />
-              <label htmlFor="name" className="text-white text-md font-bold">
+      <style>{PANEL_STYLES}</style>
+      <div className="p-3">
+        <div className="fp-animate-slide-in flex flex-col gap-y-6 max-w-[500px]">
+          {/* Header */}
+          <div className="flex w-full justify-between items-center bg-zinc-800/10 p-3 rounded-2xl border border-zinc-800/20 backdrop-blur-sm">
+            <div className="flex items-center gap-x-3">
+              <div className="p-2 bg-theme-bg-secondary rounded-xl shadow-inner border border-zinc-800/30">
+                <FlowArrow size={24} weight="bold" className="text-theme-text-primary" />
+              </div>
+              <label htmlFor="name" className="text-theme-text-primary text-base font-bold tracking-wide">
                 {flow.name}
               </label>
             </div>
@@ -105,9 +120,13 @@ export default function FlowPanel({ flow, toggleFlow, enabled, onDelete }) {
               <ManageFlowMenu flow={flow} onDelete={onDelete} />
             </div>
           </div>
-          <p className="whitespace-pre-wrap text-white text-opacity-60 text-xs font-medium py-1.5">
-            {flow.description || "No description provided"}
-          </p>
+
+          {/* Description */}
+          <div className="flex flex-col gap-y-1">
+            <p className="whitespace-pre-wrap text-theme-text-secondary text-opacity-80 text-xs font-medium leading-relaxed pl-1">
+              {flow.description || "No description provided"}
+            </p>
+          </div>
         </div>
       </div>
     </>

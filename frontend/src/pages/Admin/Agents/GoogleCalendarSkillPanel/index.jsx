@@ -23,6 +23,23 @@ import { getGoogleCalendarSkills, filterSkillCategories } from "./utils";
 import { Tooltip } from "react-tooltip";
 import GoogleCalendarIcon from "./google-calendar.png";
 
+const PANEL_STYLES = `
+  @keyframes gcSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .gc-animate-slide-in {
+    animation: gcSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes gcPulseWarning {
+    0%, 100% { border-color: rgba(251, 146, 60, 0.2); }
+    50% { border-color: rgba(251, 146, 60, 0.5); }
+  }
+  .gc-animate-pulse-warning {
+    animation: gcPulseWarning 2.5s infinite ease-in-out;
+  }
+`;
+
 export default function GoogleCalendarSkillPanel({
   title,
   skill,
@@ -103,17 +120,21 @@ export default function GoogleCalendarSkillPanel({
   const isConfigured = deploymentId && apiKey;
 
   return (
-    <div className="p-2">
-      <div className="flex flex-col gap-y-[18px] max-w-[500px]">
-        <div className="flex w-full justify-between items-center">
-          <div className="flex items-center gap-x-2">
-            <img
-              src={GoogleCalendarIcon}
-              alt="Google Calendar"
-              width={24}
-              height={24}
-            />
-            <label className="text-theme-text-primary text-md font-bold">
+    <div className="p-3">
+      <style>{PANEL_STYLES}</style>
+      <div className="flex flex-col gap-y-6 max-w-[500px]">
+        {/* Header */}
+        <div className="flex w-full justify-between items-center bg-zinc-800/10 p-3 rounded-2xl border border-zinc-800/20 backdrop-blur-sm">
+          <div className="flex items-center gap-x-3">
+            <div className="p-2 bg-theme-bg-secondary rounded-xl shadow-inner border border-zinc-800/30">
+              <img
+                src={GoogleCalendarIcon}
+                alt="Google Calendar"
+                width={24}
+                height={24}
+              />
+            </div>
+            <label className="text-theme-text-primary text-base font-bold tracking-wide">
               {title}
             </label>
           </div>
@@ -125,21 +146,28 @@ export default function GoogleCalendarSkillPanel({
           />
         </div>
 
+        {/* Multi-user warning */}
         {isMultiUserMode && (
-          <div className="flex items-center gap-x-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-            <Warning size={20} className="text-yellow-500 shrink-0" />
-            <p className="text-yellow-500 text-xs">
+          <div className="gc-animate-pulse-warning flex items-center gap-x-3 p-3 bg-yellow-500/5 border border-yellow-500/20 text-yellow-400/90 rounded-2xl backdrop-blur-xs shadow-inner">
+            <div className="p-1 bg-yellow-500/10 rounded-lg">
+              <Warning size={20} className="flex-shrink-0" weight="fill" />
+            </div>
+            <p className="text-xs font-semibold leading-relaxed">
               {t("agent.skill.googleCalendar.multiUserWarning")}
             </p>
           </div>
         )}
 
-        <p className="text-theme-text-secondary text-opacity-60 text-xs font-medium">
-          {t("agent.skill.googleCalendar.description").replace(/<a[^>]*>|<\/a>/g, "")}
-        </p>
+        {/* Description */}
+        <div className="flex flex-col gap-y-1">
+          <p className="text-theme-text-secondary text-opacity-80 text-xs font-medium leading-relaxed pl-1">
+            {t("agent.skill.googleCalendar.description").replace(/<a[^>]*>|<\/a>/g, "")}
+          </p>
+        </div>
 
+        {/* Configuration */}
         {enabled && !isMultiUserMode && (
-          <>
+          <div className="gc-animate-slide-in flex flex-col gap-y-5">
             <HiddenFormInputs
               disabledSkills={disabledSkills}
               deploymentId={deploymentId}
@@ -147,10 +175,10 @@ export default function GoogleCalendarSkillPanel({
             />
 
             {loading ? (
-              <div className="flex items-center justify-center py-4">
+              <div className="flex items-center justify-center py-6">
                 <CircleNotch
-                  size={24}
-                  className="animate-spin text-theme-text-primary"
+                  size={28}
+                  className="animate-spin text-theme-text-primary opacity-80"
                 />
               </div>
             ) : (
@@ -174,7 +202,7 @@ export default function GoogleCalendarSkillPanel({
                 )}
               </>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>
@@ -194,20 +222,20 @@ function ConfigurationSection({
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   return (
-    <div className="border border-theme-sidebar-border/50 rounded-lg overflow-hidden mt-2">
+    <div className="overflow-hidden rounded-2xl border border-zinc-800/30 shadow-md">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="border-none w-full flex items-center justify-between p-3 bg-theme-bg-secondary/30 hover:bg-theme-bg-secondary/50 transition-colors"
+        className="border-none w-full flex items-center justify-between p-3.5 bg-zinc-800/10 hover:bg-zinc-800/20 transition-all duration-300"
       >
         <div className="flex items-center gap-x-2">
-          <span className="text-theme-text-primary font-semibold text-sm">
+          <span className="text-theme-text-primary font-bold text-sm tracking-wide">
             {t("agent.skill.googleCalendar.configuration")}
           </span>
           {isConfigured && (
-            <div className="flex items-center gap-x-1">
+            <div className="flex items-center gap-x-1 bg-green-500/10 px-2 py-0.5 rounded-full">
               <CheckCircle size={14} weight="fill" className="text-green-500" />
-              <span className="text-xs text-green-500">
+              <span className="text-xxs text-green-500 font-semibold">
                 {t("agent.skill.googleCalendar.configured")}
               </span>
             </div>
@@ -215,21 +243,21 @@ function ConfigurationSection({
         </div>
         <CaretDown
           size={16}
-          className={`text-theme-text-secondary transition-transform ${expanded ? "rotate-180" : ""}`}
+          className={`text-theme-text-secondary transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
         />
       </button>
 
       {expanded && (
-        <div className="p-3 flex flex-col gap-y-4 border-t border-theme-sidebar-border/50">
+        <div className="gc-animate-slide-in p-4 flex flex-col gap-y-4 border-t border-zinc-800/20 bg-zinc-900/5">
           <div className="flex flex-col gap-y-2">
             <div className="flex items-center gap-x-2">
-              <label className="text-theme-text-primary text-sm font-medium">
+              <label className="text-theme-text-primary text-sm font-semibold">
                 {t("agent.skill.googleCalendar.deploymentId")}
               </label>
               <Info
                 data-tooltip-id="gcal-deployment-id-tooltip"
                 size={16}
-                className="text-theme-text-secondary"
+                className="text-theme-text-secondary/60 hover:text-theme-text-secondary transition-colors"
               />
               <Tooltip
                 id="gcal-deployment-id-tooltip"
@@ -248,19 +276,19 @@ function ConfigurationSection({
                 setHasChanges(true);
               }}
               placeholder="AKfycb..."
-              className="w-full px-3 py-2 bg-theme-bg-primary border border-theme-sidebar-border rounded-lg text-theme-text-primary text-sm placeholder:text-theme-text-secondary/50"
+              className="w-full px-3.5 py-2.5 bg-theme-bg-primary border-2 border-zinc-800/30 rounded-xl text-theme-text-primary text-sm placeholder:text-theme-text-secondary/40 focus:border-zinc-700/60 focus:outline-none transition-all duration-300"
             />
           </div>
 
           <div className="flex flex-col gap-y-2">
             <div className="flex items-center gap-x-2">
-              <label className="text-theme-text-primary text-sm font-medium">
+              <label className="text-theme-text-primary text-sm font-semibold">
                 {t("agent.skill.googleCalendar.apiKey")}
               </label>
               <Info
                 data-tooltip-id="gcal-api-key-tooltip"
                 size={16}
-                className="text-theme-text-secondary"
+                className="text-theme-text-secondary/60 hover:text-theme-text-secondary transition-colors"
               />
               <Tooltip
                 id="gcal-api-key-tooltip"
@@ -279,13 +307,15 @@ function ConfigurationSection({
                 setHasChanges(true);
               }}
               placeholder="Your API key..."
-              className="w-full px-3 py-2 bg-theme-bg-primary border border-theme-sidebar-border rounded-lg text-theme-text-primary text-sm placeholder:text-theme-text-secondary/50"
+              className="w-full px-3.5 py-2.5 bg-theme-bg-primary border-2 border-zinc-800/30 rounded-xl text-theme-text-primary text-sm placeholder:text-theme-text-secondary/40 focus:border-zinc-700/60 focus:outline-none transition-all duration-300"
             />
           </div>
           {!isConfigured && (
-            <div className="flex items-center gap-x-2 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
-              <Warning size={20} className="text-orange-500 shrink-0" />
-              <p className="text-orange-500 text-xs">
+            <div className="gc-animate-pulse-warning flex items-center gap-x-3 p-3 bg-orange-500/5 border border-orange-500/20 text-orange-400/90 rounded-2xl">
+              <div className="p-1 bg-orange-500/10 rounded-lg">
+                <Warning size={18} className="flex-shrink-0" weight="fill" />
+              </div>
+              <p className="text-xs font-semibold leading-relaxed">
                 {t("agent.skill.googleCalendar.configurationRequired")}
               </p>
             </div>
@@ -325,11 +355,11 @@ function SkillSearchInput({ onSearch }) {
         type="search"
         placeholder={t("agent.skill.googleCalendar.searchSkills")}
         onChange={handleChange}
-        className="w-full pl-9 pr-3 py-2 bg-theme-bg-primary border border-theme-sidebar-border rounded-lg text-theme-text-primary text-sm placeholder:text-theme-text-secondary/50 search-input"
+        className="w-full pl-10 pr-3.5 py-2.5 bg-theme-bg-primary border-2 border-zinc-800/30 rounded-xl text-theme-text-primary text-sm placeholder:text-theme-text-secondary/40 focus:border-zinc-700/60 focus:outline-none transition-all duration-300 search-input"
       />
       <MagnifyingGlass
         size={16}
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-theme-text-secondary"
+        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-theme-text-secondary/50"
         weight="bold"
       />
     </div>
@@ -352,7 +382,8 @@ function SkillsSection({ skillCategories, disabledSkills, onToggle }) {
   const hasResults = Object.keys(filteredCategories).length > 0;
 
   return (
-    <div className="flex flex-col mt-4 gap-y-4">
+    <div className="gc-animate-slide-in flex flex-col gap-y-4 mt-1">
+      <div className="h-[1px] bg-gradient-to-r from-zinc-800/50 via-zinc-700/50 to-transparent w-full" />
       <SkillSearchInput onSearch={handleSearch} />
       {hasResults ? (
         <div className="flex flex-col gap-y-4">
@@ -366,7 +397,7 @@ function SkillsSection({ skillCategories, disabledSkills, onToggle }) {
           ))}
         </div>
       ) : (
-        <p className="text-theme-text-secondary text-sm text-center py-4">
+        <p className="text-theme-text-secondary/50 text-sm text-center py-6 font-medium">
           {t("agent.skill.googleCalendar.noSkillsFound")}
         </p>
       )}
@@ -379,9 +410,11 @@ function CategorySection({ category, disabledSkills, onToggle }) {
 
   return (
     <div className="flex flex-col gap-y-2">
-      <div className="flex items-center gap-x-2 px-1">
-        <Icon size={18} className="text-theme-text-primary" />
-        <span className="text-sm font-medium text-theme-text-primary">
+      <div className="flex items-center gap-x-2 pl-1">
+        <div className="p-1.5 bg-theme-bg-secondary/60 rounded-lg border border-zinc-800/20">
+          <Icon size={14} className="text-theme-text-primary" />
+        </div>
+        <span className="text-xxs font-bold uppercase tracking-widest text-theme-text-secondary/50">
           {category.title}
         </span>
       </div>
@@ -402,17 +435,21 @@ function CategorySection({ category, disabledSkills, onToggle }) {
 function SkillRow({ skill, disabled, onToggle }) {
   return (
     <div
-      className={`flex items-center justify-between p-2 rounded-lg border ${
+      className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all duration-300 transform hover:scale-[1.015] ${
         disabled
-          ? "bg-theme-bg-secondary/30 border-theme-sidebar-border/30"
-          : "bg-theme-bg-secondary/50 border-theme-sidebar-border/50"
+          ? "bg-zinc-800/10 border-zinc-800/10 opacity-40 hover:opacity-50"
+          : "bg-theme-bg-secondary/40 border-zinc-800/30 hover:border-zinc-700/60 hover:shadow-lg hover:shadow-black/5"
       }`}
     >
-      <div className="flex flex-col">
-        <span className="text-sm font-medium text-slate-100 light:text-slate-900">
+      <div className="flex flex-col gap-y-0.5">
+        <span
+          className={`text-sm font-semibold tracking-wide ${disabled ? "text-theme-text-secondary/40" : "text-theme-text-primary"}`}
+        >
           {skill.title}
         </span>
-        <span className="text-xs text-slate-100/50 light:text-slate-900/50">
+        <span
+          className={`text-xxs leading-normal ${disabled ? "text-theme-text-secondary/30" : "text-theme-text-secondary/70"}`}
+        >
           {skill.description}
         </span>
       </div>

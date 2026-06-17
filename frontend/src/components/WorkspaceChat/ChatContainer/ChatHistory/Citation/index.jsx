@@ -82,7 +82,11 @@ export function SourceTypeCircle({
 
   return (
     <div
-      className={`${customImage ? "bg-transparent border-none" : "bg-white light:bg-slate-100 border-zinc-800 light:border-white rounded-full"} flex items-center justify-center overflow-hidden`}
+      className={`${
+        customImage
+          ? "bg-transparent border-none"
+          : "bg-zinc-800 light:bg-slate-200 border border-zinc-700/60 light:border-slate-300/80 rounded-full shadow-sm"
+      } flex items-center justify-center overflow-hidden transition-all duration-300`}
       style={{ width: size, height: size }}
     >
       {faviconUrl && !imgError ? (
@@ -101,7 +105,7 @@ export function SourceTypeCircle({
           className="object-contain bg-transparent"
         />
       ) : (
-        <Icon size={iconSize} weight="bold" className="text-black" />
+        <Icon size={iconSize} weight="bold" className="text-zinc-200 light:text-slate-700" />
       )}
     </div>
   );
@@ -124,6 +128,28 @@ export function combineLikeSources(sources) {
   });
   return Object.values(combined);
 }
+
+const CITATION_STYLES = `
+  @keyframes slide-up-fade {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .citation-animate-container {
+    animation: slide-up-fade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .group\\/citation:hover .citation-circle-stagger[data-index="1"] {
+    transform: translateX(5px);
+  }
+  .group\\/citation:hover .citation-circle-stagger[data-index="2"] {
+    transform: translateX(10px);
+  }
+`;
 
 export default function Citations({ sources = [] }) {
   const {
@@ -148,44 +174,48 @@ export default function Citations({ sources = [] }) {
   }
 
   return (
-    <button
-      onClick={handleOpenSourcesSidebar}
-      className="w-fit flex items-center gap-[5px] px-[10px] py-[4px] rounded-full hover:bg-white/5 light:hover:bg-black/5 transition-colors"
-      type="button"
-    >
-      <span className="text-xs text-white light:text-slate-800">
-        {t("chat_window.sources")}
-      </span>
-      <div
-        className="relative h-[22px]"
-        style={{ width: `${visibleSources.length * 17 + 5}px` }}
+    <div className="citation-animate-container mt-2">
+      <style dangerouslySetInnerHTML={{ __html: CITATION_STYLES }} />
+      <button
+        onClick={handleOpenSourcesSidebar}
+        className="group/citation w-fit flex items-center gap-[6px] px-[12px] py-[6px] rounded-xl border border-zinc-800/60 light:border-slate-200 bg-zinc-800/30 light:bg-slate-100/30 backdrop-blur-sm hover:bg-zinc-800/60 light:hover:bg-slate-100/60 hover:border-zinc-700 light:hover:border-slate-300 transition-all duration-300 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
+        type="button"
       >
-        {visibleSources.map((source, idx) => {
-          const info = parseChunkSource(source);
-          const customImage = CIRCLE_IMAGES[info.icon];
-          return (
-            <div
-              key={source.title || idx}
-              className={`absolute top-0 size-[22px] rounded-full ${customImage ? "border-none" : "border-2 border-zinc-800 light:border-white"}`}
-              style={{ left: `${idx * 17}px`, zIndex: 3 - idx }}
-            >
-              <SourceTypeCircle
-                type={info.icon}
-                size={18}
-                iconSize={10}
-                url={info.href}
-                customImage={customImage}
-              />
-            </div>
-          );
-        })}
-      </div>
-      {remainingCount > 0 && (
-        <span className="text-xs text-white light:text-slate-800">
-          + {remainingCount}
+        <span className="text-xs font-medium text-zinc-300 light:text-slate-700 group-hover/citation:text-white light:group-hover/citation:text-slate-900 transition-colors">
+          {t("chat_window.sources")}
         </span>
-      )}
-    </button>
+        <div
+          className="relative h-[22px] flex items-center"
+          style={{ width: `${visibleSources.length * 17 + 5}px` }}
+        >
+          {visibleSources.map((source, idx) => {
+            const info = parseChunkSource(source);
+            const customImage = CIRCLE_IMAGES[info.icon];
+            return (
+              <div
+                key={source.title || idx}
+                className={`citation-circle-stagger absolute top-0 size-[22px] rounded-full transition-all duration-300 ease-out ${customImage ? "border-none" : "border-2 border-zinc-850 light:border-white"}`}
+                style={{ left: `${idx * 17}px`, zIndex: 3 - idx }}
+                data-index={idx}
+              >
+                <SourceTypeCircle
+                  type={info.icon}
+                  size={18}
+                  iconSize={10}
+                  url={info.href}
+                  customImage={customImage}
+                />
+              </div>
+            );
+          })}
+        </div>
+        {remainingCount > 0 && (
+          <span className="text-xs font-semibold text-zinc-300 light:text-slate-650 group-hover/citation:text-white light:group-hover/citation:text-slate-800 transition-colors">
+            + {remainingCount}
+          </span>
+        )}
+      </button>
+    </div>
   );
 }
 
@@ -201,25 +231,25 @@ export function CitationDetailModal({ source, onClose }) {
 
   return (
     <ModalWrapper isOpen={!!source}>
-      <div className="w-full max-w-2xl bg-zinc-900 light:bg-white rounded-lg shadow border-2 border-zinc-700 light:border-slate-300 overflow-hidden">
-        <div className="relative p-6 border-b rounded-t border-zinc-700 light:border-slate-300">
+      <div className="w-full max-w-2xl bg-zinc-900/95 light:bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-zinc-800 light:border-slate-200 overflow-hidden animate-slide-up-fade">
+        <div className="relative p-6 border-b border-zinc-800/80 light:border-slate-200">
           <div className="w-full flex gap-x-2 items-center">
             {isUrl ? (
               <a
                 href={linkTo}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xl w-[90%] font-semibold text-white light:text-slate-900 whitespace-nowrap hover:underline hover:text-blue-300 light:hover:text-blue-600 flex items-center gap-x-1"
+                className="text-xl w-[90%] font-semibold text-zinc-100 light:text-slate-900 whitespace-nowrap hover:underline hover:text-blue-400 light:hover:text-blue-600 flex items-center gap-x-1 transition-colors"
               >
-                <div className="flex items-center gap-x-1 max-w-full overflow-hidden">
+                <div className="flex items-center gap-x-1.5 max-w-full overflow-hidden">
                   <h3 className="truncate text-ellipsis whitespace-nowrap overflow-hidden w-full">
                     {webpageUrl}
                   </h3>
-                  <ArrowSquareOut className="flex-shrink-0" />
+                  <ArrowSquareOut className="flex-shrink-0 w-5 h-5 text-zinc-400 light:text-slate-500" />
                 </div>
               </a>
             ) : (
-              <h3 className="text-xl font-semibold text-white light:text-slate-900 overflow-hidden overflow-ellipsis whitespace-nowrap">
+              <h3 className="text-xl font-semibold text-zinc-100 light:text-slate-900 overflow-hidden overflow-ellipsis whitespace-nowrap">
                 {truncate(title, 45)}
               </h3>
             )}
@@ -232,12 +262,12 @@ export function CitationDetailModal({ source, onClose }) {
           <button
             onClick={onClose}
             type="button"
-            className="absolute top-4 right-4 transition-all duration-300 bg-transparent rounded-lg text-sm p-1 inline-flex items-center hover:bg-zinc-700 light:hover:bg-slate-200 border-transparent border"
+            className="absolute top-5 right-5 transition-all duration-300 bg-transparent rounded-xl text-sm p-1.5 inline-flex items-center hover:bg-zinc-800 light:hover:bg-slate-100 border border-zinc-800 light:border-slate-200"
           >
             <X
-              size={24}
+              size={20}
               weight="bold"
-              className="text-white light:text-slate-900"
+              className="text-zinc-400 light:text-slate-600 hover:text-white light:hover:text-slate-900"
             />
           </button>
         </div>
@@ -245,23 +275,23 @@ export function CitationDetailModal({ source, onClose }) {
           className="h-full w-full overflow-y-auto"
           style={{ maxHeight: "calc(100vh - 200px)" }}
         >
-          <div className="py-7 px-9 space-y-2 flex-col">
+          <div className="py-7 px-9 space-y-4 flex-col">
             {chunks.map(({ text, score }, idx) => (
               <Fragment key={idx}>
-                <div className="pt-6 text-white light:text-slate-900">
-                  <div className="flex flex-col w-full justify-start pb-6 gap-y-1">
-                    <p className="text-white light:text-slate-900 whitespace-pre-line">
+                <div className="pt-2 text-zinc-200 light:text-slate-800">
+                  <div className="flex flex-col w-full justify-start pb-4 gap-y-2">
+                    <p className="text-zinc-200 light:text-slate-800 whitespace-pre-line leading-relaxed text-sm">
                       {HTMLDecode(omitChunkHeader(text))}
                     </p>
 
                     {!!score && (
-                      <div className="w-full flex items-center text-xs text-white/60 light:text-slate-500 gap-x-2 cursor-default">
+                      <div className="w-full flex items-center text-xs text-zinc-400 light:text-slate-500 gap-x-2 cursor-default mt-2">
                         <div
                           data-tooltip-id="similarity-score"
                           data-tooltip-content={`This is the semantic similarity score of this chunk of text compared to your query calculated by the vector database.`}
                           className="flex items-center gap-x-1"
                         >
-                          <Info size={14} />
+                          <Info size={14} className="text-zinc-400 light:text-slate-500" />
                           <p>
                             {toPercentString(score)}{" "}
                             {t("chat_window.similarity_match")}
@@ -272,7 +302,7 @@ export function CitationDetailModal({ source, onClose }) {
                   </div>
                 </div>
                 {idx !== chunks.length - 1 && (
-                  <hr className="border-zinc-700 light:border-slate-300" />
+                  <hr className="border-zinc-800/80 light:border-slate-200" />
                 )}
               </Fragment>
             ))}
