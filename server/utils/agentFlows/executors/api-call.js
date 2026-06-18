@@ -67,13 +67,15 @@ async function executeApiCall(config, context) {
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let fullResponse = "";
+      let buffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         
-        const chunkStr = decoder.decode(value, { stream: true });
-        const lines = chunkStr.split('\n');
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || "";
         
         for (const line of lines) {
           if (line.trim() === '' || line.startsWith('event:')) continue;
