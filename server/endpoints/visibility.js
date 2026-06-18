@@ -7,7 +7,9 @@ function visibilityEndpoints(app) {
   // Get status: whether visibility password has been set
   app.get("/visibility/status", async (_, response) => {
     try {
-      const password = await SystemSettings.get({ label: "sidebar_visibility_password" });
+      const password = await SystemSettings.get({
+        label: "sidebar_visibility_password",
+      });
       return response.status(200).json({ passwordSet: !!password?.value });
     } catch (e) {
       console.error(e);
@@ -19,7 +21,9 @@ function visibilityEndpoints(app) {
   app.post("/visibility/auth", async (request, response) => {
     try {
       const { password } = request.body;
-      const storedPasswordSetting = await SystemSettings.get({ label: "sidebar_visibility_password" });
+      const storedPasswordSetting = await SystemSettings.get({
+        label: "sidebar_visibility_password",
+      });
       if (!storedPasswordSetting || !storedPasswordSetting.value) {
         return response.status(400).json({ error: "Password not set yet." });
       }
@@ -35,13 +39,17 @@ function visibilityEndpoints(app) {
   app.post("/visibility/set-password", async (request, response) => {
     try {
       const { password } = request.body;
-      const storedPasswordSetting = await SystemSettings.get({ label: "sidebar_visibility_password" });
+      const storedPasswordSetting = await SystemSettings.get({
+        label: "sidebar_visibility_password",
+      });
       if (storedPasswordSetting && storedPasswordSetting.value) {
         return response.status(400).json({ error: "Password is already set." });
       }
 
       if (!password || password.length < 4) {
-        return response.status(400).json({ error: "Password must be at least 4 characters long." });
+        return response
+          .status(400)
+          .json({ error: "Password must be at least 4 characters long." });
       }
 
       const hashedPassword = bcrypt.hashSync(password, 10);
@@ -59,7 +67,9 @@ function visibilityEndpoints(app) {
   // Get current visibility config
   app.get("/visibility/config", async (_, response) => {
     try {
-      const configSetting = await SystemSettings.get({ label: "sidebar_visibility_config" });
+      const configSetting = await SystemSettings.get({
+        label: "sidebar_visibility_config",
+      });
       let config = {};
       if (configSetting && configSetting.value) {
         try {
@@ -79,7 +89,9 @@ function visibilityEndpoints(app) {
   app.post("/visibility/update", async (request, response) => {
     try {
       const { password, config } = request.body;
-      const storedPasswordSetting = await SystemSettings.get({ label: "sidebar_visibility_password" });
+      const storedPasswordSetting = await SystemSettings.get({
+        label: "sidebar_visibility_password",
+      });
       if (!storedPasswordSetting || !storedPasswordSetting.value) {
         return response.status(400).json({ error: "Password not set." });
       }

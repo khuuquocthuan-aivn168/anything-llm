@@ -129,7 +129,7 @@ export default function handleSocketResponse(socket, event, setChatHistory) {
 
       const knownMessage = data.content.uuid
         ? prev.find((msg) => msg.uuid === data.content.uuid)
-        : prev.findLast((msg) => msg.role === "assistant");
+        : null;
       if (!knownMessage) {
         if (data.content.type === "fullTextResponse") {
           return [
@@ -160,7 +160,7 @@ export default function handleSocketResponse(socket, event, setChatHistory) {
           return [
             ...prev.filter((msg) => !!msg.content),
             {
-              uuid: data.content.uuid || v4(),
+              uuid: data.content.uuid,
               type: "textResponse",
               content: data.content.content,
               role: "assistant",
@@ -177,7 +177,7 @@ export default function handleSocketResponse(socket, event, setChatHistory) {
         return [
           ...prev.filter((msg) => !!msg.content),
           {
-            uuid: data.content.uuid || v4(),
+            uuid: data.content.uuid,
             type: "statusResponse",
             content: data.content.content,
             role: "assistant",
@@ -227,7 +227,7 @@ export default function handleSocketResponse(socket, event, setChatHistory) {
         if (type === "textResponseChunk") {
           return prev
             .map((msg) =>
-              (uuid ? msg.uuid === uuid : msg === knownMessage)
+              msg.uuid === uuid
                 ? {
                     ...msg,
                     type: "textResponse",
@@ -242,7 +242,7 @@ export default function handleSocketResponse(socket, event, setChatHistory) {
 
         // Generic text response - will be put in the agent thought bubble
         return prev.map((msg) =>
-          (data.content.uuid ? msg.uuid === data.content.uuid : msg === knownMessage)
+          msg.uuid === data.content.uuid
             ? { ...msg, content: msg.content + data.content.content }
             : msg
         );

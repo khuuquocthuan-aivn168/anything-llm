@@ -175,7 +175,12 @@ class FlowExecutor {
     }
 
     // If directOutput is true, mark this result for direct output
-    if (config.directOutput) result = { directOutput: true, result };
+    if (
+      config.directOutput &&
+      !(result && typeof result === "object" && result.directOutput === true)
+    ) {
+      result = { directOutput: true, result };
+    }
     return result;
   }
 

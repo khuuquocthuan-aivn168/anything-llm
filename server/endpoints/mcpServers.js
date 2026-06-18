@@ -11,7 +11,10 @@ function mcpServersEndpoints(app) {
 
   app.get(
     "/mcp-servers/force-reload",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
+    [
+      validatedRequest,
+      flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default]),
+    ],
     async (_request, response) => {
       try {
         const mcp = new MCPCompatibilityLayer();
@@ -34,7 +37,10 @@ function mcpServersEndpoints(app) {
 
   app.get(
     "/mcp-servers/list",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
+    [
+      validatedRequest,
+      flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default]),
+    ],
     async (_request, response) => {
       try {
         const servers = await new MCPCompatibilityLayer().servers();
@@ -54,7 +60,10 @@ function mcpServersEndpoints(app) {
 
   app.post(
     "/mcp-servers/toggle",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
+    [
+      validatedRequest,
+      flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default]),
+    ],
     async (request, response) => {
       try {
         const { name } = reqBody(request);
@@ -77,7 +86,10 @@ function mcpServersEndpoints(app) {
 
   app.post(
     "/mcp-servers/delete",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
+    [
+      validatedRequest,
+      flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default]),
+    ],
     async (request, response) => {
       try {
         const { name } = reqBody(request);
@@ -98,7 +110,10 @@ function mcpServersEndpoints(app) {
 
   app.post(
     "/mcp-servers/toggle-tool",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
+    [
+      validatedRequest,
+      flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default]),
+    ],
     async (request, response) => {
       try {
         const { serverName, toolName, enabled } = reqBody(request);
@@ -125,53 +140,82 @@ function mcpServersEndpoints(app) {
 
   app.post(
     "/mcp-servers/create",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
+    [
+      validatedRequest,
+      flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default]),
+    ],
     async (request, response) => {
       try {
-        const { name, type, url, command, args, env, openApiJson, openApiToken } = reqBody(request);
-        
+        const {
+          name,
+          type,
+          url,
+          command,
+          args,
+          env,
+          openApiJson,
+          openApiToken,
+        } = reqBody(request);
+
         // Name validation
         if (!name || !/^[a-zA-Z0-9-]+$/.test(name)) {
           return response.status(400).json({
             success: false,
-            error: "Tên máy chủ không hợp lệ. Chỉ chấp nhận chữ cái, số và dấu gạch ngang.",
+            error:
+              "Tên máy chủ không hợp lệ. Chỉ chấp nhận chữ cái, số và dấu gạch ngang.",
           });
         }
 
         const mcp = new MCPCompatibilityLayer();
-        
+
         let config = {};
         if (type === "sse") {
           if (!url) throw new Error("URL is required for SSE transport");
           config = { type: "sse", url };
         } else if (type === "stdio") {
-          if (!command) throw new Error("Command is required for Stdio transport");
+          if (!command)
+            throw new Error("Command is required for Stdio transport");
           config = {
             command,
-            args: args ? (Array.isArray(args) ? args : args.split(",").map((a) => a.trim()).filter((a) => a)) : [],
+            args: args
+              ? Array.isArray(args)
+                ? args
+                : args
+                    .split(",")
+                    .map((a) => a.trim())
+                    .filter((a) => a)
+              : [],
             env: env ? (typeof env === "object" ? env : JSON.parse(env)) : {},
           };
         } else if (type === "openapi") {
           if (!openApiJson) throw new Error("OpenAPI JSON is required");
-          
+
           const fs = require("fs");
           const path = require("path");
-          
-          const openApiDir = path.resolve(__dirname, "../storage/plugins/openapi");
+
+          const openApiDir = path.resolve(
+            __dirname,
+            "../storage/plugins/openapi"
+          );
           if (!fs.existsSync(openApiDir)) {
             fs.mkdirSync(openApiDir, { recursive: true });
           }
-          
+
           const schemaFile = path.resolve(openApiDir, `${name}.json`);
-          fs.writeFileSync(schemaFile, typeof openApiJson === "string" ? openApiJson : JSON.stringify(openApiJson, null, 2));
+          fs.writeFileSync(
+            schemaFile,
+            typeof openApiJson === "string"
+              ? openApiJson
+              : JSON.stringify(openApiJson, null, 2)
+          );
 
           config = {
             command: "node",
             args: [
               path.resolve(__dirname, "../utils/MCP/openapi_server.js"),
-              schemaFile
+              schemaFile,
             ],
-            env: openApiToken ? { OPENAPI_BEARER_TOKEN: openApiToken } : {}
+            env: openApiToken ? { OPENAPI_BEARER_TOKEN: openApiToken } : {},
           };
         } else {
           throw new Error("Invalid transport type");

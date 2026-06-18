@@ -330,7 +330,10 @@ function adminEndpoints(app) {
   // System preferences but only by array of labels
   app.get(
     "/admin/system-preferences-for",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
+    [
+      validatedRequest,
+      flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default]),
+    ],
     async (request, response) => {
       try {
         const user = await userFromSession(request, response);
@@ -476,7 +479,10 @@ function adminEndpoints(app) {
 
   app.post(
     "/admin/system-preferences",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default])],
+    [
+      validatedRequest,
+      flexUserRoleValid([ROLES.admin, ROLES.manager, ROLES.default]),
+    ],
     async (request, response) => {
       try {
         const user = await userFromSession(request, response);

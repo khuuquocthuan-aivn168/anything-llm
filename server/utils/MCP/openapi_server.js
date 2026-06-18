@@ -2,7 +2,7 @@
 
 /**
  * Universal OpenAPI MCP Server
- * 
+ *
  * This server reads an OpenAPI JSON schema file and automatically
  * exposes all its endpoints as MCP Tools.
  */
@@ -10,8 +10,13 @@
 const fs = require("fs");
 const path = require("path");
 const { Server } = require("@modelcontextprotocol/sdk/server/index.js");
-const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
-const { CallToolRequestSchema, ListToolsRequestSchema } = require("@modelcontextprotocol/sdk/types.js");
+const {
+  StdioServerTransport,
+} = require("@modelcontextprotocol/sdk/server/stdio.js");
+const {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} = require("@modelcontextprotocol/sdk/types.js");
 
 // 1. Read Arguments
 const schemaPath = process.argv[2];
@@ -45,20 +50,37 @@ const mcpTools = [];
 if (openApiSchema.paths) {
   for (const [apiPath, methods] of Object.entries(openApiSchema.paths)) {
     for (const [method, details] of Object.entries(methods)) {
-      if (!["get", "post", "put", "patch", "delete"].includes(method.toLowerCase())) continue;
-      
-      const toolName = details.operationId || `${method.toLowerCase()}_${apiPath.replace(/[^a-zA-Z0-9]/g, "_")}`.replace(/_+/g, "_").replace(/_$/, "");
-      const description = details.summary || details.description || `Call ${method.toUpperCase()} ${apiPath}`;
-      
+      if (
+        !["get", "post", "put", "patch", "delete"].includes(
+          method.toLowerCase()
+        )
+      )
+        continue;
+
+      const toolName =
+        details.operationId ||
+        `${method.toLowerCase()}_${apiPath.replace(/[^a-zA-Z0-9]/g, "_")}`
+          .replace(/_+/g, "_")
+          .replace(/_$/, "");
+      const description =
+        details.summary ||
+        details.description ||
+        `Call ${method.toUpperCase()} ${apiPath}`;
+
       let inputSchema = {
         type: "object",
         properties: {},
-        required: []
+        required: [],
       };
 
       // Extract body schema if exists (mainly for POST/PUT)
-      if (details.requestBody && details.requestBody.content && details.requestBody.content["application/json"]) {
-        const bodySchema = details.requestBody.content["application/json"].schema;
+      if (
+        details.requestBody &&
+        details.requestBody.content &&
+        details.requestBody.content["application/json"]
+      ) {
+        const bodySchema =
+          details.requestBody.content["application/json"].schema;
         if (bodySchema) {
           inputSchema = { ...bodySchema };
         }
@@ -73,14 +95,16 @@ if (openApiSchema.paths) {
       toolsMap.set(toolName, {
         path: apiPath,
         method: method.toUpperCase(),
-        details: details
+        details: details,
       });
     }
   }
 }
 
 // 4. Initialize MCP Server
-const serverName = openApiSchema.info?.title ? openApiSchema.info.title.replace(/[^a-zA-Z0-9-]/g, "") : "openapi-dynamic-server";
+const serverName = openApiSchema.info?.title
+  ? openApiSchema.info.title.replace(/[^a-zA-Z0-9-]/g, "")
+  : "openapi-dynamic-server";
 const server = new Server(
   {
     name: serverName,
@@ -111,15 +135,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   // For Universal APIs, we inject fixed properties if defined by user's openapi (e.g., blocking response mode)
   // Or just pass the args directly as JSON body
   const payload = { ...args };
-  
+
   // Specific override for Dify/AIHA if detected (response_mode defaults to streaming if not set, we force blocking for tools)
-  if (endpointMeta.details?.requestBody?.content?.["application/json"]?.schema?.properties?.response_mode) {
+  if (
+    endpointMeta.details?.requestBody?.content?.["application/json"]?.schema
+      ?.properties?.response_mode
+  ) {
     payload.response_mode = "blocking";
   }
 
   const requestUrl = `${baseUrl}${endpointMeta.path}`;
   const headers = {
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
   };
 
   if (API_KEY) {
@@ -129,7 +156,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     const fetchOptions = {
       method: endpointMeta.method,
-      headers: headers
+      headers: headers,
     };
 
     if (endpointMeta.method !== "GET" && endpointMeta.method !== "HEAD") {
@@ -141,7 +168,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (!response.ok) {
       const errorText = await response.text();
       return {
-        content: [{ type: "text", text: `API Error [${response.status}]: ${errorText}` }],
+        content: [
+          {
+            type: "text",
+            text: `API Error [${response.status}]: ${errorText}`,
+          },
+        ],
         isError: true,
       };
     }
@@ -154,10 +186,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       if (data.json && Array.isArray(data.json) && data.json.length > 0) {
         // Dify/AIHA format
         const firstItem = data.json[0];
-        answerText = firstItem?.data?.output?.llm_response?.message?.text 
-                  || firstItem?.data?.output?.text
-                  || firstItem?.answer
-                  || JSON.stringify(data.json);
+        answerText =
+          firstItem?.data?.output?.llm_response?.message?.text ||
+          firstItem?.data?.output?.text ||
+          firstItem?.answer ||
+          JSON.stringify(data.json);
       } else if (data.answer) {
         answerText = data.answer;
       } else if (data.text) {
@@ -173,11 +206,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     return {
-      content: [{ type: "text", text: answerText }]
+      content: [{ type: "text", text: answerText }],
     };
   } catch (error) {
     return {
-      content: [{ type: "text", text: `Lỗi kết nối tới API: ${error.message}` }],
+      content: [
+        { type: "text", text: `Lỗi kết nối tới API: ${error.message}` },
+      ],
       isError: true,
     };
   }

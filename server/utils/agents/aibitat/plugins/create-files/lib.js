@@ -209,7 +209,13 @@ class CreateFilesManager {
    * @param {string} params.displayFilename - The user-friendly filename for display
    * @returns {Promise<{filename: string, displayFilename: string, fileSize: number, storagePath: string}>}
    */
-  async saveGeneratedFile({ fileType, extension, buffer, displayFilename, workspace = null }) {
+  async saveGeneratedFile({
+    fileType,
+    extension,
+    buffer,
+    displayFilename,
+    workspace = null,
+  }) {
     await this.ensureInitialized();
 
     const filename = this.generateFilename(fileType, extension);
@@ -238,30 +244,49 @@ class CreateFilesManager {
         const online = await collector.online();
         if (online) {
           const result = await collector.processDocument(displayFilename);
-          if (result && result.success && result.documents && result.documents.length > 0) {
+          if (
+            result &&
+            result.success &&
+            result.documents &&
+            result.documents.length > 0
+          ) {
             const docPath = result.documents[0].location; // e.g., "custom-documents/filename.json"
-            console.log(`[CreateFilesManager] Processed by collector, location: ${docPath}`);
-
-            // Add the document to the workspace
-            const { failedToEmbed = [], errors = [] } = await Document.addDocuments(
-              workspace,
-              [docPath],
-              null // system/agent upload
+            console.log(
+              `[CreateFilesManager] Processed by collector, location: ${docPath}`
             );
 
+            // Add the document to the workspace
+            const { failedToEmbed = [], errors = [] } =
+              await Document.addDocuments(
+                workspace,
+                [docPath],
+                null // system/agent upload
+              );
+
             if (failedToEmbed.length > 0) {
-              console.error(`[CreateFilesManager] Failed to embed file to workspace:`, errors);
+              console.error(
+                `[CreateFilesManager] Failed to embed file to workspace:`,
+                errors
+              );
             } else {
-              console.log(`[CreateFilesManager] Successfully embedded file "${displayFilename}" to workspace "${workspace.name}"`);
+              console.log(
+                `[CreateFilesManager] Successfully embedded file "${displayFilename}" to workspace "${workspace.name}"`
+              );
             }
           } else {
-            console.error(`[CreateFilesManager] Collector processing failed:`, result?.reason);
+            console.error(
+              `[CreateFilesManager] Collector processing failed:`,
+              result?.reason
+            );
           }
         } else {
           console.error(`[CreateFilesManager] Collector service is offline.`);
         }
       } catch (error) {
-        console.error(`[CreateFilesManager] Error auto-uploading to workspace:`, error);
+        console.error(
+          `[CreateFilesManager] Error auto-uploading to workspace:`,
+          error
+        );
       }
     }
 

@@ -1,4 +1,5 @@
 const { safeJsonParse } = require("../../http");
+const { v4 } = require("uuid");
 
 /**
  * Execute an API call flow step
@@ -47,7 +48,8 @@ async function executeApiCall(config, context) {
       requestConfig.body = String(body || "");
     } else {
       if (body !== undefined && body !== null) {
-        requestConfig.body = typeof body === "object" ? JSON.stringify(body) : body;
+        requestConfig.body =
+          typeof body === "object" ? JSON.stringify(body) : body;
       }
     }
   }
@@ -61,48 +63,55 @@ async function executeApiCall(config, context) {
     }
 
     introspect(`API call completed`);
-    
+
     // Check if we should stream the response
-    if (config.streamChunks && response.headers.get('content-type')?.includes('text/event-stream')) {
+    if (
+      config.streamChunks &&
+      response.headers.get("content-type")?.includes("text/event-stream")
+    ) {
+      const streamUuid = v4();
       const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8');
+      const decoder = new TextDecoder("utf-8");
       let fullResponse = "";
       let buffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
+        const lines = buffer.split("\n");
         buffer = lines.pop() || "";
-        
+
         for (const line of lines) {
-          if (line.trim() === '' || line.startsWith('event:')) continue;
-          if (line.startsWith('data: ')) {
+          if (line.trim() === "" || line.startsWith("event:")) continue;
+          if (line.startsWith("data: ")) {
             const dataStr = line.slice(6).trim();
-            if (dataStr === '[DONE]') continue;
-            
+            if (dataStr === "[DONE]") continue;
+
             try {
               const data = JSON.parse(dataStr);
               let extractedText = "";
 
               // Dify format (event: message)
-              if (data.event === 'message' && data.answer !== undefined) {
+              if (data.event === "message" && data.answer !== undefined) {
                 extractedText = data.answer;
-              } 
+              }
               // OpenAI format
               else if (data.choices?.[0]?.delta?.content !== undefined) {
                 extractedText = data.choices[0].delta.content;
               }
               // Anthropic format
-              else if (data.type === 'content_block_delta' && data.delta?.text !== undefined) {
+              else if (
+                data.type === "content_block_delta" &&
+                data.delta?.text !== undefined
+              ) {
                 extractedText = data.delta.text;
               }
               // Generic fallback if it's just an object with a text/content field
-              else if (typeof data.text === 'string') {
+              else if (typeof data.text === "string") {
                 extractedText = data.text;
-              } else if (typeof data.content === 'string' && !data.choices) {
+              } else if (typeof data.content === "string" && !data.choices) {
                 extractedText = data.content;
               }
 
@@ -112,12 +121,12 @@ async function executeApiCall(config, context) {
                   context.aibitat.socket.send?.("reportStreamEvent", {
                     type: "textResponseChunk",
                     content: extractedText,
-                    uuid: context.aibitat.id
+                    uuid: streamUuid,
                   });
                 }
               }
-            } catch (e) {
-              // Not JSON, treat as raw string if we really wanted to, 
+            } catch {
+              // Not JSON, treat as raw string if we really wanted to,
               // but standard SSE data is usually JSON. We'll ignore parse errors.
             }
           }

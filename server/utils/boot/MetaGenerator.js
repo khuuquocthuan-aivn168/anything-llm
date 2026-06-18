@@ -225,9 +225,7 @@ class MetaGenerator {
           return {
             tag: "title",
             props: null,
-            content:
-              customTitle ??
-              "GOV AI VN168",
+            content: customTitle ?? "GOV AI VN168",
           };
         }
         // Override meta title
@@ -236,9 +234,7 @@ class MetaGenerator {
             tag: "meta",
             props: {
               name: "title",
-              content:
-                customTitle ??
-                "GOV AI VN168",
+              content: customTitle ?? "GOV AI VN168",
             },
           };
         }
@@ -248,9 +244,7 @@ class MetaGenerator {
             tag: "meta",
             props: {
               property: "og:title",
-              content:
-                customTitle ??
-                "GOV AI VN168",
+              content: customTitle ?? "GOV AI VN168",
             },
           };
         }
@@ -260,9 +254,7 @@ class MetaGenerator {
             tag: "meta",
             props: {
               property: "twitter:title",
-              content:
-                customTitle ??
-                "GOV AI VN168",
+              content: customTitle ?? "GOV AI VN168",
             },
           };
         }
