@@ -329,7 +329,7 @@ export default function PromptInput({
         }
       >
         <div
-          className={`flex items-center rounded-lg lg:w-full ${centered ? "mb-0" : "mb-4"}`}
+          className={`flex items-center rounded-lg w-full ${centered ? "mb-0" : "mb-4"}`}
         >
           <div className="relative w-full lg:max-w-[750px] xl:max-w-[850px] px-4 lg:px-0">
             <ToolsMenu
@@ -343,7 +343,7 @@ export default function PromptInput({
             />
             <div className="bg-zinc-800 light:bg-white light:border light:border-slate-300 rounded-[20px] pwa:rounded-3xl flex flex-col px-5 overflow-hidden">
               <AttachmentManager attachments={attachments} />
-              <div className="flex items-center">
+              <div className="flex items-center w-full">
                 <textarea
                   id={PROMPT_INPUT_ID}
                   ref={textareaRef}
