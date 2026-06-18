@@ -35,6 +35,7 @@ import WorkspaceModelPicker from "./WorkspaceModelPicker";
 import { ChatSidebarProvider } from "./ChatSidebar";
 import SourcesSidebar from "./SourcesSidebar";
 import MemoriesSidebar from "./MemoriesSidebar";
+import { SidebarMobileHeader } from "@/components/Sidebar";
 
 export default function ChatContainer({
   workspace,
@@ -456,7 +457,7 @@ export default function ChatContainer({
             <WorkspaceModelPicker workspaceSlug={workspace.slug} />
             <DnDFileUploaderWrapper>
               <div className="flex flex-col h-full w-full items-center justify-center pt-16 lg:pt-0">
-                <div className="flex flex-col items-center w-full max-w-[750px]">
+                <div className="flex flex-col items-center w-full md:px-4 lg:max-w-[750px] xl:max-w-[850px]">
                   <h1 className="text-white text-xl md:text-2xl mb-11 text-center">
                     {t("main-page.greeting")}
                   </h1>
