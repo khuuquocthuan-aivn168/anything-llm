@@ -67,6 +67,7 @@ const BLOCK_INFO = {
       formData: [],
       responseVariable: "",
       directOutput: false,
+      streamChunks: false,
     },
     getSummary: (config) =>
       `${config.method || "GET"} ${config.url || "(no URL)"}`,

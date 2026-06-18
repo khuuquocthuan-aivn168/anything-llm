@@ -2,6 +2,7 @@
 import React, { useRef, useState } from "react";
 import { Plus, X, CaretDown } from "@phosphor-icons/react";
 import VariableInput from "../../VariableInput";
+import Toggle from "@/components/lib/Toggle";
 
 export default function ApiCallNode({
   config,
@@ -277,6 +278,21 @@ export default function ApiCallNode({
           (value) => onConfigChange({ responseVariable: value }),
           "Select or create variable"
         )}
+      </div>
+
+      <div className="pt-4 border-t border-white/10">
+        <Toggle
+          size="md"
+          variant="horizontal"
+          label="Stream Response Chunks"
+          description="If the external API returns an SSE stream, read chunks and stream them directly to the user's chat UI."
+          enabled={config.streamChunks || false}
+          onChange={(checked) =>
+            onConfigChange({
+              streamChunks: checked,
+            })
+          }
+        />
       </div>
     </div>
   );

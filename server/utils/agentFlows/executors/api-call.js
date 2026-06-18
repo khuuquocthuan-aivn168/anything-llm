@@ -61,6 +61,69 @@ async function executeApiCall(config, context) {
     }
 
     introspect(`API call completed`);
+    
+    // Check if we should stream the response
+    if (config.streamChunks && response.headers.get('content-type')?.includes('text/event-stream')) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let fullResponse = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunkStr = decoder.decode(value, { stream: true });
+        const lines = chunkStr.split('\n');
+        
+        for (const line of lines) {
+          if (line.trim() === '' || line.startsWith('event:')) continue;
+          if (line.startsWith('data: ')) {
+            const dataStr = line.slice(6).trim();
+            if (dataStr === '[DONE]') continue;
+            
+            try {
+              const data = JSON.parse(dataStr);
+              let extractedText = "";
+
+              // Dify format (event: message)
+              if (data.event === 'message' && data.answer !== undefined) {
+                extractedText = data.answer;
+              } 
+              // OpenAI format
+              else if (data.choices?.[0]?.delta?.content !== undefined) {
+                extractedText = data.choices[0].delta.content;
+              }
+              // Anthropic format
+              else if (data.type === 'content_block_delta' && data.delta?.text !== undefined) {
+                extractedText = data.delta.text;
+              }
+              // Generic fallback if it's just an object with a text/content field
+              else if (typeof data.text === 'string') {
+                extractedText = data.text;
+              } else if (typeof data.content === 'string' && !data.choices) {
+                extractedText = data.content;
+              }
+
+              if (extractedText) {
+                fullResponse += extractedText;
+                if (context.aibitat && context.aibitat.socket) {
+                  context.aibitat.socket.send?.("reportStreamEvent", {
+                    type: "textResponseChunk",
+                    content: extractedText,
+                    uuid: context.aibitat.id
+                  });
+                }
+              }
+            } catch (e) {
+              // Not JSON, treat as raw string if we really wanted to, 
+              // but standard SSE data is usually JSON. We'll ignore parse errors.
+            }
+          }
+        }
+      }
+      return { directOutput: true, result: fullResponse };
+    }
+
     return await response
       .text()
       .then((text) =>
