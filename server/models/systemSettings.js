@@ -169,6 +169,7 @@ const SystemSettings = {
             "duckduckgo-engine",
             "exa-search",
             "perplexity-search",
+            "brave-search",
           ].includes(update)
         )
           throw new Error("Invalid SERP provider.");
@@ -563,6 +564,10 @@ const SystemSettings = {
       STTOpenAICompatibleModel: process.env.STT_OPEN_AI_COMPATIBLE_MODEL,
       STTOpenAICompatibleEndpoint: process.env.STT_OPEN_AI_COMPATIBLE_ENDPOINT,
 
+      // STT Groq
+      STTGroqApiKey: !!process.env.STT_GROQ_API_KEY,
+      STTGroqModel: process.env.STT_GROQ_MODEL,
+
       // --------------------------------------------------------
       // Agent Settings & Configs
       // --------------------------------------------------------
@@ -578,6 +583,7 @@ const SystemSettings = {
       AgentTavilyApiKey: !!process.env.AGENT_TAVILY_API_KEY || null,
       AgentExaApiKey: !!process.env.AGENT_EXA_API_KEY || null,
       AgentPerplexityApiKey: !!process.env.AGENT_PERPLEXITY_API_KEY || null,
+      AgentBraveApiKey: !!process.env.AGENT_BRAVE_API_KEY || null,
 
       // --------------------------------------------------------
       // Compliance Settings
@@ -953,18 +959,11 @@ const SystemSettings = {
       FoundryModelPref: process.env.FOUNDRY_MODEL_PREF,
       FoundryModelTokenLimit: process.env.FOUNDRY_MODEL_TOKEN_LIMIT,
 
-      AwsBedrockLLMConnectionMethod:
-        process.env.AWS_BEDROCK_LLM_CONNECTION_METHOD || "iam",
-      AwsBedrockLLMAccessKeyId: !!process.env.AWS_BEDROCK_LLM_ACCESS_KEY_ID,
-      AwsBedrockLLMAccessKey: !!process.env.AWS_BEDROCK_LLM_ACCESS_KEY,
-      AwsBedrockLLMSessionToken: !!process.env.AWS_BEDROCK_LLM_SESSION_TOKEN,
-      AwsBedrockLLMAPIKey: !!process.env.AWS_BEDROCK_LLM_API_KEY,
+      AwsBedrockLLMApiKey: !!process.env.AWS_BEDROCK_LLM_API_KEY,
       AwsBedrockLLMRegion: process.env.AWS_BEDROCK_LLM_REGION,
       AwsBedrockLLMModel: process.env.AWS_BEDROCK_LLM_MODEL_PREFERENCE,
       AwsBedrockLLMTokenLimit:
         process.env.AWS_BEDROCK_LLM_MODEL_TOKEN_LIMIT || 8192,
-      AwsBedrockLLMMaxOutputTokens:
-        process.env.AWS_BEDROCK_LLM_MAX_OUTPUT_TOKENS || 4096,
 
       // Cohere API Keys
       CohereApiKey: !!process.env.COHERE_API_KEY,

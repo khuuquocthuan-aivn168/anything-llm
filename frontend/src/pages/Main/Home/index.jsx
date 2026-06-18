@@ -190,11 +190,13 @@ function HomeContent({ workspace, setWorkspace, threadSlug, setThreadSlug }) {
   const isMobile = useMobile();
 
   useEffect(() => {
-    window.dispatchEvent(
-      new CustomEvent(PROMPT_INPUT_EVENT, {
-        detail: { messageContent: "", writeMode: "replace" },
-      })
-    );
+    if (!threadSlug) {
+      window.dispatchEvent(
+        new CustomEvent(PROMPT_INPUT_EVENT, {
+          detail: { messageContent: "", writeMode: "replace" },
+        })
+      );
+    }
   }, []);
 
 

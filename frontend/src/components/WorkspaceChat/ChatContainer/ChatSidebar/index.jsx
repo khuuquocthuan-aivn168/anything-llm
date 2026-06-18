@@ -63,20 +63,33 @@ export function useMemoriesSidebar() {
 
 /**
  * Reusable animation wrapper for right-side chat panels.
- * Handles the slide-in/out transition only; each panel provides its own layout.
- * @param {Object} props
- * @param {boolean} props.isOpen
- * @param {React.ReactNode} props.children
+ * Uses a fixed-width wrapper + GPU-composited translateX so opening/closing
+ * never triggers layout recalculation on the chat history (which can have
+ * 500+ message nodes).
  */
 export default function ChatSidebar({ isOpen, children }) {
   const isMobileSize = typeof window !== "undefined" ? window.innerWidth < 640 : false;
   const width = isMobileSize ? "100vw" : "366px";
   return (
     <div
-      className="h-full overflow-hidden transition-all duration-500 flex-shrink-0"
-      style={{ width: isOpen ? width : "0px" }}
+      className="h-full flex-shrink-0 overflow-hidden"
+      style={{
+        width: isOpen ? width : "0px",
+        transition: "width 400ms cubic-bezier(0.4,0,0.2,1)",
+        willChange: isOpen ? "width" : "auto",
+        contain: "strict",
+      }}
     >
-      {children}
+      <div
+        className="h-full"
+        style={{
+          width: "366px",
+          transform: isOpen ? "translateX(0)" : "translateX(100%)",
+          transition: "transform 400ms cubic-bezier(0.4,0,0.2,1)",
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
