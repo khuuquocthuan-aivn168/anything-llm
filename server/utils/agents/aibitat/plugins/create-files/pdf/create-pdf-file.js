@@ -64,6 +64,7 @@ module.exports.CreatePdfFile = {
           }) {
             try {
               this.super.handlerProps.log(`Using the create-pdf-file tool.`);
+              await createFilesLib.initializeLogo();
 
               const hasExtension = /\.pdf$/i.test(filename);
               if (!hasExtension) filename = `${filename}.pdf`;

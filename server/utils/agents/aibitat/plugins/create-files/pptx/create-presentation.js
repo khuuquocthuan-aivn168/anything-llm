@@ -168,6 +168,7 @@ module.exports.CreatePptxPresentation = {
               this.super.handlerProps.log(
                 `Using the create-pptx-presentation tool.`
               );
+              await createFilesLib.initializeLogo();
 
               // Strip XML 1.0 illegal control characters so PowerPoint can open
               // the generated deck (slide content is sanitized after assembly).

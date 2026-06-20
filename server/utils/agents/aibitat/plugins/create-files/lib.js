@@ -370,6 +370,48 @@ class CreateFilesManager {
   }
 
   /**
+   * Initializes the custom logo if configured in system settings.
+   */
+  async initializeLogo() {
+    try {
+      const { determineLogoFilepath, fetchLogo } = require("../../../../files/logo");
+      const { SystemSettings } = require("../../../../../models/systemSettings");
+
+      const currentLogoFilename = await SystemSettings.currentLogoFilename();
+      if (currentLogoFilename && currentLogoFilename !== "anything-llm.png" && currentLogoFilename !== "anything-llm-dark.png") {
+        const logoPath = await determineLogoFilepath();
+        const { found, buffer, mime } = fetchLogo(logoPath);
+        if (found && buffer) {
+          this._customLogoBuffer = buffer;
+          this._customLogoMime = mime || "image/png";
+
+          let ext = path.extname(currentLogoFilename).toLowerCase().replace(".", "");
+          if (ext === "jpeg") ext = "jpg";
+          this._customLogoType = ext || "png";
+
+          const base64 = buffer.toString("base64");
+          this._customLogoDataUri = `${this._customLogoMime};base64,${base64}`;
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("[CreateFilesManager] Failed to initialize custom logo:", err);
+    }
+    this._customLogoBuffer = null;
+    this._customLogoMime = null;
+    this._customLogoDataUri = null;
+    this._customLogoType = "png";
+  }
+
+  /**
+   * Gets the logo type (e.g. "png", "jpg").
+   * @returns {string} Logo file extension/type
+   */
+  getLogoType() {
+    return this._customLogoType || "png";
+  }
+
+  /**
    * Gets the AnythingLLM logo for branding.
    * @param {Object} options
    * @param {boolean} [options.forDarkBackground=false] - True to get light logo (for dark backgrounds), false for dark logo (for light backgrounds)
@@ -377,8 +419,13 @@ class CreateFilesManager {
    * @returns {Buffer|string|null} Logo as Buffer, data URI string, or null if file not found
    */
   getLogo({ forDarkBackground = false, format = "buffer" } = {}) {
-    // On Docker this is pre-packed images local to this lib.
-    // Does not honor Whitelabeling changes/preferences right now.
+    if (this._customLogoBuffer) {
+      if (format === "dataUri") {
+        return this._customLogoDataUri;
+      }
+      return this._customLogoBuffer;
+    }
+
     const assetsPath = path.join(__dirname, "assets");
     const filename = forDarkBackground
       ? "anything-llm.png"

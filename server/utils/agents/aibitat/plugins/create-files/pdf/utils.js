@@ -15,7 +15,10 @@ async function applyBranding(pdfDoc, { rgb, StandardFonts }) {
     forDarkBackground: false,
     format: "buffer",
   });
-  const logoImage = logoPng ? await pdfDoc.embedPng(logoPng) : null;
+  const logoType = createFilesLib.getLogoType();
+  const logoImage = logoPng
+    ? (logoType === "jpg" ? await pdfDoc.embedJpg(logoPng) : await pdfDoc.embedPng(logoPng))
+    : null;
 
   const logoWidth = 80;
   const logoHeight = logoImage

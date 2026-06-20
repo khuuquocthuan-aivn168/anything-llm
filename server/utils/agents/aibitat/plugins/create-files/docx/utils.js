@@ -869,7 +869,7 @@ function createCoverPageSection(docx, options) {
           new ImageRun({
             data: logoBuffer,
             transformation: { width: 100, height: 16 },
-            type: "png",
+            type: options.logoType || "png",
           }),
         ],
       })
@@ -967,7 +967,7 @@ function createRunningHeader(docx, documentTitle, theme) {
  * @param {Object} theme - Theme color configuration
  * @returns {Object} Footer configuration
  */
-function createRunningFooter(docx, logoBuffer, theme) {
+function createRunningFooter(docx, logoBuffer, theme, logoType = "png") {
   const {
     Footer,
     Paragraph,
@@ -1002,7 +1002,7 @@ function createRunningFooter(docx, logoBuffer, theme) {
           new ImageRun({
             data: logoBuffer,
             transformation: { width: 80, height: 13 },
-            type: "png",
+            type: logoType || "png",
           }),
         ],
       })

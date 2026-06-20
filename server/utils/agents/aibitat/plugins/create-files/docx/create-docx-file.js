@@ -23,7 +23,7 @@ module.exports.CreateDocxFile = {
           super: aibitat,
           name: this.name,
           description:
-            "Create a Microsoft Word document (.docx) from markdown or plain text content. Supports professional styling with color themes, title pages, and running headers/footers.",
+            "Create a Microsoft Word document (.docx) from markdown or plain text content. Supports professional styling with color themes, title pages, and running headers/footers. Note: For official Vietnamese administrative documents following Decree 30/2020/NĐ-CP, use the 'create-vn-admin-docx' tool instead.",
           examples: [
             {
               prompt: "Create a Word document with meeting notes",
@@ -172,10 +172,12 @@ module.exports.CreateDocxFile = {
                 `create-docx-file: Parsed markdown to HTML (${html.length} chars), theme: ${theme}, margins: ${margins}`
               );
 
+              await createFilesLib.initializeLogo();
               const logoBuffer = createFilesLib.getLogo({
                 forDarkBackground: false,
                 format: "buffer",
               });
+              const logoType = createFilesLib.getLogoType();
 
               const docElements = await htmlToDocxElements(
                 html,
@@ -210,6 +212,7 @@ module.exports.CreateDocxFile = {
                     theme: themeColors,
                     margins: marginConfig,
                     logoBuffer,
+                    logoType,
                   })
                 );
 
@@ -228,7 +231,7 @@ module.exports.CreateDocxFile = {
                     ),
                   },
                   footers: {
-                    default: createRunningFooter(docx, logoBuffer, themeColors),
+                    default: createRunningFooter(docx, logoBuffer, themeColors, logoType),
                   },
                 });
               } else {
@@ -240,7 +243,7 @@ module.exports.CreateDocxFile = {
                   },
                   children: docElements,
                   footers: {
-                    default: createRunningFooter(docx, logoBuffer, themeColors),
+                    default: createRunningFooter(docx, logoBuffer, themeColors, logoType),
                   },
                 });
               }
