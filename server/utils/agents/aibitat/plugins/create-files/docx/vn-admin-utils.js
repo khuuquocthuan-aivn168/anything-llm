@@ -164,10 +164,10 @@ function buildHeaderSection(docx, {
   } = docx;
   const S = VN_ADMIN_STYLES;
   const noBorders = {
-    top: { style: "none" },
-    bottom: { style: "none" },
-    left: { style: "none" },
-    right: { style: "none" },
+    top: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
+    bottom: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
+    left: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
+    right: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
   };
 
   // --- Left column: Cơ quan ---
@@ -239,7 +239,7 @@ function buildHeaderSection(docx, {
           font: S.font,
           size: S.sizes.tieuNgu,
           bold: true,
-          underline: { type: UnderlineType.SINGLE },
+          underline: { type: "single" },
         }),
       ],
     }),
@@ -287,10 +287,10 @@ function buildNumberDateSection(docx, {
   } = docx;
   const S = VN_ADMIN_STYLES;
   const noBorders = {
-    top: { style: "none" },
-    bottom: { style: "none" },
-    left: { style: "none" },
-    right: { style: "none" },
+    top: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
+    bottom: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
+    left: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
+    right: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
   };
 
   // Build symbol string: Số: XX/YYYY-ABBR
@@ -880,10 +880,10 @@ function buildSignatureBlock(docx, { signerTitle = "", signerName = "" }) {
     Table, TableRow, TableCell, WidthType } = docx;
   const S = VN_ADMIN_STYLES;
   const noBorders = {
-    top: { style: "none" },
-    bottom: { style: "none" },
-    left: { style: "none" },
-    right: { style: "none" },
+    top: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
+    bottom: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
+    left: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
+    right: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
   };
 
   const sigChildren = [];
@@ -1100,9 +1100,9 @@ async function buildVnAdminDocx(docx, params, libs, log) {
 
   // --- Build the Document ---
   const doc = new Document({
-    title: params.title || "Văn bản hành chính",
+    title: (params.title || "Văn bản hành chính").replace(/\n/g, " "),
     creator: "AnythingLLM",
-    description: `Văn bản hành chính - ${documentTypeInfo.name}`,
+    description: `Văn bản hành chính - ${documentTypeInfo.name}`.replace(/\n/g, " "),
     styles: {
       default: {
         document: {
@@ -1122,6 +1122,7 @@ async function buildVnAdminDocx(docx, params, libs, log) {
     sections: [
       {
         properties: {
+          titlePage: true,
           page: {
             margin: S.margins,
             size: {
@@ -1145,7 +1146,7 @@ async function buildVnAdminDocx(docx, params, libs, log) {
               }),
             ],
           }),
-          first: new Header({ children: [] }), // No page number on first page
+          first: new Header({ children: [new Paragraph({ children: [] })] }), // No page number on first page
         },
         children,
       },
