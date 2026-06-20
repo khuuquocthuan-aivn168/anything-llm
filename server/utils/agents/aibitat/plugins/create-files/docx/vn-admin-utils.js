@@ -5,7 +5,7 @@
  * Reference: Phụ lục I - Thể thức và kỹ thuật trình bày văn bản hành chính
  */
 
-const { loadLibraries, htmlToDocxElements, fetchImage } = require("./utils.js");
+const { loadLibraries, htmlToDocxElements, fetchImage, DEFAULT_NUMBERING_CONFIG } = require("./utils.js");
 
 // ---------------------------------------------------------------------------
 // 1. Constants & Styles
@@ -1103,6 +1103,7 @@ async function buildVnAdminDocx(docx, params, libs, log) {
     title: (params.title || "Văn bản hành chính").replace(/\n/g, " "),
     creator: "AnythingLLM",
     description: `Văn bản hành chính - ${documentTypeInfo.name}`.replace(/\n/g, " "),
+    numbering: DEFAULT_NUMBERING_CONFIG,
     styles: {
       default: {
         document: {
