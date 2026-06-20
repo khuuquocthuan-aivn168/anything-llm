@@ -1088,6 +1088,7 @@ module.exports = {
   getMargins,
   loadLibraries,
   htmlToDocxElements,
+  fetchImage,
   createCoverPageSection,
   createRunningHeader,
   createRunningFooter,

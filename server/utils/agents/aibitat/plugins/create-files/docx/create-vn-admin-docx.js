@@ -11,6 +11,7 @@ const createFilesLib = require("../lib.js");
 const {
   getDocumentTypeKeys,
   getDocumentType,
+  extractLegalBasisFromContent,
   buildVnAdminDocx,
 } = require("./vn-admin-utils.js");
 const { runLegalAdvisorAgent } = require("./legal-advisor-agent.js");
@@ -235,9 +236,10 @@ module.exports.CreateVnAdminDocx = {
               );
 
               // --- Step 1: Legal advisory (unless skipped) ---
-              let finalLegalBasis = legalBasis || [];
+              const { cleanContent, extractedBases } = extractLegalBasisFromContent(content);
+              let finalLegalBasis = [...new Set([...(legalBasis || []), ...extractedBases])];
               let advisoryNotes = "";
-              let finalContent = content;
+              let finalContent = cleanContent;
               let citations = [];
 
               if (!skipLegalAdvisory) {
@@ -251,9 +253,9 @@ module.exports.CreateVnAdminDocx = {
                     documentType,
                     documentTypeName: docTypeInfo.name,
                     title,
-                    content,
+                    content: finalContent,
                     issuingAgency,
-                    userLegalBasis: legalBasis,
+                    userLegalBasis: finalLegalBasis,
                   });
 
                   finalLegalBasis = advisory.legalBasis;
