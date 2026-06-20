@@ -26,18 +26,19 @@ const VN_ADMIN_STYLES = {
     right: 1134,  // ~20mm
   },
   sizes: {
-    quocHieu: 26,        // 13pt – Quốc hiệu
-    tieuNgu: 28,         // 14pt – Tiêu ngữ
+    quocHieu: 26,        // 13pt – Quốc hiệu (in hoa, đậm)
+    tieuNgu: 28,         // 14pt – Tiêu ngữ (đậm)
     coQuan: 26,          // 13pt – Tên cơ quan
     soKyHieu: 26,        // 13pt – Số, ký hiệu
-    diaDanh: 28,         // 14pt – Địa danh, ngày tháng
-    tenLoaiVB: 28,       // 14pt – Tên loại văn bản
-    trichYeu: 28,        // 14pt – Trích yếu
+    diaDanh: 28,         // 14pt – Địa danh, ngày tháng (nghiêng)
+    tenLoaiVB: 28,       // 14pt – Tên loại văn bản (in hoa, đậm)
+    trichYeu: 28,        // 14pt – Trích yếu văn bản có tên loại (đậm)
+    trichYeuCongVan: 24, // 12pt – Trích yếu công văn (V/v)
     body: 28,            // 14pt – Nội dung
-    canCu: 26,           // 13pt – Căn cứ pháp lý
-    chucVuKy: 28,        // 14pt – Chức vụ người ký
-    hoTen: 28,           // 14pt – Họ tên người ký
-    noiNhanLabel: 24,    // 12pt – "Nơi nhận:" label
+    canCu: 26,           // 13pt – Căn cứ pháp lý (nghiêng)
+    chucVuKy: 28,        // 14pt – Chức vụ người ký (in hoa, đậm)
+    hoTen: 28,           // 14pt – Họ tên người ký (đậm)
+    noiNhanLabel: 24,    // 12pt – "Nơi nhận:" label (nghiêng, đậm)
     noiNhanItem: 22,     // 11pt – Nơi nhận items
     pageNumber: 28,      // 14pt – Số trang
   },
@@ -280,6 +281,7 @@ function buildNumberDateSection(docx, {
   location = "",
   date = null,
   documentTypeInfo = null,
+  title = "",
 }) {
   const {
     Paragraph, TextRun, AlignmentType,
@@ -295,12 +297,14 @@ function buildNumberDateSection(docx, {
 
   // Build symbol string: Số: XX/YYYY-ABBR
   const abbr = documentTypeInfo?.abbr || "";
-  let symbolText = `Số: ${documentNumber || "......"}`;
+  let symbolText = `Số: ${documentNumber || "[Số]"}`;
   if (symbol) {
     symbolText += `/${symbol}`;
     if (abbr) symbolText += `-${abbr}`;
   } else if (abbr) {
     symbolText += `/${abbr}`;
+  } else {
+    symbolText += `/...`;
   }
 
   // Build date string
@@ -308,7 +312,49 @@ function buildNumberDateSection(docx, {
   const day = dateObj.getDate();
   const month = dateObj.getMonth() + 1;
   const year = dateObj.getFullYear();
-  const dateText = `${location || "......"},  ngày ${String(day).padStart(2, "0")} tháng ${String(month).padStart(2, "0")} năm ${year}`;
+  const dateText = `${location || "[Địa danh]"},  ngày ${String(day).padStart(2, "0")} tháng ${String(month).padStart(2, "0")} năm ${year}`;
+
+  const leftChildren = [
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: symbolText,
+          font: S.font,
+          size: S.sizes.soKyHieu,
+        }),
+      ],
+    }),
+  ];
+
+  // If this is a cong-van, the trích yếu goes here below the number
+  if (documentTypeInfo && documentTypeInfo.template === "cong-van" && title) {
+    leftChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 60, after: 0 },
+        children: [
+          new TextRun({
+            text: `V/v: ${title}`,
+            font: S.font,
+            size: S.sizes.trichYeuCongVan,
+          }),
+        ],
+      }),
+      // Gạch ngang cho trích yếu công văn
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 0, after: 120 },
+        children: [
+          new TextRun({
+            text: "─────────────",
+            font: S.font,
+            size: 20,
+          }),
+        ],
+      })
+    );
+  }
 
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
@@ -323,18 +369,7 @@ function buildNumberDateSection(docx, {
           new TableCell({
             width: { size: 40, type: WidthType.PERCENTAGE },
             borders: noBorders,
-            children: [
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [
-                  new TextRun({
-                    text: symbolText,
-                    font: S.font,
-                    size: S.sizes.soKyHieu,
-                  }),
-                ],
-              }),
-            ],
+            children: leftChildren,
           }),
           new TableCell({
             width: { size: 60, type: WidthType.PERCENTAGE },
@@ -367,7 +402,7 @@ function buildTitleSection(docx, { documentTypeInfo, title }) {
   const S = VN_ADMIN_STYLES;
   const elements = [];
 
-  // Tên loại văn bản (IN HOA, đậm, giữa)
+  // Tên loại văn bản và Trích yếu CÓ TÊN LOẠI
   if (documentTypeInfo && documentTypeInfo.template === "named") {
     elements.push(
       new Paragraph({
@@ -383,38 +418,37 @@ function buildTitleSection(docx, { documentTypeInfo, title }) {
         ],
       })
     );
-  }
 
-  // Trích yếu
-  if (title) {
-    elements.push(
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { before: documentTypeInfo?.template === "named" ? 60 : 240, after: 0 },
-        children: [
-          new TextRun({
-            text: title,
-            font: S.font,
-            size: S.sizes.trichYeu,
-            bold: true,
-          }),
-        ],
-      })
-    );
-    // Gạch ngang dưới trích yếu
-    elements.push(
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 120 },
-        children: [
-          new TextRun({
-            text: "─────────────",
-            font: S.font,
-            size: 20,
-          }),
-        ],
-      })
-    );
+    if (title) {
+      elements.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 60, after: 0 },
+          children: [
+            new TextRun({
+              text: title,
+              font: S.font,
+              size: S.sizes.trichYeu,
+              bold: true,
+            }),
+          ],
+        })
+      );
+      // Gạch ngang dưới trích yếu
+      elements.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 120 },
+          children: [
+            new TextRun({
+              text: "─────────────",
+              font: S.font,
+              size: 20,
+            }),
+          ],
+        })
+      );
+    }
   }
 
   return elements;
@@ -875,7 +909,7 @@ async function buildBodyContent(docx, libs, content, log) {
  * Creates the signature block (Khối chữ ký).
  * Right-aligned: Title line → [space for signature] → Full name
  */
-function buildSignatureBlock(docx, { signerTitle = "", signerName = "" }) {
+function buildFooterBlock(docx, { recipients = [], signerTitle = "", signerName = "" }) {
   const { Paragraph, TextRun, AlignmentType,
     Table, TableRow, TableCell, WidthType } = docx;
   const S = VN_ADMIN_STYLES;
@@ -886,94 +920,11 @@ function buildSignatureBlock(docx, { signerTitle = "", signerName = "" }) {
     right: { style: docx.BorderStyle.NONE, size: 0, color: "auto" },
   };
 
-  const sigChildren = [];
-
-  // Chức vụ người ký (IN HOA, đậm)
-  if (signerTitle) {
-    sigChildren.push(
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 0 },
-        children: [
-          new TextRun({
-            text: signerTitle.toUpperCase(),
-            font: S.font,
-            size: S.sizes.chucVuKy,
-            bold: true,
-          }),
-        ],
-      })
-    );
-  }
-
-  // Khoảng trống cho chữ ký (3 dòng trống)
-  for (let i = 0; i < 3; i++) {
-    sigChildren.push(
-      new Paragraph({
-        spacing: { after: 0 },
-        children: [new TextRun({ text: "", font: S.font, size: S.sizes.body })],
-      })
-    );
-  }
-
-  // Họ tên người ký (đậm)
-  if (signerName) {
-    sigChildren.push(
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 0 },
-        children: [
-          new TextRun({
-            text: signerName,
-            font: S.font,
-            size: S.sizes.hoTen,
-            bold: true,
-          }),
-        ],
-      })
-    );
-  }
-
-  // Use a table to right-align the signature block
-  return new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    borders: {
-      ...noBorders,
-      insideHorizontal: { style: "none" },
-      insideVertical: { style: "none" },
-    },
-    rows: [
-      new TableRow({
-        children: [
-          new TableCell({
-            width: { size: 50, type: WidthType.PERCENTAGE },
-            borders: noBorders,
-            children: [new Paragraph({ children: [] })],
-          }),
-          new TableCell({
-            width: { size: 50, type: WidthType.PERCENTAGE },
-            borders: noBorders,
-            children: sigChildren,
-          }),
-        ],
-      }),
-    ],
-  });
-}
-
-/**
- * Creates the "Nơi nhận" (Recipients) block at the bottom-left.
- */
-function buildRecipientsBlock(docx, recipients = []) {
-  const { Paragraph, TextRun } = docx;
-  const S = VN_ADMIN_STYLES;
-
-  const elements = [];
-
-  // "Nơi nhận:" label (đậm, nghiêng)
-  elements.push(
+  // --- Left: Nơi nhận ---
+  const leftChildren = [];
+  leftChildren.push(
     new Paragraph({
-      spacing: { before: 240, after: 60 },
+      spacing: { before: 0, after: 60 },
       children: [
         new TextRun({
           text: "Nơi nhận:",
@@ -986,19 +937,17 @@ function buildRecipientsBlock(docx, recipients = []) {
     })
   );
 
-  // Each recipient as a bullet-style list
-  const recipientList = recipients.length > 0
+  const recipientList = recipients && recipients.length > 0
     ? recipients
     : ["- Như trên;", "- Lưu: VT."];
 
   recipientList.forEach((recipient, index) => {
     const isLast = index === recipientList.length - 1;
     let text = recipient.replace(/^[-–•]\s*/, "");
-    // Ensure proper trailing punctuation
     if (!text.match(/[;.]$/)) {
       text += isLast ? "." : ";";
     }
-    elements.push(
+    leftChildren.push(
       new Paragraph({
         spacing: { after: 0 },
         children: [
@@ -1012,7 +961,74 @@ function buildRecipientsBlock(docx, recipients = []) {
     );
   });
 
-  return elements;
+  // --- Right: Chữ ký ---
+  const rightChildren = [];
+  rightChildren.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 0 },
+      children: [
+        new TextRun({
+          text: (signerTitle || "[CHỨC VỤ NGƯỜI KÝ]").toUpperCase(),
+          font: S.font,
+          size: S.sizes.chucVuKy,
+          bold: true,
+        }),
+      ],
+    })
+  );
+
+  for (let i = 0; i < 4; i++) {
+    rightChildren.push(
+      new Paragraph({
+        spacing: { after: 0 },
+        children: [new TextRun({ text: "", font: S.font, size: S.sizes.body })],
+      })
+    );
+  }
+
+  rightChildren.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 0 },
+      children: [
+        new TextRun({
+          text: signerName || "[Họ và tên người ký]",
+          font: S.font,
+          size: S.sizes.hoTen,
+          bold: true,
+        }),
+      ],
+    })
+  );
+
+  return [
+    new Paragraph({ spacing: { before: 240 }, children: [] }),
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: {
+        ...noBorders,
+        insideHorizontal: { style: "none" },
+        insideVertical: { style: "none" },
+      },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              children: leftChildren,
+            }),
+            new TableCell({
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              children: rightChildren,
+            }),
+          ],
+        }),
+      ],
+    })
+  ];
 }
 
 /**
@@ -1039,8 +1055,8 @@ async function buildVnAdminDocx(docx, params, libs, log) {
   // 1. Header: Cơ quan + Quốc hiệu
   children.push(
     buildHeaderSection(docx, {
-      parentAgency: params.parentAgency,
-      issuingAgency: params.issuingAgency,
+      parentAgency: params.parentAgency || "[TÊN CƠ QUAN CHỦ QUẢN]",
+      issuingAgency: params.issuingAgency || "[TÊN CƠ QUAN BAN HÀNH]",
     })
   );
 
@@ -1055,6 +1071,7 @@ async function buildVnAdminDocx(docx, params, libs, log) {
       location: params.location,
       date: params.date,
       documentTypeInfo,
+      title: params.title,
     })
   );
 
@@ -1084,19 +1101,14 @@ async function buildVnAdminDocx(docx, params, libs, log) {
     children.push(...bodyElements);
   }
 
-  // 6. Khối chữ ký
+  // 6. Nơi nhận & Khối chữ ký (Footer block)
   children.push(
-    new Paragraph({ spacing: { before: 240 }, children: [] })
-  );
-  children.push(
-    buildSignatureBlock(docx, {
+    ...buildFooterBlock(docx, {
+      recipients: params.recipients,
       signerTitle: params.signerTitle,
       signerName: params.signerName,
     })
   );
-
-  // 7. Nơi nhận
-  children.push(...buildRecipientsBlock(docx, params.recipients));
 
   // --- Build the Document ---
   const doc = new Document({
@@ -1172,7 +1184,6 @@ module.exports = {
   buildTitleSection,
   buildLegalBasisParagraphs,
   buildBodyContent,
-  buildSignatureBlock,
-  buildRecipientsBlock,
+  buildFooterBlock,
   buildVnAdminDocx,
 };
