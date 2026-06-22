@@ -16,42 +16,40 @@ function isDarkColor(hexColor) {
 function addBranding(slide, bgColor) {
   const isDark = isDarkColor(bgColor);
   const textColor = isDark ? "FFFFFF" : "000000";
-  const logo = createFilesLib.getLogo({
-    forDarkBackground: isDark,
-    format: "dataUri",
-  });
+  const logoPath = "https://ai.aiha.vn/logo.png";
 
-  slide.addText("Created with", {
+  slide.addText("Gov AI VN168", {
     x: 7.85,
     y: 5.06,
     w: 1.85,
     h: 0.12,
-    fontSize: 5.5,
+    fontSize: 6.5,
     color: textColor,
-    transparency: 78,
+    transparency: 50,
     fontFace: "Calibri",
     align: "center",
-    italic: true,
+    bold: true,
   });
 
-  if (logo) {
+  try {
     slide.addImage({
-      data: logo,
+      path: logoPath,
       x: 8.025,
       y: 5.17,
       w: 1.5,
       h: 0.24,
-      transparency: 78,
+      sizing: { type: "contain", w: 1.5, h: 0.24 },
     });
-  } else {
-    slide.addText("AnythingLLM", {
+  } catch (e) {
+    // Fallback if image path fails
+    slide.addText("Gov AI VN168", {
       x: 7.85,
       y: 5.17,
       w: 1.85,
       h: 0.24,
       fontSize: 8,
       color: textColor,
-      transparency: 78,
+      transparency: 50,
       fontFace: "Calibri",
       align: "center",
     });
