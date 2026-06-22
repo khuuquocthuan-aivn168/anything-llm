@@ -613,12 +613,23 @@ async function htmlToVnAdminDocxElements(html, libs, log) {
       }
 
       if (inlineChildren.length > 0) {
+        let hasOwnNumbering = false;
+        if (!isOrdered) {
+          const text = li.textContent.trim();
+          if (/^(?:(?:\d+\.)+(?:\d+)?|\d+\)|Điều\s+\d+(?:[\.\:])?|Khoản\s+\d+(?:[\.\:])?|[a-zA-Z][\.\)])(\s|:)/.test(text)) {
+            hasOwnNumbering = true;
+          }
+        }
+
         listParagraphs.push(
           new Paragraph({
             children: inlineChildren,
-            bullet: isOrdered ? undefined : { level },
+            bullet: (isOrdered || hasOwnNumbering) ? undefined : { level },
             numbering: isOrdered
               ? { reference: "default-numbering", level }
+              : undefined,
+            indent: hasOwnNumbering 
+              ? { left: 720 + (level * 360), hanging: 360 } 
               : undefined,
             spacing: { after: 60, line: S.spacing.lineSpacing },
           })

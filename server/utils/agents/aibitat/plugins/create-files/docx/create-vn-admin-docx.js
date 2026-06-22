@@ -30,6 +30,8 @@ module.exports.CreateVnAdminDocx = {
             "Tạo văn bản hành chính Việt Nam (.docx) theo đúng thể thức Nghị định 30/2020/NĐ-CP. " +
             "Tool sẽ tự động tra cứu internet để tìm căn cứ pháp lý và tham mưu nội dung. " +
             "Hỗ trợ tất cả 29 loại văn bản hành chính: Công văn, Quyết định, Tờ trình, Báo cáo, Kế hoạch, Thông báo, v.v. " +
+            "BẮT BUỘC: Nội dung tạo ra phải đầy đủ, chi tiết, tuỳ theo thể loại văn bản. Không được viết ngắn gọn. " +
+            "Nếu văn bản cần tiêu đề chính nằm giữa in đậm, hãy sử dụng Heading 1 (VD: `# TIÊU ĐỀ`). " +
             "Create a Vietnamese administrative document (.docx) following official government formatting standards. " +
             "Automatically searches the internet for relevant legal references and provides advisory on content. " +
             "Note: For general-purpose, non-Vietnamese-admin Word documents, use 'create-docx-file' instead.",
@@ -151,7 +153,7 @@ module.exports.CreateVnAdminDocx = {
               content: {
                 type: "string",
                 description:
-                  "Nội dung chính của văn bản (hỗ trợ markdown). Tool sẽ tự động review và tham mưu chỉnh sửa nếu cần.",
+                  "Nội dung chính của văn bản (hỗ trợ markdown). BẮT BUỘC: Nội dung phải đầy đủ, chi tiết, chuyên nghiệp đúng văn phong hành chính. Tuyệt đối không viết nháp hay placeholder ngắn gọn. Để tạo các tiêu đề chính nằm giữa và in đậm bên trong nội dung, hãy dùng Heading 1 (VD: `# TIÊU ĐỀ TÀI LIỆU`). Tool sẽ tự động review và tham mưu chỉnh sửa nếu cần.",
               },
               signerTitle: {
                 type: "string",

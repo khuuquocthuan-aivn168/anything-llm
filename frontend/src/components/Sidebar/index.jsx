@@ -8,6 +8,7 @@ import useLogo from "@/hooks/useLogo";
 import useUser from "@/hooks/useUser";
 import Footer from "../Footer";
 import SettingsButton from "../SettingsButton";
+import TransferDocButton from "../TransferDocButton";
 import { Link, useLocation } from "react-router-dom";
 import paths from "@/utils/paths";
 import { useTranslation } from "react-i18next";
@@ -167,6 +168,7 @@ export function SidebarMobileHeader() {
                 />
               </div>
               <div className="flex gap-x-3 items-center text-slate-500 shrink-0">
+                {(!user || user?.role !== "default") && <TransferDocButton />}
                 {(!user || user?.role !== "default") && <SettingsButton />}
                 <button
                   type="button"

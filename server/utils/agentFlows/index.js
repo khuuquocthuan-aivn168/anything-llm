@@ -281,7 +281,28 @@ class AgentFlows {
    * @returns {string} The stringified result
    */
   static stringifyResult(input) {
-    return typeof input === "object" ? JSON.stringify(input) : String(input);
+    if (typeof input === "object") {
+      try {
+        return "```json\n" + JSON.stringify(input, null, 2) + "\n```";
+      } catch (e) {
+        return String(input);
+      }
+    }
+    
+    let str = String(input);
+    
+    // Fix Markdown single newlines if it already has newlines
+    if (str.includes('\n')) {
+      // Replace single newlines with double newlines so Markdown doesn't ignore them
+      str = str.replace(/([^\n])\n([^\n])/g, '$1\n\n$2');
+    } else if (str.length > 50) {
+      // Dynamic break heuristic for flattened "Key: Value" strings
+      str = str.replace(/(?<=\s|^)(\p{Lu}[\p{L}\p{N}/_]+(?:\s[\p{L}\p{N}/_]+){0,4})(?=:(\s|$))/gu, (match, p1) => {
+        return `\n\n- **${p1}**`;
+      }).trim();
+    }
+    
+    return str;
   }
 }
 

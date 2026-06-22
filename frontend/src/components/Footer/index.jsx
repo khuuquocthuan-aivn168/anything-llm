@@ -13,6 +13,7 @@ import {
 } from "@phosphor-icons/react";
 import React, { useEffect, useState } from "react";
 import SettingsButton from "../SettingsButton";
+import TransferDocButton from "../TransferDocButton";
 import { isMobile } from "react-device-detect";
 import { Tooltip } from "react-tooltip";
 import { Link } from "react-router-dom";
@@ -74,6 +75,7 @@ export default function Footer() {
               )}
             </a>
           ))}
+        {!isMobile && <TransferDocButton />}
         {!isMobile && <SettingsButton />}
       </div>
       <Tooltip

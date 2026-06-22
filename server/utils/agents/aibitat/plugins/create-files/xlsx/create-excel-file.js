@@ -175,11 +175,17 @@ module.exports.CreateExcelFile = {
               const hasExtension = /\.xlsx$/i.test(filename);
               if (!hasExtension) filename = `${filename}.xlsx`;
 
-              if (!csvData && (!sheets || sheets.length === 0)) {
-                return "Error: You must provide either 'csvData' for a single sheet or 'sheets' array for multiple sheets.";
+              if (sheets && typeof sheets === "string") {
+                // LLM hallucinated sheets as a string (the CSV data)
+                if (!csvData) csvData = sheets;
+                sheets = null;
               }
 
-              const sheetDefinitions = sheets
+              if (!csvData && (!sheets || !Array.isArray(sheets) || sheets.length === 0)) {
+                return "Error: You must provide either 'csvData' (string) for a single sheet or 'sheets' (array of objects) for multiple sheets.";
+              }
+
+              const sheetDefinitions = (sheets && Array.isArray(sheets))
                 ? sheets
                 : [
                     {
@@ -189,10 +195,17 @@ module.exports.CreateExcelFile = {
                     },
                   ];
 
-              for (const sheet of sheetDefinitions) {
-                if (!sheet.csvData || sheet.csvData.trim() === "") {
-                  return `Error: Sheet "${sheet.name || "unnamed"}" has no CSV data.`;
+              for (let i = 0; i < sheetDefinitions.length; i++) {
+                let sheet = sheetDefinitions[i];
+                if (typeof sheet === "string") {
+                   sheet = { name: `Sheet${i+1}`, csvData: sheet };
+                   sheetDefinitions[i] = sheet;
                 }
+                const actualCsvData = sheet.csvData || sheet.data || sheet.content || sheet.text;
+                if (!actualCsvData || typeof actualCsvData !== "string" || actualCsvData.trim() === "") {
+                  return `Error: Sheet "${sheet.name || `Sheet${i+1}`}" has no CSV data.`;
+                }
+                sheet.csvData = actualCsvData; // Normalize
               }
 
               const sheetCount = sheetDefinitions.length;
