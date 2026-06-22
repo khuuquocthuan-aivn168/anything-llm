@@ -386,14 +386,12 @@ module.exports.CreateVnAdminDocx = {
                 );
               }
 
-              this.super.skipHandleExecution = true;
               return parts.join("\n");
             } catch (e) {
               this.super.handlerProps.log(
                 `create-vn-admin-docx error: ${e.message}`
               );
               this.super.introspect(`Error: ${e.message}`);
-              this.super.skipHandleExecution = true;
               return `Lỗi khi tạo văn bản hành chính: ${e.message}`;
             }
           },

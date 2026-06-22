@@ -365,7 +365,6 @@ module.exports.CreateExcelFile = {
                 result += `\n\nWarnings:\n${allWarnings.map((w) => `- ${w}`).join("\n")}`;
               }
 
-              this.super.skipHandleExecution = true;
               return result;
             } catch (e) {
               this.super.handlerProps.log(

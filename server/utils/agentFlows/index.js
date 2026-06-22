@@ -255,7 +255,6 @@ class AgentFlows {
                 aibitat.introspect(
                   `Luồng thất bại: ${result.results[0]?.error || "Lỗi không xác định"}`
                 );
-                aibitat.skipHandleExecution = true;
                 return `Luồng thực thi thất bại: ${result.results[0]?.error || "Lỗi không xác định"}`;
               }
               aibitat.introspect(`Luồng ${flow.name} đã hoàn thành thành công`);
@@ -267,7 +266,6 @@ class AgentFlows {
                 return AgentFlows.stringifyResult(result.directOutput);
               }
 
-              aibitat.skipHandleExecution = true;
               return AgentFlows.stringifyResult(result);
             },
           });
