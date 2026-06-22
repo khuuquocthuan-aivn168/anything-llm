@@ -10,13 +10,13 @@ async function executeLLMInstruction(config, context) {
   logger(
     `\x1b[43m[AgentFlowToolExecutor]\x1b[0m - executing LLM Instruction block`
   );
-  introspect(`Processing data with LLM instruction...`);
+  introspect(`Đang xử lý dữ liệu với chỉ thị LLM...`);
 
   try {
     logger(
       `Sending request to LLM (${aibitat.defaultProvider.provider}::${aibitat.defaultProvider.model})`
     );
-    introspect(`Sending request to LLM...`);
+    introspect(`Đang gửi yêu cầu tới LLM...`);
 
     // Ensure the input is a string since we are sending it to the LLM direct as a message
     let input = instruction;
@@ -35,7 +35,7 @@ async function executeLLMInstruction(config, context) {
       completion = await provider.complete([{ role: "user", content: input }]);
     }
 
-    introspect(`Successfully received LLM response`);
+    introspect(`Đã nhận được phản hồi từ LLM thành công`);
     if (resultVariable) config.resultVariable = resultVariable;
     return completion.textResponse;
   } catch (error) {

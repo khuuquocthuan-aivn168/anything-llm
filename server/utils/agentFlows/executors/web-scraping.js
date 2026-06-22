@@ -21,7 +21,7 @@ async function executeWebScraping(config, context) {
   }
 
   const captureMode = captureAs === "querySelector" ? "html" : captureAs;
-  introspect(`Scraping the content of ${url} as ${captureAs}`);
+  introspect(`Đang thu thập nội dung của ${url} dưới dạng ${captureAs}...`);
   const { success, content } = await new CollectorApi()
     .getLinkContent(url, captureMode)
     .then((res) => {
@@ -30,13 +30,13 @@ async function executeWebScraping(config, context) {
     });
 
   if (!success) {
-    introspect(`Could not scrape ${url}. Cannot use this page's content.`);
+    introspect(`Không thể thu thập nội dung từ ${url}. Không thể sử dụng nội dung trang này.`);
     throw new Error("URL could not be scraped and no content was found.");
   }
 
-  introspect(`Successfully scraped content from ${url}`);
+  introspect(`Đã thu thập nội dung thành công từ ${url}`);
   if (!content || content?.length === 0) {
-    introspect("There was no content to be collected or read.");
+    introspect("Không có nội dung nào được thu thập hoặc đọc được.");
     throw new Error("There was no content to be collected or read.");
   }
 
@@ -61,7 +61,7 @@ async function executeWebScraping(config, context) {
   }
 
   introspect(
-    `This page's content is way too long (${tokenCount} tokens). I will summarize it right now.`
+    `Nội dung của trang này quá dài (${tokenCount} tokens). Tôi sẽ tóm tắt nó ngay bây giờ.`
   );
   const summary = await summarizeContent({
     provider: aibitat.defaultProvider.provider,
@@ -70,7 +70,7 @@ async function executeWebScraping(config, context) {
     aibitat,
   });
 
-  introspect(`Successfully summarized content`);
+  introspect(`Đã tóm tắt nội dung thành công`);
   return summary;
 }
 
@@ -83,7 +83,7 @@ async function executeWebScraping(config, context) {
  */
 function parseHTMLwithSelector(html, selector = null, context) {
   if (!selector || selector.length === 0) {
-    context.introspect("No selector provided. Returning the entire HTML.");
+    context.introspect("Không có CSS selector nào được cung cấp. Đang trả về toàn bộ HTML.");
     return { success: true, content: html };
   }
 
@@ -98,7 +98,7 @@ function parseHTMLwithSelector(html, selector = null, context) {
     content = selectedElements.html();
   } else {
     context.introspect(
-      `Found ${selectedElements.length} elements matching selector: ${selector}`
+      `Đang trích xuất các thành phần khớp với selector: ${selector}`
     );
     content = selectedElements
       .map((_, element) => $(element).html())

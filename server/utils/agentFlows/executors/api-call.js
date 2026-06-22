@@ -12,7 +12,7 @@ async function executeApiCall(config, context) {
   const { introspect, logger } = context;
   logger(`\x1b[43m[AgentFlowToolExecutor]\x1b[0m - executing API Call block`);
   const upperMethod = (method || "GET").toUpperCase();
-  introspect(`Making ${upperMethod} request to external API...`);
+  introspect(`Đang gửi yêu cầu ${upperMethod} gọi tới Agent chuyên môn...`);
 
   const requestConfig = {
     method: upperMethod,
@@ -55,14 +55,15 @@ async function executeApiCall(config, context) {
   }
 
   try {
-    introspect(`Sending body to ${url}: ${requestConfig?.body || "No body"}`);
+    logger(`[API Call] Sending body to ${url}: ${requestConfig?.body || "No body"}`);
+    introspect(`Đang gửi dữ liệu (payload) gọi tới Agent chuyên môn...`);
     const response = await fetch(url, requestConfig);
     if (!response.ok) {
-      introspect(`Request failed with status ${response.status}`);
+      introspect(`Gọi Agent chuyên môn thất bại (Mã trạng thái: ${response.status})`);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    introspect(`API call completed`);
+    introspect(`Đã nhận được kết quả từ Agent chuyên môn`);
 
     // Check if we should stream the response
     if (

@@ -296,12 +296,14 @@ module.exports.CreateDocxFile = {
               const styleDesc =
                 styleInfo.length > 0 ? ` with ${styleInfo.join(", ")}` : "";
 
+              this.super.skipHandleExecution = true;
               return `Successfully created Word document "${displayFilename}" (${bufferSizeKB}KB)${styleDesc}. The document includes formatted content with tables, images, Page X of Y footer, and professional styling.`;
             } catch (e) {
               this.super.handlerProps.log(
                 `create-docx-file error: ${e.message}`
               );
               this.super.introspect(`Error: ${e.message}`);
+              this.super.skipHandleExecution = true;
               return `Error creating Word document: ${e.message}`;
             }
           },

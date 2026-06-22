@@ -249,15 +249,16 @@ class AgentFlows {
               }, {}),
             },
             handler: async (args) => {
-              aibitat.introspect(`Executing flow: ${flow.name}`);
+              aibitat.introspect(`Đang thực thi luồng: ${flow.name}`);
               const result = await AgentFlows.executeFlow(uuid, args, aibitat);
               if (!result.success) {
                 aibitat.introspect(
-                  `Flow failed: ${result.results[0]?.error || "Unknown error"}`
+                  `Luồng thất bại: ${result.results[0]?.error || "Lỗi không xác định"}`
                 );
-                return `Flow execution failed: ${result.results[0]?.error || "Unknown error"}`;
+                aibitat.skipHandleExecution = true;
+                return `Luồng thực thi thất bại: ${result.results[0]?.error || "Lỗi không xác định"}`;
               }
-              aibitat.introspect(`${flow.name} completed successfully`);
+              aibitat.introspect(`Luồng ${flow.name} đã hoàn thành thành công`);
 
               // If the flow result has directOutput, return it
               // as the aibitat result so that no other processing is done
@@ -266,6 +267,7 @@ class AgentFlows {
                 return AgentFlows.stringifyResult(result.directOutput);
               }
 
+              aibitat.skipHandleExecution = true;
               return AgentFlows.stringifyResult(result);
             },
           });
