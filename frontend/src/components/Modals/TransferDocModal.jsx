@@ -11,6 +11,10 @@ export default function TransferDocModal({ hideModal = noop, onSubmit = noop }) 
   const [showFollow, setShowFollow] = useState(false);
   const [showDirection, setShowDirection] = useState(false);
   const [showDraftConsult, setShowDraftConsult] = useState(false);
+  
+  // Reminder modal state
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [reminderSelection, setReminderSelection] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -257,6 +261,58 @@ export default function TransferDocModal({ hideModal = noop, onSubmit = noop }) 
               </div>
             </div>
 
+            {/* Checkbox Options */}
+            <div className="space-y-2 pt-4 border-t border-theme-modal-border">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="flex items-center space-x-2 text-sm text-white cursor-pointer">
+                  <input type="checkbox" name="continueProcessing" defaultChecked className="rounded bg-theme-settings-input-bg border-none" />
+                  <span>Tiếp tục xử lý</span>
+                </label>
+                <label className="flex items-center space-x-2 text-sm text-white cursor-pointer">
+                  <input type="checkbox" name="sendSMS" className="rounded bg-theme-settings-input-bg border-none" />
+                  <span>Gửi tin nhắn sms đến người nhận</span>
+                </label>
+                <label className="flex items-center space-x-2 text-sm text-white cursor-pointer">
+                  <input type="checkbox" name="sendNotify" className="rounded bg-theme-settings-input-bg border-none" />
+                  <span>Gửi thông báo đến người nhận</span>
+                </label>
+                
+                <div className="flex items-center space-x-2 text-sm text-white">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" name="reminder" className="rounded bg-theme-settings-input-bg border-none" />
+                    <span>Nhắc <span className="text-red-400 font-bold">⚑</span> lại cho tôi vào ngày</span>
+                  </label>
+                  <span>(</span>
+                  <a 
+                    href="javascript:void(0)" 
+                    onClick={() => setShowReminderModal(true)} 
+                    className="text-blue-400 hover:text-blue-300 hover:underline"
+                  >
+                    {reminderSelection ? reminderSelection : "chọn ngày..."}
+                  </a>
+                  <span>)</span>
+                  <input type="hidden" name="reminderDate" value={reminderSelection} />
+                </div>
+
+                <label className="flex items-center space-x-2 text-sm text-slate-400 cursor-not-allowed">
+                  <input type="checkbox" name="hasPaper" disabled className="rounded bg-theme-settings-input-bg border-none opacity-50" />
+                  <span>Có tài liệu giấy</span>
+                </label>
+                <label className="flex items-center space-x-2 text-sm text-white cursor-pointer hidden">
+                  <input type="checkbox" name="watch" defaultChecked className="rounded bg-theme-settings-input-bg border-none" />
+                  <span>Cần theo dõi tình hình xử lý</span>
+                </label>
+                <label className="flex items-center space-x-2 text-sm text-white cursor-pointer">
+                  <input type="checkbox" name="needRatify" defaultChecked className="rounded bg-theme-settings-input-bg border-none" />
+                  <span>Cần thông qua</span>
+                </label>
+                <label className="flex items-center space-x-2 text-sm text-white cursor-pointer">
+                  <input type="checkbox" name="createTask" className="rounded bg-theme-settings-input-bg border-none" />
+                  <span>Tạo công việc</span>
+                </label>
+              </div>
+            </div>
+
           </form>
         </div>
 
@@ -277,7 +333,83 @@ export default function TransferDocModal({ hideModal = noop, onSubmit = noop }) 
           </button>
         </div>
       </div>
+
+      {showReminderModal && (
+        <ReminderDateModal 
+          hideModal={() => setShowReminderModal(false)}
+          onSelect={(value) => {
+            setReminderSelection(value);
+            setShowReminderModal(false);
+          }}
+        />
+      )}
     </ModalWrapper>
+  );
+}
+
+function ReminderDateModal({ hideModal, onSelect }) {
+  const [selectedRadio, setSelectedRadio] = useState("TODAY");
+  const [customDate, setCustomDate] = useState("");
+
+  const handleApply = () => {
+    onSelect(selectedRadio === "CUSTOM" ? customDate : selectedRadio);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div className="w-full max-w-sm bg-theme-bg-secondary rounded-lg shadow-xl border border-theme-modal-border overflow-hidden">
+        <div className="p-4 border-b border-theme-modal-border flex justify-between items-center">
+          <div className="flex items-center gap-2 text-white">
+            <Calendar size={20} />
+            <h4 className="font-semibold">Chọn ngày nhắc nhở</h4>
+          </div>
+          <button onClick={hideModal} className="text-gray-400 hover:text-white">
+            <X size={20} />
+          </button>
+        </div>
+        
+        <div className="p-6 space-y-3">
+          <label className="flex items-center space-x-3 cursor-pointer text-white">
+            <input type="radio" name="reminder-radio" value="TODAY" checked={selectedRadio === "TODAY"} onChange={() => setSelectedRadio("TODAY")} className="text-blue-500 bg-theme-settings-input-bg border-none" />
+            <span className="flex items-center gap-1"><span className="text-red-400">⚑</span> Hôm nay</span>
+          </label>
+          <label className="flex items-center space-x-3 cursor-pointer text-white">
+            <input type="radio" name="reminder-radio" value="TOMORROW" checked={selectedRadio === "TOMORROW"} onChange={() => setSelectedRadio("TOMORROW")} className="text-blue-500 bg-theme-settings-input-bg border-none" />
+            <span className="flex items-center gap-1"><span className="text-yellow-400">⚑</span> Ngày mai</span>
+          </label>
+          <label className="flex items-center space-x-3 cursor-pointer text-white">
+            <input type="radio" name="reminder-radio" value="WEEKEND" checked={selectedRadio === "WEEKEND"} onChange={() => setSelectedRadio("WEEKEND")} className="text-blue-500 bg-theme-settings-input-bg border-none" />
+            <span className="flex items-center gap-1"><span className="text-blue-400">⚑</span> Cuối tuần</span>
+          </label>
+          <label className="flex items-center space-x-3 cursor-pointer text-white">
+            <input type="radio" name="reminder-radio" value="NEXTWEEK" checked={selectedRadio === "NEXTWEEK"} onChange={() => setSelectedRadio("NEXTWEEK")} className="text-blue-500 bg-theme-settings-input-bg border-none" />
+            <span className="flex items-center gap-1"><span className="text-green-400">⚑</span> Ngày này tuần sau</span>
+          </label>
+          <label className="flex items-center space-x-3 cursor-pointer text-white">
+            <input type="radio" name="reminder-radio" value="CUSTOM" checked={selectedRadio === "CUSTOM"} onChange={() => setSelectedRadio("CUSTOM")} className="text-blue-500 bg-theme-settings-input-bg border-none" />
+            <span className="flex items-center gap-2">
+              Tùy chọn ngày
+              <input 
+                type="date" 
+                disabled={selectedRadio !== "CUSTOM"}
+                value={customDate}
+                onChange={(e) => setCustomDate(e.target.value)}
+                className="border-none bg-theme-settings-input-bg text-white text-xs rounded p-1 ml-2 disabled:opacity-50" 
+              />
+            </span>
+          </label>
+        </div>
+
+        <div className="flex justify-end p-4 border-t border-theme-modal-border gap-2 bg-theme-bg-secondary">
+          <button onClick={hideModal} className="px-4 py-2 text-sm text-white bg-transparent border border-slate-500 hover:bg-slate-600 rounded">
+            Thoát
+          </button>
+          <button onClick={handleApply} className="px-4 py-2 text-sm text-black bg-white hover:opacity-80 rounded flex items-center gap-1">
+            Đồng ý
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
