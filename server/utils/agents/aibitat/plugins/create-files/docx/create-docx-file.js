@@ -172,12 +172,41 @@ module.exports.CreateDocxFile = {
                 `create-docx-file: Parsed markdown to HTML (${html.length} chars), theme: ${theme}, margins: ${margins}`
               );
 
-              await createFilesLib.initializeLogo();
-              const logoBuffer = createFilesLib.getLogo({
-                forDarkBackground: false,
-                format: "buffer",
-              });
-              const logoType = createFilesLib.getLogoType();
+              let logoBuffer = null;
+              let logoType = "png";
+              try {
+                const fs = require("fs");
+                const path = require("path");
+                const logoPath = path.join(__dirname, "../assets/gov-ai-vn168-logo.png");
+                if (fs.existsSync(logoPath)) {
+                  logoBuffer = fs.readFileSync(logoPath);
+                }
+              } catch (err) {
+                this.super.handlerProps.log(`Failed to read local Gov AI logo: ${err.message}`);
+              }
+
+              // Fallback to online fetch if buffer is empty
+              if (!logoBuffer) {
+                try {
+                  const response = await fetch("https://ai.aiha.vn/logo.png");
+                  if (response.ok) {
+                    const ab = await response.arrayBuffer();
+                    logoBuffer = Buffer.from(ab);
+                  }
+                } catch (fetchError) {
+                  this.super.handlerProps.log(`Failed to fetch online Gov AI logo: ${fetchError.message}`);
+                }
+              }
+
+              // Ultimate fallback to default system logo
+              if (!logoBuffer) {
+                await createFilesLib.initializeLogo();
+                logoBuffer = createFilesLib.getLogo({
+                  forDarkBackground: false,
+                  format: "buffer",
+                });
+                logoType = createFilesLib.getLogoType();
+              }
 
               const docElements = await htmlToDocxElements(
                 html,
