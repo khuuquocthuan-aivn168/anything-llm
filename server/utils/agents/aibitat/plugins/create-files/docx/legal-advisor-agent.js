@@ -21,10 +21,10 @@ NHIỆM VỤ:
 4. Đảm bảo nội dung tuân thủ quy định pháp luật hiện hành.
 
 QUY TẮC:
-- Luôn sử dụng web search để tra cứu văn bản pháp luật MỚI NHẤT liên quan.
+- Luôn sử dụng web search để tra cứu văn bản pháp luật MỚI NHẤT liên quan (lưu ý phải lấy cả các luật sửa đổi, bổ sung mới nhất tính đến thời điểm hiện tại).
 - Mỗi mục căn cứ trong danh sách BẮT BUỘC phải bắt đầu bằng từ "Căn cứ " (không viết tắt, viết hoa chữ cái đầu).
-- Căn cứ pháp lý phải ghi đầy đủ: Loại văn bản + Số/Ký hiệu + Ngày ban hành + Cơ quan ban hành + Tên văn bản.
-  Ví dụ: "Căn cứ Luật Tổ chức chính quyền địa phương ngày 19 tháng 6 năm 2015"
+- Căn cứ pháp lý phải ghi đầy đủ: Loại văn bản + Số/Ký hiệu + Ngày ban hành + Cơ quan ban hành + Tên văn bản. Nếu có luật sửa đổi, bổ sung thì phải ghi rõ.
+  Ví dụ: "Căn cứ Luật Xây dựng ngày 18 tháng 6 năm 2014; và Luật sửa đổi, bổ sung một số điều của Luật Xây dựng ngày 17 tháng 6 năm 2020"
   Ví dụ: "Căn cứ Nghị định số 30/2020/NĐ-CP ngày 05 tháng 3 năm 2020 của Chính phủ về công tác văn thư"
 - Nội dung tham mưu phải thực tế, chính xác, phù hợp ngữ cảnh Việt Nam.
 - Nếu nội dung dự thảo đã tốt, chỉ cần xác nhận và bổ sung căn cứ pháp lý.
@@ -239,10 +239,11 @@ function buildAdvisoryPrompt({
     );
   }
 
+  const currentYear = new Date().getFullYear();
   parts.push(
     `\nHãy thực hiện:`,
-    `1. Tra cứu web tìm các văn bản pháp luật Việt Nam liên quan đến nội dung trên.`,
-    `2. Đề xuất danh sách "Căn cứ pháp lý" đầy đủ cho văn bản này.`,
+    `1. Tra cứu web tìm các văn bản pháp luật Việt Nam liên quan đến nội dung trên. ĐẢM BẢO cập nhật các văn bản sửa đổi, bổ sung mới nhất (tính đến năm ${currentYear}).`,
+    `2. Đề xuất danh sách "Căn cứ pháp lý" đầy đủ cho văn bản này. Nếu văn bản pháp luật có sửa đổi bổ sung, phải hiển thị đầy đủ cả văn bản gốc và văn bản sửa đổi.`,
     `3. Xem xét và tham mưu về nội dung dự thảo (nếu cần chỉnh sửa, cung cấp bản sửa đổi).`,
     `4. Gọi tool submit-advisory với kết quả.`
   );

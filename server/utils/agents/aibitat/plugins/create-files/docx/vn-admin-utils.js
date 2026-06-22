@@ -125,6 +125,11 @@ function extractLegalBasisFromContent(content) {
       continue;
     }
 
+    // Bỏ qua tiêu đề bị duplicate ở đầu (VD: "# QUYẾT ĐỊNH" hoặc "# V/v...")
+    if (/^#+\s/.test(trimmed) && extractedBases.length === 0 && !reachedBody) {
+      continue;
+    }
+
     // Match list markers or numbering followed by "Căn cứ" (case-insensitive)
     const match = trimmed.match(/^([-*•\d\.\s]*)\s*(Căn\s+cứ\s+.*)$/i);
     if (match) {
@@ -476,7 +481,7 @@ function buildLegalBasisParagraphs(docx, legalBases = []) {
           text: `${cleanBasis}${separator}`,
           font: S.font,
           size: S.sizes.canCu,
-          italics: true,
+          italics: false,
         }),
       ],
     });
@@ -920,7 +925,7 @@ async function buildBodyContent(docx, libs, content, log) {
  * Creates the signature block (Khối chữ ký).
  * Right-aligned: Title line → [space for signature] → Full name
  */
-function buildFooterBlock(docx, { recipients = [], signerTitle = "", signerName = "" }) {
+function buildFooterBlock(docx, { recipients = [], signers = [] }) {
   const { Paragraph, TextRun, AlignmentType,
     Table, TableRow, TableCell, WidthType } = docx;
   const S = VN_ADMIN_STYLES;
@@ -972,46 +977,80 @@ function buildFooterBlock(docx, { recipients = [], signerTitle = "", signerName 
     );
   });
 
-  // --- Right: Chữ ký ---
-  const rightChildren = [];
-  rightChildren.push(
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 0 },
-      children: [
-        new TextRun({
-          text: (signerTitle || "[CHỨC VỤ NGƯỜI KÝ]").toUpperCase(),
-          font: S.font,
-          size: S.sizes.chucVuKy,
-          bold: true,
-        }),
-      ],
+  // --- Dynamic Layout cho Nơi nhận và (Các) Chữ ký ---
+  const numSigners = signers && signers.length > 0 ? signers.length : 1;
+  const noNhanWidth = numSigners === 1 ? 50 : Math.floor(100 / (numSigners + 1));
+  const signerWidth = Math.floor((100 - noNhanWidth) / numSigners);
+
+  const rowCells = [];
+  
+  // Nơi nhận
+  rowCells.push(
+    new TableCell({
+      width: { size: noNhanWidth, type: WidthType.PERCENTAGE },
+      borders: noBorders,
+      children: leftChildren,
     })
   );
 
-  for (let i = 0; i < 4; i++) {
-    rightChildren.push(
-      new Paragraph({
-        spacing: { after: 0 },
-        children: [new TextRun({ text: "", font: S.font, size: S.sizes.body })],
-      })
-    );
+  // Signers
+  let finalSigners = signers;
+  if (!finalSigners || finalSigners.length === 0) {
+    finalSigners = [{ title: "[CHỨC VỤ NGƯỜI KÝ]", name: "[Họ và tên người ký]" }];
   }
 
-  rightChildren.push(
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 0 },
-      children: [
-        new TextRun({
-          text: signerName || "[Họ và tên người ký]",
-          font: S.font,
-          size: S.sizes.hoTen,
-          bold: true,
-        }),
-      ],
-    })
-  );
+  finalSigners.forEach(signer => {
+    const signerChildren = [];
+    const titles = (signer.title || "[CHỨC VỤ NGƯỜI KÝ]").split(/\n|<br>/i);
+    titles.forEach(t => {
+      signerChildren.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 0 },
+          children: [
+            new TextRun({
+              text: t.toUpperCase(),
+              font: S.font,
+              size: S.sizes.chucVuKy,
+              bold: true,
+            }),
+          ],
+        })
+      );
+    });
+
+    for (let i = 0; i < 4; i++) {
+      signerChildren.push(
+        new Paragraph({
+          spacing: { after: 0 },
+          children: [new TextRun({ text: "", font: S.font, size: S.sizes.body })],
+        })
+      );
+    }
+
+    signerChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 0 },
+        children: [
+          new TextRun({
+            text: signer.name || "[Họ và tên người ký]",
+            font: S.font,
+            size: S.sizes.hoTen,
+            bold: true,
+          }),
+        ],
+      })
+    );
+
+    rowCells.push(
+      new TableCell({
+        width: { size: signerWidth, type: WidthType.PERCENTAGE },
+        borders: noBorders,
+        children: signerChildren,
+      })
+    );
+  });
 
   return [
     new Paragraph({ spacing: { before: 240 }, children: [] }),
@@ -1024,18 +1063,7 @@ function buildFooterBlock(docx, { recipients = [], signerTitle = "", signerName 
       },
       rows: [
         new TableRow({
-          children: [
-            new TableCell({
-              width: { size: 50, type: WidthType.PERCENTAGE },
-              borders: noBorders,
-              children: leftChildren,
-            }),
-            new TableCell({
-              width: { size: 50, type: WidthType.PERCENTAGE },
-              borders: noBorders,
-              children: rightChildren,
-            }),
-          ],
+          children: rowCells,
         }),
       ],
     })
@@ -1116,8 +1144,7 @@ async function buildVnAdminDocx(docx, params, libs, log) {
   children.push(
     ...buildFooterBlock(docx, {
       recipients: params.recipients,
-      signerTitle: params.signerTitle,
-      signerName: params.signerName,
+      signers: params.signers,
     })
   );
 

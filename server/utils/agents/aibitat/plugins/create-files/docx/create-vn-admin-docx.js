@@ -31,7 +31,7 @@ module.exports.CreateVnAdminDocx = {
             "Tool sẽ tự động tra cứu internet để tìm căn cứ pháp lý và tham mưu nội dung. " +
             "Hỗ trợ tất cả 29 loại văn bản hành chính: Công văn, Quyết định, Tờ trình, Báo cáo, Kế hoạch, Thông báo, v.v. " +
             "BẮT BUỘC: Nội dung tạo ra phải đầy đủ, chi tiết, tuỳ theo thể loại văn bản. Không được viết ngắn gọn. " +
-            "Nếu văn bản cần tiêu đề chính nằm giữa in đậm, hãy sử dụng Heading 1 (VD: `# TIÊU ĐỀ`). " +
+            "Tuyệt đối KHÔNG đưa Tiêu đề chính (Tên loại văn bản, Trích yếu) vào phần content vì hệ thống đã tự động tạo. Chỉ bắt đầu content từ phần 'Kính gửi' hoặc 'Điều 1...' trở đi. " +
             "Create a Vietnamese administrative document (.docx) following official government formatting standards. " +
             "Automatically searches the internet for relevant legal references and provides advisory on content. " +
             "Note: For general-purpose, non-Vietnamese-admin Word documents, use 'create-docx-file' instead.",
@@ -153,17 +153,26 @@ module.exports.CreateVnAdminDocx = {
               content: {
                 type: "string",
                 description:
-                  "Nội dung chính của văn bản (hỗ trợ markdown). BẮT BUỘC: Nội dung phải đầy đủ, chi tiết, chuyên nghiệp đúng văn phong hành chính. Tuyệt đối không viết nháp hay placeholder ngắn gọn. Để tạo các tiêu đề chính nằm giữa và in đậm bên trong nội dung, hãy dùng Heading 1 (VD: `# TIÊU ĐỀ TÀI LIỆU`). Tool sẽ tự động review và tham mưu chỉnh sửa nếu cần.",
+                  "Nội dung chính của văn bản (hỗ trợ markdown). BẮT BUỘC: Nội dung phải đầy đủ, chi tiết, chuyên nghiệp đúng văn phong hành chính. Tuyệt đối không đưa Tiêu đề chính (như Tên loại văn bản, Trích yếu) vào đầu content vì hệ thống đã tự sinh. Tool sẽ tự động review và tham mưu chỉnh sửa nếu cần.",
               },
               signerTitle: {
                 type: "string",
-                description:
-                  "Chức vụ người ký. Ví dụ: 'Giám đốc', 'Chủ tịch', 'Trưởng phòng'.",
+                description: "Chức vụ người ký. Tương thích ngược, nên dùng 'signers' thay thế.",
               },
               signerName: {
                 type: "string",
-                description:
-                  "Họ tên người ký. Ví dụ: 'Nguyễn Văn A'.",
+                description: "Họ tên người ký. Tương thích ngược, nên dùng 'signers' thay thế.",
+              },
+              signers: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string", description: "Chức vụ người ký" },
+                    name: { type: "string", description: "Họ tên người ký" }
+                  }
+                },
+                description: "Danh sách người ký. Hỗ trợ 1 hoặc nhiều bên ký. VD: [{title: 'Giám đốc', name: 'Nguyễn Văn A'}]",
               },
               recipients: {
                 type: "array",
@@ -193,6 +202,7 @@ module.exports.CreateVnAdminDocx = {
             content = "",
             signerTitle = "",
             signerName = "",
+            signers = [],
             recipients = [],
             skipLegalAdvisory = false,
           }) {
@@ -208,6 +218,12 @@ module.exports.CreateVnAdminDocx = {
               parentAgency = createFilesLib.stripInvalidXmlChars(parentAgency);
               signerTitle = createFilesLib.stripInvalidXmlChars(signerTitle);
               signerName = createFilesLib.stripInvalidXmlChars(signerName);
+              const finalSigners = signers && signers.length > 0 
+                ? signers.map(s => ({ 
+                    title: createFilesLib.stripInvalidXmlChars(s.title || ""), 
+                    name: createFilesLib.stripInvalidXmlChars(s.name || "") 
+                  }))
+                : (signerTitle || signerName ? [{ title: signerTitle, name: signerName }] : []);
 
               const hasExtension = /\.docx$/i.test(filename);
               if (!hasExtension) filename = `${filename}.docx`;
@@ -307,8 +323,7 @@ module.exports.CreateVnAdminDocx = {
                   title,
                   legalBasis: finalLegalBasis,
                   content: finalContent,
-                  signerTitle,
-                  signerName,
+                  signers: finalSigners,
                   recipients,
                   date: new Date(),
                 },
