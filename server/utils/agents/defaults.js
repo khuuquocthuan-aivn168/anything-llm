@@ -66,7 +66,7 @@ const WORKSPACE_AGENT = {
     user = null,
     prompt = ""
   ) => {
-    let [role, clarifyingQuestionsSkills] = await Promise.all([
+    let [role, clarifyingQuestionsSkills, agentSkills, mcpServers] = await Promise.all([
       Provider.systemPrompt({
         provider,
         workspace,
@@ -74,6 +74,8 @@ const WORKSPACE_AGENT = {
         prompt,
       }),
       clarifyingQuestionsSkillIfEnabled(),
+      agentSkillsFromSystemSettings(),
+      new MCPCompatibilityLayer().activeMCPServers(),
     ]);
 
     // If clarifying questions tools are enabled, add a note to the role that the user must use the request-user-input tool to ask questions.
@@ -84,11 +86,11 @@ const WORKSPACE_AGENT = {
     return {
       role,
       functions: [
-        ...(await agentSkillsFromSystemSettings()),
+        ...agentSkills,
         ...clarifyingQuestionsSkills,
         ...ImportedPlugin.activeImportedPlugins(),
         ...AgentFlows.activeFlowPlugins(),
-        ...(await new MCPCompatibilityLayer().activeMCPServers()),
+        ...mcpServers,
       ],
     };
   },
@@ -123,42 +125,48 @@ async function clarifyingQuestionsSkillIfEnabled() {
 async function agentSkillsFromSystemSettings() {
   const systemFunctions = [];
 
+  const [disabledDefaultSkillsStr, defaultSkillsStr] = await Promise.all([
+    SystemSettings.getValueOrFallback({ label: "disabled_agent_skills" }, "[]"),
+    SystemSettings.getValueOrFallback({ label: "default_agent_skills" }, "[]"),
+  ]);
+
   // Load non-imported built-in skills that are configurable, but are default enabled.
-  const _disabledDefaultSkills = safeJsonParse(
-    await SystemSettings.getValueOrFallback(
-      { label: "disabled_agent_skills" },
-      "[]"
-    ),
-    []
-  );
+  const _disabledDefaultSkills = safeJsonParse(disabledDefaultSkillsStr, []);
   DEFAULT_SKILLS.forEach((skill) => {
     if (!_disabledDefaultSkills.includes(skill))
       systemFunctions.push(AgentPlugins[skill].name);
   });
 
   // Load non-imported built-in skills that are configurable.
-  const _setting = safeJsonParse(
-    await SystemSettings.getValueOrFallback(
-      { label: "default_agent_skills" },
-      "[]"
-    ),
-    []
-  );
+  const _setting = safeJsonParse(defaultSkillsStr, []);
 
   // Pre-load disabled sub-skills and availability for configured skills
   const skillFilterState = {};
-  for (const skillName of Object.keys(SKILL_FILTER_CONFIG)) {
-    if (!_setting.includes(skillName)) continue;
+  const filterPromises = Object.keys(SKILL_FILTER_CONFIG).map(async (skillName) => {
+    if (!_setting.includes(skillName)) return null;
     const config = SKILL_FILTER_CONFIG[skillName];
-    skillFilterState[skillName] = {
-      available: await config.getAvailability(),
-      disabledSubSkills: safeJsonParse(
-        await SystemSettings.getValueOrFallback(
-          { label: config.disabledSettingKey },
-          "[]"
-        ),
-        []
-      ),
+    
+    const [available, disabledSubSkillsStr] = await Promise.all([
+      config.getAvailability(),
+      SystemSettings.getValueOrFallback(
+        { label: config.disabledSettingKey },
+        "[]"
+      )
+    ]);
+
+    return {
+      skillName,
+      available,
+      disabledSubSkills: safeJsonParse(disabledSubSkillsStr, [])
+    };
+  });
+
+  const filterResults = await Promise.all(filterPromises);
+  for (const result of filterResults) {
+    if (!result) continue;
+    skillFilterState[result.skillName] = {
+      available: result.available,
+      disabledSubSkills: result.disabledSubSkills,
     };
   }
 
