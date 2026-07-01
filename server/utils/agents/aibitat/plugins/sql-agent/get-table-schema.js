@@ -25,7 +25,7 @@ module.exports.SqlAgentGetTableSchema = {
           super: aibitat,
           name: this.name,
           description:
-            "Gets the table schema in SQL for a given `table` and `database_id`",
+            "Gets the table schema in SQL for a given `table` and `database_id`. You MUST use this tool to discover the exact column names and data types before writing any SQL query.",
           examples: [
             {
               prompt: "What does the customers table in access-logs look like?",

@@ -9,7 +9,7 @@ module.exports.SqlAgentListDatabase = {
           super: aibitat,
           name: this.name,
           description:
-            "List all available databases via `list_databases` you currently have access to. Returns a unique string identifier `database_id` that can be used for future calls.",
+            "Use this tool to proactively list all available databases you have access to when you need to fetch data or answer user questions related to data. You do not need explicit keywords like 'connect sql' to use this. Returns a unique string identifier `database_id` that can be used for future calls.",
           examples: [
             {
               prompt: "What databases can you access?",

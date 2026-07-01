@@ -10,3 +10,7 @@ aws_cf_deploy_anything_llm.json
 yarn.lock
 *.bak
 .idea
+
+# Ignore large files (>100MB) for desktop build
+desktop-wrapper/dist/
+server/storage/models/Xenova/whisper-small/onnx/decoder_model_merged_quantized.onnx

@@ -13,7 +13,7 @@ module.exports.SqlAgentQuery = {
           super: aibitat,
           name: this.name,
           description:
-            "Run a read-only SQL query on a `database_id` which will return up rows of data related to the query. The query must only be SELECT statements which do not modify the table data. There should be a reasonable LIMIT on the return quantity to prevent long-running or queries which crash the db.",
+            "Run a read-only SQL query on a `database_id`. Prioritize using this tool to fetch data from the SQL database to answer user queries. You MUST explore the table schema using `sql-get-table-schema` before calling this tool to ensure your query is correct. The query must only be SELECT statements which do not modify the table data. There should be a reasonable LIMIT on the return quantity to prevent long-running or queries which crash the db.",
           examples: [
             {
               prompt: "How many customers are in dvd-rentals?",

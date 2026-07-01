@@ -1,0 +1,61 @@
+{
+  "name": "anything-llm-desktop-hybrid",
+  "version": "1.0.0",
+  "description": "Hybrid Online/Offline AnythingLLM Desktop App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "download-ollama": "node scripts/download-ollama.js",
+    "postinstall": "npm run download-ollama"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "electron-updater": "^6.1.8",
+    "get-port": "^7.1.0",
+    "wait-on": "^7.2.0"
+  },
+  "devDependencies": {
+    "electron": "^29.1.5",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.mintplexlabs.anythingllmdesktop",
+    "productName": "AnythingLLM",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "target": "dmg",
+      "identity": null,
+      "extraResources": [
+        {
+          "from": "bin/ollama-darwin",
+          "to": "bin/ollama",
+          "filter": ["**/*"]
+        },
+        {
+          "from": "../server",
+          "to": "server",
+          "filter": ["**/*"]
+        }
+      ]
+    },
+    "win": {
+      "target": "nsis",
+      "extraResources": [
+        {
+          "from": "bin/ollama.exe",
+          "to": "bin/ollama.exe",
+          "filter": ["**/*"]
+        },
+        {
+          "from": "../server",
+          "to": "server",
+          "filter": ["**/*"]
+        }
+      ]
+    }
+  }
+}

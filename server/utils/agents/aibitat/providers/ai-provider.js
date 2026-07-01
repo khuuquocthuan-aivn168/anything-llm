@@ -28,7 +28,7 @@ const {
 const { OllamaAILLM } = require("../../../AiProviders/ollama");
 
 const DEFAULT_WORKSPACE_PROMPT =
-  "You are a helpful ai assistant who can assist the user and use tools available to help answer the users prompts and questions.";
+  "You are a helpful ai assistant who can assist the user and use tools available to help answer the users prompts and questions. If data is requested, prioritize checking the available SQL databases and tables using your SQL tools without waiting for explicit keywords. Always explore the table schemas before writing SQL queries to ensure correctness.";
 
 /**
  * @typedef {Object} ProviderUsageMetrics

@@ -25,7 +25,7 @@ module.exports.SqlAgentListTables = {
           super: aibitat,
           name: this.name,
           description:
-            "List all available tables in a database via its `database_id`.",
+            "List all available tables in a database via its `database_id`. Always use this tool to explore the tables in a database before assuming the table names.",
           examples: [
             {
               prompt: "What tables are there in the `access-logs` database?",
