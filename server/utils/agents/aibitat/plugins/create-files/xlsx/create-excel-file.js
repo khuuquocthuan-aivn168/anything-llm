@@ -234,7 +234,6 @@ module.exports.CreateExcelFile = {
               const ExcelJS = await import("exceljs");
               const workbook = new ExcelJS.default.Workbook();
 
-              workbook.creator = "AnythingLLM";
               workbook.created = new Date();
               workbook.modified = new Date();
 
@@ -324,8 +323,6 @@ module.exports.CreateExcelFile = {
                   freezePanes(worksheet, 1, 0);
                 }
               }
-
-              applyBranding(workbook);
 
               const buffer = await workbook.xlsx.writeBuffer();
               const bufferSizeKB = (buffer.length / 1024).toFixed(2);

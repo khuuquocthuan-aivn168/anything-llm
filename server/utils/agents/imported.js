@@ -9,6 +9,11 @@ const pluginsPath =
     : path.resolve(process.env.STORAGE_DIR, "plugins", "agent-skills");
 const sharedWebScraper = new CollectorApi();
 
+// Cache for activeImportedPlugins to avoid synchronous filesystem reads on every agent invocation.
+let _activePluginsCache = null;
+let _activePluginsCacheTime = 0;
+const ACTIVE_PLUGINS_CACHE_TTL_MS = 30_000; // 30 seconds
+
 class ImportedPlugin {
   constructor(config) {
     this.config = config;
@@ -59,9 +64,18 @@ class ImportedPlugin {
   /**
    * Loads plugins from `plugins` folder in storage that are custom loaded and defined.
    * only loads plugins that are active: true.
+   * Uses a short-lived cache to avoid synchronous filesystem I/O on every agent invocation.
    * @returns {string[]} - array of plugin names to be loaded later.
    */
   static activeImportedPlugins() {
+    const now = Date.now();
+    if (
+      _activePluginsCache !== null &&
+      now - _activePluginsCacheTime < ACTIVE_PLUGINS_CACHE_TTL_MS
+    ) {
+      return _activePluginsCache;
+    }
+
     const plugins = [];
     this.checkPluginFolderExists();
     const folders = fs.readdirSync(path.resolve(pluginsPath));
@@ -75,7 +89,19 @@ class ImportedPlugin {
       const config = safeJsonParse(fs.readFileSync(configLocation, "utf8"));
       if (config.active) plugins.push(`@@${config.hubId}`);
     }
+
+    _activePluginsCache = plugins;
+    _activePluginsCacheTime = now;
     return plugins;
+  }
+
+  /**
+   * Invalidates the active plugins cache. Should be called after any
+   * plugin CRUD operation (create, update, delete, import).
+   */
+  static invalidateActivePluginsCache() {
+    _activePluginsCache = null;
+    _activePluginsCacheTime = 0;
   }
 
   /**
@@ -123,6 +149,7 @@ class ImportedPlugin {
 
     const updatedConfig = { ...currentConfig, ...config };
     fs.writeFileSync(configLocation, JSON.stringify(updatedConfig, null, 2));
+    this.invalidateActivePluginsCache();
     return updatedConfig;
   }
 
@@ -136,6 +163,7 @@ class ImportedPlugin {
     const pluginFolder = path.resolve(pluginsPath, normalizePath(hubId));
     if (!this.isValidLocation(pluginFolder)) return;
     fs.rmSync(pluginFolder, { recursive: true });
+    this.invalidateActivePluginsCache();
     return true;
   }
 
@@ -346,6 +374,7 @@ class ImportedPlugin {
       console.log(
         `ImportedPlugin.importCommunityItemFromUrl - successfully imported plugin to agent-skills/${hubId}`
       );
+      this.invalidateActivePluginsCache();
       return { success: true, error: null };
     } catch (error) {
       console.error(

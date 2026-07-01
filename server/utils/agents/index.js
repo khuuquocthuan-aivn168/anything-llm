@@ -680,10 +680,16 @@ class AgentHandler {
   async #loadAgents() {
     // Default User agent and workspace agent
     this.log(`Attaching user and default agent to Agent cluster.`);
-    const user = this.invocation.user_id
-      ? await User.get({ id: Number(this.invocation.user_id) })
-      : null;
-    const userAgentDef = await USER_AGENT.getDefinition();
+
+    // Fetch user and user agent definition concurrently since they are independent.
+    const [user, userAgentDef] = await Promise.all([
+      this.invocation.user_id
+        ? User.get({ id: Number(this.invocation.user_id) })
+        : Promise.resolve(null),
+      USER_AGENT.getDefinition(),
+    ]);
+
+    // Workspace agent definition depends on user result for memory injection
     const workspaceAgentDef = await WORKSPACE_AGENT.getDefinition(
       this.provider,
       this.invocation.workspace,
@@ -781,10 +787,13 @@ class AgentHandler {
       socket: null,
     }
   ) {
+    // Start chat history fetch early so it runs while we set up the rest
+    const chatHistoryPromise = this.#chatHistory(20);
+
     this.aibitat = new AIbitat({
       provider: this.provider ?? "openai",
       model: this.model ?? "gpt-4o",
-      chats: await this.#chatHistory(20),
+      chats: await chatHistoryPromise,
       handlerProps: {
         invocation: this.invocation,
         log: this.log,
