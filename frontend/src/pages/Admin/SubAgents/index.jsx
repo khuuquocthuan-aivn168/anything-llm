@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isMobile } from "react-device-detect";
 import Admin from "@/models/admin";
+import SubAgentsModel from "@/models/subAgents";
 import System from "@/models/system";
 import showToast from "@/utils/toast";
 import { Plus, Trash, PencilSimple, Robot, Brain, Image, MusicNotes, TextT, ArrowLeft, FilmStrip } from "@phosphor-icons/react";
@@ -32,19 +33,13 @@ export default function SubAgents() {
   const [fetchingModels, setFetchingModels] = useState(false);
 
   useEffect(() => {
-    async function loadPreferences() {
+    async function loadAgents() {
       setLoading(true);
-      const res = await Admin.systemPreferencesByFields(["sub_agents"]);
-      if (res && res.settings && res.settings.sub_agents) {
-        try {
-          setSubAgents(JSON.parse(res.settings.sub_agents));
-        } catch {
-          setSubAgents([]);
-        }
-      }
+      const agents = await SubAgentsModel.getAll();
+      setSubAgents(agents || []);
       setLoading(false);
     }
-    loadPreferences();
+    loadAgents();
   }, []);
 
   // Fetch models for chosen provider
@@ -149,14 +144,12 @@ export default function SubAgents() {
     setOpenModal(true);
   };
 
-  const handleDelete = async (agentId) => {
+  const handleDelete = async (agentUuid) => {
     if (!window.confirm("Are you sure you want to delete this sub-agent?")) return;
-    const updated = subAgents.filter((a) => a.id !== agentId);
-    setSubAgents(updated);
-    const { success, error } = await Admin.updateSystemPreferences({
-      sub_agents: JSON.stringify(updated),
-    });
+    const { success, error } = await SubAgentsModel.delete(agentUuid);
+    
     if (success) {
+      setSubAgents((prev) => prev.filter((a) => a.uuid !== agentUuid));
       showToast("Sub-agent deleted successfully", "success");
     } else {
       showToast(`Error deleting sub-agent: ${error}`, "error");
@@ -170,33 +163,26 @@ export default function SubAgents() {
       return;
     }
 
-    let updatedList;
     if (editingAgent) {
       // Update
-      updatedList = subAgents.map((a) =>
-        a.id === editingAgent.id ? { ...a, ...formData } : a
-      );
+      const { success, subAgent, error } = await SubAgentsModel.update(editingAgent.uuid, formData);
+      if (success) {
+        setSubAgents((prev) => prev.map((a) => (a.uuid === editingAgent.uuid ? subAgent : a)));
+        showToast("Sub-agent updated successfully", "success");
+        setOpenModal(false);
+      } else {
+        showToast(`Error updating sub-agent: ${error}`, "error");
+      }
     } else {
       // Add
-      updatedList = [...subAgents, { ...formData, id: crypto.randomUUID() }];
-    }
-
-    setSubAgents(updatedList);
-    setOpenModal(false);
-
-    const { success, error } = await Admin.updateSystemPreferences({
-      sub_agents: JSON.stringify(updatedList),
-    });
-
-    if (success) {
-      showToast(
-        editingAgent
-          ? "Sub-agent updated successfully"
-          : "Sub-agent created successfully",
-        "success"
-      );
-    } else {
-      showToast(`Error saving sub-agent: ${error}`, "error");
+      const { success, subAgent, error } = await SubAgentsModel.create(formData);
+      if (success) {
+        setSubAgents((prev) => [subAgent, ...prev]);
+        showToast("Sub-agent created successfully", "success");
+        setOpenModal(false);
+      } else {
+        showToast(`Error creating sub-agent: ${error}`, "error");
+      }
     }
   };
 
@@ -278,7 +264,7 @@ export default function SubAgents() {
                         <PencilSimple className="w-5 h-5 text-theme-text-secondary hover:text-white" />
                       </button>
                       <button
-                        onClick={() => handleDelete(agent.id)}
+                        onClick={() => handleDelete(agent.uuid)}
                         className="p-1.5 hover:bg-red-950/30 rounded-lg transition-colors"
                         title="Delete Agent"
                       >

@@ -58,6 +58,20 @@ model system_settings {
   lastUpdatedAt DateTime @default(now())
 }
 
+model sub_agents {
+  id            Int      @id @default(autoincrement())
+  uuid          String   @unique
+  name          String
+  description   String
+  system_prompt String
+  provider      String
+  model         String
+  input_type    String   @default("text")
+  output_type   String   @default("text")
+  createdAt     DateTime @default(now())
+  lastUpdatedAt DateTime @default(now())
+}
+
 model users {
   id                           Int                           @id @default(autoincrement())
   username                     String?                       @unique

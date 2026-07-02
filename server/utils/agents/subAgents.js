@@ -1,11 +1,14 @@
 const { SystemSettings } = require("../../models/systemSettings");
 const { safeJsonParse } = require("../http");
 const Provider = require("./aibitat/providers/ai-provider");
+const path = require("path");
+const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
 
 class SubAgent {
   constructor(config) {
     this.config = config;
-    this.name = `@@subagent_${config.id}`;
+    this.name = `@@subagent_${config.uuid || config.id}`;
     this.agentName = config.name;
     this.description = config.description;
     this.system_prompt = config.system_prompt;
@@ -16,24 +19,49 @@ class SubAgent {
   }
 
   static async activeSubAgents() {
-    const configStr = await SystemSettings.getValueOrFallback(
-      { label: "sub_agents" },
-      "[]"
-    );
-    const subAgents = safeJsonParse(configStr, []);
-    return subAgents.map((agent) => `@@subagent_${agent.id}`);
+    const { SubAgents } = require("../../models/subAgents");
+    const subAgents = await SubAgents.get();
+    return subAgents.map((agent) => `@@subagent_${agent.uuid}`);
   }
 
-  static async loadSubAgent(agentId, aibitat) {
-    const configStr = await SystemSettings.getValueOrFallback(
-      { label: "sub_agents" },
-      "[]"
-    );
-    const subAgents = safeJsonParse(configStr, []);
-    const agentConfig = subAgents.find((a) => a.id === agentId);
+  static async loadSubAgent(agentUuid, aibitat) {
+    const { SubAgents } = require("../../models/subAgents");
+    const agentConfig = await SubAgents.getOne({ uuid: agentUuid });
     if (!agentConfig) return null;
 
     return new SubAgent(agentConfig);
+  }
+
+  /**
+   * Save a base64 image to the storage directory and return its accessible URL path.
+   * @param {string} base64Data - The base64 encoded image data (with or without data: prefix)
+   * @param {string} [ext="png"] - The file extension
+   * @returns {string} The URL path to access the saved image
+   */
+  static saveBase64Image(base64Data, ext = "png") {
+    const storageDir = process.env.STORAGE_DIR
+      ? path.resolve(process.env.STORAGE_DIR, "sub-agent-outputs")
+      : path.resolve(__dirname, "../../storage/sub-agent-outputs");
+
+    if (!fs.existsSync(storageDir))
+      fs.mkdirSync(storageDir, { recursive: true });
+
+    // Strip data URI prefix if present
+    let cleanBase64 = base64Data;
+    const dataUriMatch = base64Data.match(
+      /^data:image\/([a-zA-Z+]+);base64,(.+)$/
+    );
+    if (dataUriMatch) {
+      ext = dataUriMatch[1] === "jpeg" ? "jpg" : dataUriMatch[1];
+      cleanBase64 = dataUriMatch[2];
+    }
+
+    const filename = `${uuidv4()}.${ext}`;
+    const filepath = path.resolve(storageDir, filename);
+    fs.writeFileSync(filepath, Buffer.from(cleanBase64, "base64"));
+
+    // Return a URL path that the frontend can access via the server's static file serving
+    return `/api/sub-agent-outputs/${filename}`;
   }
 
   plugin() {
@@ -60,11 +88,16 @@ class SubAgent {
           handler: async (args) => {
             const { task } = args;
             try {
-              aibitat?.handlerProps?.log?.(`[Sub-Agent ${self.agentName}] Executing task: ${task}`);
+              aibitat?.handlerProps?.log?.(
+                `[Sub-Agent ${self.agentName}] Executing task: ${task}`
+              );
               if (typeof aibitat?.introspect === "function") {
-                aibitat.introspect(`[Sub-Agent] Calling ${self.agentName} to perform task...`);
+                aibitat.introspect(
+                  `[Sub-Agent] Calling ${self.agentName} to perform task...`
+                );
               }
-              
+
+              // Get the provider instance to access its raw client
               const aiProvider = aibitat.getProviderForConfig({
                 provider: self.provider,
                 model: self.model,
@@ -76,7 +109,20 @@ class SubAgent {
                 { role: "user", content: task },
               ];
 
-              // Call the provider's complete method (no tool functions for sub-agents)
+              // For image/audio output models, call the raw client directly
+              // to capture multimodal response content (images, audio, etc.)
+              if (
+                self.output_type === "image" ||
+                self.output_type === "text+image"
+              ) {
+                return await self.#handleImageGeneration(
+                  aiProvider,
+                  messages,
+                  aibitat
+                );
+              }
+
+              // For text-only output, use the standard complete() method
               const result = await aiProvider.complete(messages, []);
               const textResult = result?.textResponse || "";
 
@@ -84,20 +130,149 @@ class SubAgent {
                 return `[ERROR: Sub-agent ${self.agentName} returned an empty response. The model may not support this task.]`;
               }
 
-              aibitat?.handlerProps?.log?.(`[Sub-Agent ${self.agentName}] Task completed successfully.`);
+              aibitat?.handlerProps?.log?.(
+                `[Sub-Agent ${self.agentName}] Task completed successfully.`
+              );
               if (typeof aibitat?.introspect === "function") {
-                aibitat.introspect(`[Sub-Agent] ${self.agentName} completed the task.`);
+                aibitat.introspect(
+                  `[Sub-Agent] ${self.agentName} completed the task.`
+                );
               }
 
               return `[Sub-Agent ${self.agentName} Result]:\n${textResult}`;
             } catch (error) {
-              aibitat?.handlerProps?.log?.(`[Sub-Agent ${self.agentName}] Error: ${error.message}`);
+              aibitat?.handlerProps?.log?.(
+                `[Sub-Agent ${self.agentName}] Error: ${error.message}`
+              );
               return `[ERROR: The sub-agent encountered an error: ${error.message}]`;
             }
           },
         });
       },
     };
+  }
+
+  /**
+   * Handle image generation by calling the raw OpenAI-compatible client
+   * and parsing the multimodal response for image content.
+   * @param {Object} aiProvider - The aibitat provider instance
+   * @param {Array} messages - The messages array
+   * @param {Object} aibitat - The aibitat instance
+   * @returns {string} Result string for the agent
+   */
+  async #handleImageGeneration(aiProvider, messages, aibitat) {
+    const client = aiProvider.client || aiProvider._client;
+    if (!client) {
+      return `[ERROR: Could not access the raw API client for ${this.provider}. Image generation requires direct API access.]`;
+    }
+
+    aibitat?.handlerProps?.log?.(
+      `[Sub-Agent ${this.agentName}] Calling model for image generation...`
+    );
+
+    try {
+      const response = await client.chat.completions.create({
+        model: this.model,
+        messages,
+      });
+
+      if (
+        !response?.choices?.length ||
+        !response.choices[0]?.message?.content
+      ) {
+        return `[ERROR: The image generation model returned no content.]`;
+      }
+
+      const content = response.choices[0].message.content;
+      const collectedTexts = [];
+      const collectedImages = [];
+
+      // Handle multimodal response (array of content parts)
+      if (Array.isArray(content)) {
+        for (const part of content) {
+          if (part.type === "text" && part.text) {
+            collectedTexts.push(part.text);
+          } else if (part.type === "image_url" && part.image_url?.url) {
+            collectedImages.push(part.image_url.url);
+          } else if (
+            part.type === "image" &&
+            (part.url || part.image_url?.url || part.data)
+          ) {
+            collectedImages.push(
+              part.url || part.image_url?.url || part.data
+            );
+          }
+        }
+      } else if (typeof content === "string") {
+        // Some models return plain text with markdown image links
+        const imgRegex = /!\[.*?\]\((data:image\/[^)]+|https?:\/\/[^)]+)\)/g;
+        let match;
+        while ((match = imgRegex.exec(content)) !== null) {
+          collectedImages.push(match[1]);
+        }
+        // Also check for raw base64 data
+        const base64Regex =
+          /data:image\/[a-zA-Z+]+;base64,[A-Za-z0-9+/=]+/g;
+        let b64Match;
+        while ((b64Match = base64Regex.exec(content)) !== null) {
+          if (!collectedImages.includes(b64Match[0])) {
+            collectedImages.push(b64Match[0]);
+          }
+        }
+        collectedTexts.push(
+          content.replace(imgRegex, "").replace(base64Regex, "").trim()
+        );
+      }
+
+      // Process collected images - save base64 ones to disk
+      const imageUrls = [];
+      for (const imgSrc of collectedImages) {
+        if (imgSrc.startsWith("data:image/")) {
+          // Save base64 image to storage
+          const savedPath = SubAgent.saveBase64Image(imgSrc);
+          imageUrls.push(savedPath);
+        } else if (imgSrc.startsWith("http")) {
+          imageUrls.push(imgSrc);
+        }
+      }
+
+      if (imageUrls.length > 0) {
+        aibitat?.handlerProps?.log?.(
+          `[Sub-Agent ${this.agentName}] Generated ${imageUrls.length} image(s).`
+        );
+        if (typeof aibitat?.introspect === "function") {
+          aibitat.introspect(
+            `[Sub-Agent] ${this.agentName} generated ${imageUrls.length} image(s) successfully.`
+          );
+        }
+
+        // Format images as markdown for display in chat
+        const imageMarkdown = imageUrls
+          .map(
+            (url, i) =>
+              `![${this.agentName} Image ${i + 1}](${url})`
+          )
+          .join("\n\n");
+
+        const textPart =
+          collectedTexts.filter((t) => t.length > 0).join("\n") || "";
+
+        return `[Sub-Agent ${this.agentName} Result]:\n${textPart}\n\n${imageMarkdown}`;
+      }
+
+      // No images found in response - return text
+      const textOnly = collectedTexts.join("\n") || content?.toString() || "";
+      if (textOnly.trim().length === 0) {
+        return `[ERROR: The image generation model did not return any image or text. The model "${this.model}" may not support image generation.]`;
+      }
+
+      return `[Sub-Agent ${this.agentName} Result]:\n${textOnly}`;
+    } catch (error) {
+      aibitat?.handlerProps?.log?.(
+        `[Sub-Agent ${this.agentName}] Image generation error: ${error.message}`
+      );
+      return `[ERROR: Image generation failed: ${error.message}]`;
+    }
   }
 }
 

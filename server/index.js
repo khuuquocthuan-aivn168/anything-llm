@@ -46,6 +46,7 @@ const {
 } = require("./endpoints/utils/googleAgentSkillEndpoints");
 const { memoryEndpoints } = require("./endpoints/memory");
 const { visibilityEndpoints } = require("./endpoints/visibility");
+const { subAgentsEndpoints } = require("./endpoints/subAgents");
 const { httpLogger } = require("./middleware/httpLogger");
 const app = express();
 const apiRouter = express.Router();
@@ -78,6 +79,12 @@ if (!!process.env.ENABLE_HTTPS) {
   require("@mintplex-labs/express-ws").default(app); // load WebSockets in non-SSL mode.
 }
 
+// Serve sub-agent output files (images, audio, etc.)
+const subAgentOutputDir = process.env.STORAGE_DIR
+  ? path.resolve(process.env.STORAGE_DIR, "sub-agent-outputs")
+  : path.resolve(__dirname, "storage/sub-agent-outputs");
+app.use("/api/sub-agent-outputs", express.static(subAgentOutputDir));
+
 app.use("/api", apiRouter);
 systemEndpoints(apiRouter);
 extensionEndpoints(apiRouter);
@@ -108,6 +115,7 @@ memoryEndpoints(apiRouter);
 visibilityEndpoints(apiRouter);
 // Externally facing embedder endpoints
 embeddedEndpoints(apiRouter);
+subAgentsEndpoints(apiRouter);
 
 // Externally facing browser extension endpoints
 browserExtensionEndpoints(apiRouter);
