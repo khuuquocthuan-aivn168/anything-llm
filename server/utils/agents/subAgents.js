@@ -65,6 +65,49 @@ class SubAgent {
     return `/api/sub-agent-outputs/${filename}`;
   }
 
+  /**
+   * Download a remote image and save it to the storage directory.
+   * @param {string} url - The HTTP/HTTPS URL of the remote image
+   * @returns {Promise<string>} The local URL path to access the saved image
+   */
+  static async saveRemoteImage(url) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      const storageDir = process.env.STORAGE_DIR
+        ? path.resolve(process.env.STORAGE_DIR, "sub-agent-outputs")
+        : path.resolve(__dirname, "../../storage/sub-agent-outputs");
+
+      if (!fs.existsSync(storageDir))
+        fs.mkdirSync(storageDir, { recursive: true });
+
+      // Determine extension from URL or content-type
+      let ext = "png";
+      const contentType = response.headers.get("content-type");
+      if (contentType) {
+        const mimeMatch = contentType.match(/image\/([a-zA-Z+]+)/);
+        if (mimeMatch) ext = mimeMatch[1] === "jpeg" ? "jpg" : mimeMatch[1];
+      } else {
+        const urlExt = url.split(".").pop()?.split(/[?#]/)[0];
+        if (urlExt && ["png", "jpg", "jpeg", "webp", "gif"].includes(urlExt.toLowerCase())) {
+          ext = urlExt.toLowerCase() === "jpeg" ? "jpg" : urlExt.toLowerCase();
+        }
+      }
+
+      const filename = `${uuidv4()}.${ext}`;
+      const filepath = path.resolve(storageDir, filename);
+      fs.writeFileSync(filepath, buffer);
+
+      return `/api/sub-agent-outputs/${filename}`;
+    } catch (e) {
+      console.error("[Sub-Agent] Failed to save remote image locally:", e);
+      return url; // Fallback to remote URL if download fails
+    }
+  }
+
   plugin() {
     const self = this;
     return {
@@ -272,7 +315,7 @@ class SubAgent {
         }
       }
 
-      // Process collected images - save base64 ones to disk
+      // Process collected images - save base64 ones and remote ones to disk
       const imageUrls = [];
       for (const imgSrc of collectedImages) {
         if (imgSrc.startsWith("data:image/")) {
@@ -280,7 +323,9 @@ class SubAgent {
           const savedPath = SubAgent.saveBase64Image(imgSrc);
           imageUrls.push(savedPath);
         } else if (imgSrc.startsWith("http")) {
-          imageUrls.push(imgSrc);
+          // Download and save remote image locally
+          const savedPath = await SubAgent.saveRemoteImage(imgSrc);
+          imageUrls.push(savedPath);
         }
       }
 
