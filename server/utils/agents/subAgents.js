@@ -79,14 +79,21 @@ class SubAgent {
             properties: {
               task: {
                 type: "string",
-                description: "The detailed task for this agent to complete",
+                description: "The detailed task, query, or prompt for this agent to complete",
               },
+              query: {
+                type: "string",
+                description: "The query or prompt to process",
+              },
+              prompt: {
+                type: "string",
+                description: "The prompt to process",
+              }
             },
-            required: ["task"],
-            additionalProperties: false,
+            additionalProperties: true,
           },
           handler: async (args) => {
-            const { task } = args;
+            const task = args.task || args.query || args.prompt || Object.values(args)[0] || "No task provided";
             try {
               aibitat?.handlerProps?.log?.(
                 `[Sub-Agent ${self.agentName}] Executing task: ${task}`
@@ -171,57 +178,97 @@ class SubAgent {
     );
 
     try {
-      const response = await client.chat.completions.create({
-        model: this.model,
-        messages,
-      });
-
-      if (
-        !response?.choices?.length ||
-        !response.choices[0]?.message?.content
-      ) {
-        return `[ERROR: The image generation model returned no content.]`;
-      }
-
-      const content = response.choices[0].message.content;
       const collectedTexts = [];
       const collectedImages = [];
+      
+      // 1. Try the dedicated Image Generation API (Recommended by OpenRouter & OpenAI for image models)
+      if (typeof client.images?.generate === 'function') {
+        try {
+          // Extract the task from the messages array for the prompt
+          const userMessage = [...messages].reverse().find(m => m.role === 'user')?.content || "";
+          const systemMessage = messages.find(m => m.role === 'system')?.content || "";
+          const prompt = `${systemMessage}\n\nTask: ${userMessage}`.trim();
+          
+          const imageResponse = await client.images.generate({
+            model: this.model,
+            prompt: prompt,
+            n: 1,
+            response_format: "b64_json"
+          });
+          
+          if (imageResponse?.data?.length > 0) {
+            for (const item of imageResponse.data) {
+              if (item.b64_json) {
+                collectedImages.push(`data:image/png;base64,${item.b64_json}`);
+              } else if (item.url) {
+                collectedImages.push(item.url);
+              }
+            }
+          }
+        } catch (imgError) {
+          console.error(`[Sub-Agent] client.images.generate failed, falling back to chat.completions: ${imgError.message}`);
+        }
+      }
 
-      // Handle multimodal response (array of content parts)
-      if (Array.isArray(content)) {
-        for (const part of content) {
-          if (part.type === "text" && part.text) {
-            collectedTexts.push(part.text);
-          } else if (part.type === "image_url" && part.image_url?.url) {
-            collectedImages.push(part.image_url.url);
-          } else if (
-            part.type === "image" &&
-            (part.url || part.image_url?.url || part.data)
-          ) {
-            collectedImages.push(
-              part.url || part.image_url?.url || part.data
-            );
+      // 2. Fallback to Chat Completions API (For multimodal models returning images in chat)
+      if (collectedImages.length === 0) {
+        const response = await client.chat.completions.create({
+          model: this.model,
+          messages,
+        });
+
+        if (!response?.choices?.length) {
+          return `[ERROR: The image generation model returned no content.]`;
+        }
+
+        const message = response.choices[0].message;
+        
+        // OpenRouter specific format: `message.images` array
+        if (Array.isArray(message?.images)) {
+          for (const img of message.images) {
+            if (img.type === "image_url" && img.image_url?.url) {
+              collectedImages.push(img.image_url.url);
+            }
           }
         }
-      } else if (typeof content === "string") {
-        // Some models return plain text with markdown image links
-        const imgRegex = /!\[.*?\]\((data:image\/[^)]+|https?:\/\/[^)]+)\)/g;
-        let match;
-        while ((match = imgRegex.exec(content)) !== null) {
-          collectedImages.push(match[1]);
-        }
-        // Also check for raw base64 data
-        const base64Regex =
-          /data:image\/[a-zA-Z+]+;base64,[A-Za-z0-9+/=]+/g;
-        let b64Match;
-        while ((b64Match = base64Regex.exec(content)) !== null) {
-          if (!collectedImages.includes(b64Match[0])) {
-            collectedImages.push(b64Match[0]);
+
+        const content = message?.content || "";
+        // Handle multimodal response (array of content parts)
+        if (Array.isArray(content)) {
+          for (const part of content) {
+            if (part.type === "text" && part.text) {
+              collectedTexts.push(part.text);
+            } else if (part.type === "image_url" && part.image_url?.url) {
+              collectedImages.push(part.image_url.url);
+            } else if (
+              part.type === "image" &&
+              (part.url || part.image_url?.url || part.data)
+            ) {
+              collectedImages.push(
+                part.url || part.image_url?.url || part.data
+              );
+            }
           }
+        } else if (typeof content === "string") {
+          // Some models return plain text with markdown image links
+          const imgRegex = /!\[.*?\]\((data:image\/[^)]+|https?:\/\/[^)]+)\)/g;
+          let match;
+          while ((match = imgRegex.exec(content)) !== null) {
+            collectedImages.push(match[1]);
+          }
+          // Also check for raw base64 data
+          const base64Regex =
+            /data:image\/[a-zA-Z+]+;base64,[A-Za-z0-9+/=]+/g;
+          let b64Match;
+          while ((b64Match = base64Regex.exec(content)) !== null) {
+            if (!collectedImages.includes(b64Match[0])) {
+              collectedImages.push(b64Match[0]);
+            }
+          }
+          collectedTexts.push(
+            content.replace(imgRegex, "").replace(base64Regex, "").trim()
+          );
         }
-        collectedTexts.push(
-          content.replace(imgRegex, "").replace(base64Regex, "").trim()
-        );
       }
 
       // Process collected images - save base64 ones to disk
