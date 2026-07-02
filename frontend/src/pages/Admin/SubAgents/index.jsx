@@ -96,8 +96,7 @@ export default function SubAgents() {
           hasTextOutput = outModality.includes("text") || (!hasImageOutput && !hasAudioOutput && !hasVideoOutput);
         }
         
-        // Filter based on requested input_type
-        if (formData.input_type === "text+image" && !hasImageInput) return false;
+        // Filter based on requested input_type (removed check for text+image as OpenRouter can describe images for text models)
         if (formData.input_type === "text+audio" && !hasAudioInput) return false;
         if (formData.input_type === "video" && !hasVideoInput) return false;
 
@@ -347,7 +346,7 @@ export default function SubAgents() {
                       className="w-full bg-theme-bg-secondary border border-theme-sidebar-border rounded-lg px-3.5 py-2.5 text-white focus:outline-none focus:border-sky-500"
                     >
                       <option value="text">Text Only</option>
-                      <option value="text+image">Text + Image (Vision)</option>
+                      <option value="text+image">Text + Image (No Vision)</option>
                       <option value="text+audio">Text + Audio</option>
                       <option value="video">Video</option>
                     </select>

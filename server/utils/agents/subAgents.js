@@ -132,12 +132,23 @@ class SubAgent {
               prompt: {
                 type: "string",
                 description: "The prompt to process",
+              },
+              image_url: {
+                type: "string",
+                description: "Optional URL or base64 data of an image to analyze",
+              },
+              images: {
+                type: "array",
+                items: {
+                  type: "string"
+                },
+                description: "Optional array of image URLs or base64 data to analyze",
               }
             },
             additionalProperties: true,
           },
           handler: async (args) => {
-            const task = args.task || args.query || args.prompt || Object.values(args)[0] || "No task provided";
+            const task = args.task || args.query || args.prompt || Object.values(args).find(v => typeof v === 'string') || "No task provided";
             try {
               aibitat?.handlerProps?.log?.(
                 `[Sub-Agent ${self.agentName}] Executing task: ${task}`
@@ -154,10 +165,30 @@ class SubAgent {
                 model: self.model,
               });
 
-              // Build messages array in the standard OpenAI format
+              // Build user message content, supporting multimodal input (text + images)
+              const userContent = [{ type: "text", text: task }];
+              if (args.image_url) {
+                userContent.push({
+                  type: "image_url",
+                  image_url: { url: args.image_url }
+                });
+              }
+              if (Array.isArray(args.images)) {
+                for (const url of args.images) {
+                  userContent.push({
+                    type: "image_url",
+                    image_url: { url }
+                  });
+                }
+              }
+
+              // Build messages array in the standard format
               const messages = [
                 { role: "system", content: self.system_prompt },
-                { role: "user", content: task },
+                { 
+                  role: "user", 
+                  content: userContent.length === 1 ? task : userContent 
+                },
               ];
 
               // For image/audio output models, call the raw client directly
