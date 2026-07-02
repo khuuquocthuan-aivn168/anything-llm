@@ -331,8 +331,11 @@ function freezePanes(worksheet, rows = 1, columns = 0) {
  */
 function applyPremiumFormatting(worksheet) {
   // Add auto filter to the data range
-  if (worksheet.dimensions) {
-    worksheet.autoFilter = worksheet.dimensions;
+  if (worksheet.rowCount > 0 && worksheet.columnCount > 0) {
+    worksheet.autoFilter = {
+      from: { row: 1, column: 1 },
+      to: { row: worksheet.rowCount, column: worksheet.columnCount },
+    };
   }
 
   // Set default row height, borders, and fonts
