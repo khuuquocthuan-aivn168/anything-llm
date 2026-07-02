@@ -66,7 +66,7 @@ const WORKSPACE_AGENT = {
     user = null,
     prompt = ""
   ) => {
-    let [role, clarifyingQuestionsSkills, agentSkills, mcpServers] = await Promise.all([
+    let [role, clarifyingQuestionsSkills, agentSkills, mcpServers, subAgents] = await Promise.all([
       Provider.systemPrompt({
         provider,
         workspace,
@@ -76,6 +76,7 @@ const WORKSPACE_AGENT = {
       clarifyingQuestionsSkillIfEnabled(),
       agentSkillsFromSystemSettings(),
       new MCPCompatibilityLayer().activeMCPServers(),
+      require("./subAgents").activeSubAgents(),
     ]);
 
     // If clarifying questions tools are enabled, add a note to the role that the user must use the request-user-input tool to ask questions.
@@ -89,6 +90,7 @@ const WORKSPACE_AGENT = {
         ...agentSkills,
         ...clarifyingQuestionsSkills,
         ...ImportedPlugin.activeImportedPlugins(),
+        ...subAgents,
         ...AgentFlows.activeFlowPlugins(),
         ...mcpServers,
       ],

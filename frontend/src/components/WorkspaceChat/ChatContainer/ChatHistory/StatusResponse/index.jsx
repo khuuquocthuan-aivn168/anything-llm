@@ -1,8 +1,21 @@
 import React, { useState } from "react";
-import { CaretDown } from "@phosphor-icons/react";
+import { CaretDown, Robot } from "@phosphor-icons/react";
 
 import AgentAnimation from "@/media/animations/agent-animation.webm";
 import AgentStatic from "@/media/animations/agent-static.png";
+
+function renderThoughtContent(content) {
+  if (content.startsWith("[Sub-Agent]")) {
+    const cleanContent = content.replace("[Sub-Agent]", "").trim();
+    return (
+      <span className="flex items-center gap-2 text-sky-400 font-semibold">
+        <Robot className="w-4 h-4 flex-shrink-0 animate-bounce" />
+        {cleanContent}
+      </span>
+    );
+  }
+  return <span>{content}</span>;
+}
 
 export default function StatusResponse({ messages = [], isThinking = false }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -24,7 +37,7 @@ export default function StatusResponse({ messages = [], isThinking = false }) {
               transition: "all 0.1s ease-in-out",
               borderRadius: "16px",
             }}
-            className="relative bg-zinc-800 light:bg-slate-100 p-4"
+            className="relative bg-zinc-800 light:bg-slate-100 p-4 border border-zinc-700/50"
           >
             <div className="absolute top-4 left-4 w-[18px] h-[18px]">
               {isThinking ? (
@@ -74,7 +87,7 @@ export default function StatusResponse({ messages = [], isThinking = false }) {
               <div className="text-zinc-200 light:text-slate-800 font-mono text-sm leading-[18px]">
                 {!isExpanded ? (
                   <span className="block w-full truncate">
-                    {currentThought.content}
+                    {renderThoughtContent(currentThought.content)}
                   </span>
                 ) : (
                   <>
@@ -83,10 +96,10 @@ export default function StatusResponse({ messages = [], isThinking = false }) {
                         key={`cot-${thought.uuid || index}`}
                         className="mb-2"
                       >
-                        {thought.content}
+                        {renderThoughtContent(thought.content)}
                       </div>
                     ))}
-                    <div>{currentThought.content}</div>
+                    <div>{renderThoughtContent(currentThought.content)}</div>
                   </>
                 )}
               </div>

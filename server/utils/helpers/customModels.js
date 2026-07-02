@@ -583,6 +583,7 @@ async function getOpenRouterModels() {
       id: model.id,
       organization: model.organization,
       name: model.name,
+      architecture: model.architecture || {},
     };
   });
   return { models, error: null };

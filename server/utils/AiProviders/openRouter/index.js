@@ -532,6 +532,7 @@ async function fetchOpenRouterModels() {
             model.id.split("/")[0].charAt(0).toUpperCase() +
             model.id.split("/")[0].slice(1),
           maxLength: model.context_length,
+          architecture: model.architecture || {},
         };
       });
 

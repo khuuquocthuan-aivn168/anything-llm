@@ -499,6 +499,7 @@ function adminEndpoints(app) {
             "default_agent_skills",
             "disabled_agent_skills",
             "imported_agent_skills",
+            "sub_agents",
           ];
           const filteredUpdates = {};
           for (const key of Object.keys(updates)) {

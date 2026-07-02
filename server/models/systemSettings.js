@@ -66,6 +66,7 @@ const SystemSettings = {
     "memory_enabled",
     "memory_auto_extraction",
     "sidebar_visibility_config",
+    "sub_agents",
   ],
   supportedFields: [
     "logo_filename",
@@ -91,6 +92,7 @@ const SystemSettings = {
     "agent_clarifying_questions_max_per_turn",
     "custom_app_name",
     "default_system_prompt",
+    "sub_agents",
 
     // Meta page customization
     "meta_page_title",
@@ -403,6 +405,29 @@ const SystemSettings = {
       } catch {
         console.error(`Failed to merge connections`);
         return JSON.stringify(existingConnections ?? []);
+      }
+    },
+    sub_agents: (updates) => {
+      try {
+        const parsed = typeof updates === "string" ? JSON.parse(updates) : updates;
+        if (!Array.isArray(parsed)) return "[]";
+        
+        // Sanitize and map
+        const sanitized = parsed.map((agent) => ({
+          id: agent.id || require("uuid").v4(),
+          name: String(agent.name || "Unnamed Agent"),
+          description: String(agent.description || ""),
+          system_prompt: String(agent.system_prompt || ""),
+          provider: String(agent.provider || "openrouter"),
+          model: String(agent.model || "openrouter/auto"),
+          input_type: String(agent.input_type || "text"),
+          output_type: String(agent.output_type || "text"),
+        }));
+
+        return JSON.stringify(sanitized);
+      } catch (e) {
+        console.error("Failed to parse sub_agents updates:", e);
+        return "[]";
       }
     },
     agent_clarifying_questions_enabled: (update) => {

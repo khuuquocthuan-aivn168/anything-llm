@@ -542,8 +542,108 @@ class AgentHandler {
     return callOpts;
   }
 
-  async #attachPlugins(args) {
+  async #filterRelevantTools(prompt = "") {
+    const lowercasePrompt = String(prompt).toLowerCase();
+    const relevant = [];
+
+    const BUILTIN_KEYWORDS = {
+      "filesystem-agent": ["file", "folder", "directory", "read", "write", "delete file", "list files", "save", "path", "tập tin", "thư mục"],
+      "create-files-agent": ["create file", "write file", "save file", "excel", "csv", "pdf", "docx", "pptx", "word", "powerpoint", "document", "tạo file", "tải file"],
+      "gmail-agent": ["gmail", "email", "mail", "send email", "inbox", "thư điện tử"],
+      "outlook-agent": ["outlook", "email", "mail", "send email", "inbox"],
+      "google-calendar-agent": ["calendar", "event", "schedule", "meeting", "google calendar", "lịch", "cuộc họp"],
+      "sql-agent": ["sql", "database", "db", "query", "select", "table", "mysql", "postgres", "sqlite", "cơ sở dữ liệu", "bảng"]
+    };
+
     for (const name of this.#funcsToLoad) {
+      const isAlwaysOn = ["memory", "summarize", "web-scraping", "request-user-input"].some(
+        (core) => name.startsWith(core)
+      );
+      if (isAlwaysOn) {
+        relevant.push(name);
+        continue;
+      }
+
+      let matched = false;
+      for (const [pluginKey, keywords] of Object.entries(BUILTIN_KEYWORDS)) {
+        if (name.startsWith(pluginKey)) {
+          if (keywords.some(keyword => lowercasePrompt.includes(keyword))) {
+            relevant.push(name);
+            matched = true;
+            break;
+          }
+        }
+      }
+      if (matched) continue;
+
+      if (name.startsWith("@@subagent_")) {
+        const agentId = name.replace("@@subagent_", "");
+        const SubAgent = require("./subAgents");
+        const plugin = await SubAgent.loadSubAgent(agentId, this.aibitat);
+        if (plugin) {
+          const agentName = String(plugin.agentName || "").toLowerCase();
+          const desc = String(plugin.description || "").toLowerCase();
+          const agentKeywords = [agentName, ...desc.split(/\s+/)].filter(k => k.length > 2);
+          if (agentKeywords.some(keyword => lowercasePrompt.includes(keyword)) || lowercasePrompt.includes(agentName)) {
+            relevant.push(name);
+            continue;
+          }
+        }
+      }
+
+      if (name.startsWith("@@flow_")) {
+        const uuid = name.replace("@@flow_", "");
+        const plugin = AgentFlows.loadFlowPlugin(uuid, this.aibitat);
+        if (plugin) {
+          const flowName = String(plugin.flowName || "").toLowerCase();
+          const desc = String(plugin.description || "").toLowerCase();
+          if (lowercasePrompt.includes(flowName) || desc.split(/\s+/).some(kw => kw.length > 2 && lowercasePrompt.includes(kw))) {
+            relevant.push(name);
+            continue;
+          }
+        }
+      }
+
+      if (name.startsWith("@@mcp_")) {
+        const mcpPluginName = name.replace("@@mcp_", "").toLowerCase();
+        if (lowercasePrompt.includes(mcpPluginName)) {
+          relevant.push(name);
+          continue;
+        }
+      }
+
+      if (name.startsWith("@@")) {
+        const hubId = name.replace("@@", "").toLowerCase();
+        const plugin = ImportedPlugin.loadPluginByHubId(hubId);
+        if (plugin) {
+          const pluginName = String(plugin.config?.name || "").toLowerCase();
+          const desc = String(plugin.config?.description || "").toLowerCase();
+          if (lowercasePrompt.includes(pluginName) || lowercasePrompt.includes(hubId) || desc.split(/\s+/).some(kw => kw.length > 2 && lowercasePrompt.includes(kw))) {
+            relevant.push(name);
+            continue;
+          }
+        }
+      }
+    }
+
+    return relevant;
+  }
+
+  async #attachPlugins(args) {
+    const relevantTools = await this.#filterRelevantTools(this.invocation.prompt);
+    
+    // Update WORKSPACE_AGENT's functions in AIbitat to only list relevant tools
+    const wsAgent = this.aibitat.agents.get(WORKSPACE_AGENT.name);
+    if (wsAgent) {
+      wsAgent.functions = wsAgent.functions.filter(f => {
+        if (["memory", "summarize", "web-scraping", "request-user-input"].some(core => f.startsWith(core))) return true;
+        return relevantTools.includes(f);
+      });
+    }
+
+    this.log(`Dynamically filtered tools: ${relevantTools.length} loaded out of ${this.#funcsToLoad.length}`);
+
+    for (const name of relevantTools) {
       // Load child plugin
       if (name.includes("#")) {
         const [parent, childPluginName] = name.split("#");
@@ -635,6 +735,25 @@ class AgentHandler {
             `Attached MCP::${plugin.toolName} MCP tool to Agent cluster`
           );
         });
+        continue;
+      }
+
+      // Load sub-agent plugin. This is marked by `@@subagent_` in the array of functions to load.
+      if (name.startsWith("@@subagent_")) {
+        const agentId = name.replace("@@subagent_", "");
+        const SubAgent = require("./subAgents");
+        const plugin = await SubAgent.loadSubAgent(agentId, this.aibitat);
+        if (!plugin) {
+          this.log(
+            `Sub-Agent by id ${agentId} not found. Skipping inclusion to agent cluster.`
+          );
+          continue;
+        }
+
+        this.aibitat.use(plugin.plugin());
+        this.log(
+          `Attached ${plugin.name} sub-agent to Agent cluster`
+        );
         continue;
       }
 

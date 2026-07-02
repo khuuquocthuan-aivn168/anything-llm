@@ -143,6 +143,13 @@ const router = createBrowserRouter([
         },
       },
       {
+        path: "/settings/agents/sub-agents",
+        lazy: async () => {
+          const { default: SubAgents } = await import("@/pages/Admin/SubAgents");
+          return { element: <PrivateRoute Component={SubAgents} /> };
+        },
+      },
+      {
         path: "/settings/agents/builder",
         lazy: async () => {
           const { default: AgentBuilder } = await import(

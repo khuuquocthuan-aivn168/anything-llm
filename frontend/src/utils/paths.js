@@ -204,6 +204,9 @@ export default {
     editAgent: (uuid) => {
       return `/settings/agents/builder/${uuid}`;
     },
+    subAgents: () => {
+      return `/settings/agents/sub-agents`;
+    },
   },
   communityHub: {
     website: () => {

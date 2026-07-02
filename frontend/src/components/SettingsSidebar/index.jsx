@@ -356,6 +356,21 @@ const SidebarOptions = ({ user = null, t }) => {
             roles={["admin", "manager", "default"]}
             hidden={!isVisible("agent-skills")}
           />
+          <Option
+            btnText="Multi-Agents"
+            icon={
+              <img
+                src={AgentIcon}
+                alt="Agent"
+                className="h-5 w-5 flex-shrink-0 light:invert"
+              />
+            }
+            href={paths.agents.subAgents()}
+            user={user}
+            flex={true}
+            roles={["admin", "manager", "default"]}
+            hidden={!isVisible("agent-skills")}
+          />
 
           <Option
             btnText={t("settings.customization")}
