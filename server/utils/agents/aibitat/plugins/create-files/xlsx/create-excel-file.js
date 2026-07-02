@@ -9,6 +9,7 @@ const {
   applyHeaderStyle,
   applyZebraStriping,
   freezePanes,
+  applyPremiumFormatting,
 } = require("./utils.js");
 
 module.exports.CreateExcelFile = {
@@ -298,9 +299,16 @@ module.exports.CreateExcelFile = {
                       cell.numFmt = "yyyy-mm-dd";
                     } else if (
                       typeof typedValue === "number" &&
-                      cellValue.includes("%")
+                      typeof cellValue === "string"
                     ) {
-                      cell.numFmt = "0.00%";
+                      if (cellValue.includes("%")) {
+                        cell.numFmt = "0.00%";
+                      } else if (/^[$€£¥₹]/.test(cellValue.trim())) {
+                        const symbol = cellValue.trim().charAt(0);
+                        cell.numFmt = `"${symbol}"#,##0.00`;
+                      } else if (/[0-9],[0-9]{3}/.test(cellValue)) {
+                        cell.numFmt = "#,##0.00";
+                      }
                     }
                   }
 
@@ -318,6 +326,9 @@ module.exports.CreateExcelFile = {
                 if (sheetOptions.zebraStripes) {
                   applyZebraStriping(worksheet);
                 }
+
+                // Apply premium table formatting
+                applyPremiumFormatting(worksheet);
 
                 if (sheetOptions.freezeHeader !== false) {
                   freezePanes(worksheet, 1, 0);

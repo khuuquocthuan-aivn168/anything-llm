@@ -153,7 +153,22 @@ function renderSectionSlide(
   slideNumber,
   totalSlides
 ) {
-  slide.background = { color: theme.titleSlideBackground };
+  const hasBgImage = slideData.image && slideData.image.url && slideData.image.position === "background";
+  if (hasBgImage) {
+    slide.background = { path: slideData.image.url };
+    slide.addShape(pptx.ShapeType.rect, {
+      x: 0,
+      y: 0,
+      w: "100%",
+      h: "100%",
+      fill: { color: "000000", transparency: 50 },
+    });
+  } else {
+    slide.background = { color: theme.titleSlideBackground };
+  }
+
+  const titleColor = hasBgImage ? "FFFFFF" : theme.titleSlideTitleColor;
+  const subtitleColor = hasBgImage ? "CCCCCC" : theme.titleSlideSubtitleColor;
 
   slide.addText(slideData.title || "", {
     x: 1.0,
@@ -162,7 +177,7 @@ function renderSectionSlide(
     h: 1.2,
     fontSize: 32,
     bold: true,
-    color: theme.titleSlideTitleColor,
+    color: titleColor,
     fontFace: theme.fontTitle,
     align: "center",
     valign: "bottom",
@@ -177,13 +192,15 @@ function renderSectionSlide(
       w: 7.0,
       h: 0.5,
       fontSize: 16,
-      color: theme.titleSlideSubtitleColor,
+      color: subtitleColor,
       fontFace: theme.fontBody,
       align: "center",
     });
   }
 
-  const numColor = isDarkColor(theme.titleSlideBackground)
+  const numColor = hasBgImage
+    ? "FFFFFF"
+    : isDarkColor(theme.titleSlideBackground)
     ? "FFFFFF"
     : "000000";
   slide.addText(`${slideNumber}  /  ${totalSlides}`, {
@@ -198,7 +215,7 @@ function renderSectionSlide(
     align: "left",
   });
 
-  addBranding(slide, theme.titleSlideBackground);
+  addBranding(slide, hasBgImage ? "000000" : theme.titleSlideBackground);
 
   if (slideData.notes) slide.addNotes(slideData.notes);
 }
@@ -211,9 +228,34 @@ function renderContentSlide(
   slideNumber,
   totalSlides
 ) {
-  slide.background = { color: theme.background };
+  const hasBgImage = slideData.image && slideData.image.url && slideData.image.position === "background";
+  if (hasBgImage) {
+    slide.background = { path: slideData.image.url };
+    slide.addShape(pptx.ShapeType.rect, {
+      x: 0,
+      y: 0,
+      w: "100%",
+      h: "100%",
+      fill: { color: "000000", transparency: 50 },
+    });
+  } else {
+    slide.background = { color: theme.background };
+  }
 
   addTopAccentBar(slide, pptx, theme);
+
+  const titleColor = hasBgImage ? "FFFFFF" : theme.titleColor;
+  const subtitleColor = hasBgImage ? "CCCCCC" : theme.subtitleColor;
+  const bodyColor = hasBgImage ? "FFFFFF" : theme.bodyColor;
+  const bulletColor = hasBgImage ? "FFFFFF" : theme.bulletColor;
+
+  const slideTheme = {
+    ...theme,
+    titleColor,
+    subtitleColor,
+    bodyColor,
+    bulletColor,
+  };
 
   let contentStartY = 0.4;
 
@@ -225,8 +267,8 @@ function renderContentSlide(
       h: 0.65,
       fontSize: 24,
       bold: true,
-      color: theme.titleColor,
-      fontFace: theme.fontTitle,
+      color: slideTheme.titleColor,
+      fontFace: slideTheme.fontTitle,
       valign: "bottom",
     });
     contentStartY = 1.0;
@@ -238,8 +280,8 @@ function renderContentSlide(
         w: CONTENT_W,
         h: 0.3,
         fontSize: 13,
-        color: theme.subtitleColor,
-        fontFace: theme.fontBody,
+        color: slideTheme.subtitleColor,
+        fontFace: slideTheme.fontBody,
       });
       contentStartY = 1.35;
     }
@@ -249,7 +291,7 @@ function renderContentSlide(
       pptx,
       MARGIN_X,
       contentStartY + 0.05,
-      theme.accentColor
+      slideTheme.accentColor
     );
     contentStartY += 0.25;
   }
@@ -258,19 +300,58 @@ function renderContentSlide(
   const contentHeight = footerY - contentStartY - 0.15;
 
   if (slideData.table) {
-    addTableContent(slide, pptx, slideData.table, theme, contentStartY);
+    addTableContent(slide, pptx, slideData.table, slideTheme, contentStartY);
   } else {
-    addBulletContent(
-      slide,
-      slideData.content,
-      theme,
-      contentStartY,
-      contentHeight
-    );
+    const hasSideImage = slideData.image && slideData.image.url && slideData.image.position !== "background";
+    if (hasSideImage) {
+      const imagePos = slideData.image?.position || "right";
+      const imgW = 3.8;
+      const textW = 4.4;
+      const gap = 0.4;
+      
+      let textX = MARGIN_X;
+      let imgX = MARGIN_X + textW + gap;
+      
+      if (imagePos === "left") {
+        imgX = MARGIN_X;
+        textX = MARGIN_X + imgW + gap;
+      }
+      
+      try {
+        slide.addImage({
+          path: slideData.image.url,
+          x: imgX,
+          y: contentStartY + 0.1,
+          w: imgW,
+          h: contentHeight - 0.1,
+          sizing: { type: "contain", w: imgW, h: contentHeight - 0.1 }
+        });
+      } catch (e) {
+        console.error("Failed to add image to slide:", e);
+      }
+      
+      addBulletContent(
+        slide,
+        slideData.content,
+        slideTheme,
+        contentStartY,
+        contentHeight,
+        textX,
+        textW
+      );
+    } else {
+      addBulletContent(
+        slide,
+        slideData.content,
+        slideTheme,
+        contentStartY,
+        contentHeight
+      );
+    }
   }
 
-  addSlideFooter(slide, pptx, theme, slideNumber, totalSlides);
-  addBranding(slide, theme.background);
+  addSlideFooter(slide, pptx, slideTheme, slideNumber, totalSlides);
+  addBranding(slide, hasBgImage ? "000000" : slideTheme.background);
 
   if (slideData.notes) slide.addNotes(slideData.notes);
 }
@@ -281,24 +362,24 @@ function renderBlankSlide(slide, pptx, theme, slideNumber, totalSlides) {
   addBranding(slide, theme.background);
 }
 
-function addBulletContent(slide, content, theme, startY, maxHeight) {
+function addBulletContent(slide, content, theme, startY, maxHeight, customX, customW) {
   if (!Array.isArray(content) || content.length === 0) return;
 
   const bulletPoints = content.map((text) => ({
     text,
     options: {
-      fontSize: 15,
+      fontSize: customW !== undefined ? 13 : 15,
       color: theme.bodyColor,
       fontFace: theme.fontBody,
       bullet: { code: "25AA", color: theme.bulletColor },
-      paraSpaceAfter: 10,
+      paraSpaceAfter: customW !== undefined ? 8 : 10,
     },
   }));
 
   slide.addText(bulletPoints, {
-    x: MARGIN_X,
+    x: customX !== undefined ? customX : MARGIN_X,
     y: startY,
-    w: CONTENT_W,
+    w: customW !== undefined ? customW : CONTENT_W,
     h: maxHeight,
     valign: "top",
   });

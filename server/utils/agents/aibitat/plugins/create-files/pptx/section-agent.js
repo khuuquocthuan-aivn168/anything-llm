@@ -10,12 +10,13 @@ RULES:
 - Be specific and data-driven when possible
 - Include speaker notes with key talking points
 - Do NOT add a title slide - only section content
+- Use the "image" field for slides where visual illustration adds high value. Choose a descriptive search query for the image.
 
 When finished, you MUST call the submit-section-slides tool with your slides. Do not respond with raw JSON - always use the tool.
 
 Available slide layouts:
-- "section": Divider slide with title + optional subtitle
-- "content": Bullet points with title + content array + optional notes
+- "section": Divider slide with title + optional subtitle. Can have a "background" image.
+- "content": Bullet points with title + content array + optional notes. Can have "left", "right" or "background" image.
   - May include "table": { "headers": ["Col1", "Col2"], "rows": [["a", "b"]] }
 - "blank": Empty slide`;
 
@@ -104,6 +105,22 @@ async function runSectionAgent({
               notes: {
                 type: "string",
                 description: "Speaker notes for this slide",
+              },
+              image: {
+                type: "object",
+                description: "Optional image decoration configuration. Will perform a DuckDuckGo search to retrieve it.",
+                properties: {
+                  query: {
+                    type: "string",
+                    description: "Search query to find a relevant image (e.g. 'smart city traffic flow' or 'modern server rack'). Be descriptive.",
+                  },
+                  position: {
+                    type: "string",
+                    enum: ["right", "left", "background"],
+                    description: "Position of the image. 'right' places image on the right half, 'left' on the left, 'background' uses it as full slide background with light overlay. Defaults to 'right'.",
+                  }
+                },
+                required: ["query"]
               },
               table: {
                 type: "object",

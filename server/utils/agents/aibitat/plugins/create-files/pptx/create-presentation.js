@@ -33,6 +33,35 @@ function extractConversationContext(chats, maxMessages = 10) {
     .join("\n");
 }
 
+/**
+ * Performs an image search on DuckDuckGo using its public JSON endpoint.
+ * @param {string} query - The search query
+ * @returns {Promise<string|null>} Resolves to the first valid image URL or null
+ */
+async function searchDuckDuckGoImage(query) {
+  try {
+    const url = `https://duckduckgo.com/i.js?q=${encodeURIComponent(query)}&o=json`;
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+      }
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (json && Array.isArray(json.results) && json.results.length > 0) {
+      // Find the first result that starts with http and does not look like base64
+      const match = json.results.find(
+        (r) => r.image && r.image.startsWith("http") && !r.image.includes("data:image")
+      );
+      return match ? match.image : json.results[0].image;
+    }
+  } catch (error) {
+    console.error(`searchDuckDuckGoImage error for "${query}":`, error.message);
+  }
+  return null;
+}
+
 module.exports.CreatePptxPresentation = {
   name: "create-pptx-presentation",
   plugin: function () {
@@ -261,6 +290,26 @@ module.exports.CreatePptxPresentation = {
               // from every slide so PowerPoint can open the generated deck.
               const cleanSlides =
                 createFilesLib.stripInvalidXmlChars(allSlides);
+
+              // Pre-fetch DuckDuckGo images for slides that request them
+              for (const slideData of cleanSlides) {
+                if (slideData.image && slideData.image.query) {
+                  this.super.introspect(
+                    `${this.caller}: Searching DuckDuckGo for image matching "${slideData.image.query}"…`
+                  );
+                  const imageUrl = await searchDuckDuckGoImage(slideData.image.query);
+                  if (imageUrl) {
+                    slideData.image.url = imageUrl;
+                    this.super.introspect(
+                      `${this.caller}: Found image URL: ${imageUrl}`
+                    );
+                  } else {
+                    this.super.introspect(
+                      `${this.caller}: No image found for query "${slideData.image.query}"`
+                    );
+                  }
+                }
+              }
 
               // Title slide
               const titleSlide = pptx.addSlide();

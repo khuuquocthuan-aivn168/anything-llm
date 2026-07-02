@@ -264,7 +264,7 @@ function autoFitColumns(worksheet, minWidth = 8, maxWidth = 50) {
  */
 function applyHeaderStyle(
   worksheet,
-  { bold = true, fill = "FF4472C4", fontColor = "FFFFFFFF" } = {}
+  { bold = true, fill = "FF0F172A", fontColor = "FFFFFFFF" } = {} // Slate 900
 ) {
   const headerRow = worksheet.getRow(1);
   if (!headerRow || headerRow.cellCount === 0) return;
@@ -273,6 +273,8 @@ function applyHeaderStyle(
     cell.font = {
       bold,
       color: { argb: fontColor },
+      name: "Segoe UI",
+      size: 11,
     };
     cell.fill = {
       type: "pattern",
@@ -285,7 +287,7 @@ function applyHeaderStyle(
     };
   });
 
-  headerRow.height = 20;
+  headerRow.height = 25;
 }
 
 /**
@@ -294,7 +296,7 @@ function applyHeaderStyle(
  * @param {string} [evenColor='FFF2F2F2'] - Color for even rows (ARGB format)
  * @param {number} [startRow=2] - Row to start alternating from (skips header)
  */
-function applyZebraStriping(worksheet, evenColor = "FFF2F2F2", startRow = 2) {
+function applyZebraStriping(worksheet, evenColor = "FFF8FAFC", startRow = 2) {
   worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
     if (rowNumber >= startRow && rowNumber % 2 === 0) {
       row.eachCell((cell) => {
@@ -320,6 +322,57 @@ function freezePanes(worksheet, rows = 1, columns = 0) {
   worksheet.views = [{ state: "frozen", xSplit: columns, ySplit: rows }];
 }
 
+/**
+ * Applies premium formatting to the entire worksheet:
+ * - Autofilter for data
+ * - Borders for all cells
+ * - Modern fonts and vertical alignment
+ * @param {import('exceljs').Worksheet} worksheet - The worksheet to modify
+ */
+function applyPremiumFormatting(worksheet) {
+  // Add auto filter to the data range
+  if (worksheet.dimensions) {
+    worksheet.autoFilter = worksheet.dimensions;
+  }
+
+  // Set default row height, borders, and fonts
+  worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+    if (rowNumber > 1 && !row.height) {
+      row.height = 20;
+    }
+
+    row.eachCell((cell) => {
+      // Apply clean subtle borders
+      cell.border = {
+        top: { style: "thin", color: { argb: "FFE2E8F0" } }, // slate-200
+        left: { style: "thin", color: { argb: "FFE2E8F0" } },
+        bottom: { style: "thin", color: { argb: "FFE2E8F0" } },
+        right: { style: "thin", color: { argb: "FFE2E8F0" } },
+      };
+
+      // Ensure proper alignment
+      if (rowNumber > 1) {
+        if (!cell.alignment) {
+          cell.alignment = { vertical: "middle", wrapText: false };
+        } else {
+          cell.alignment.vertical = cell.alignment.vertical || "middle";
+        }
+
+        // Upgrade font
+        if (!cell.font || !cell.font.name) {
+          const currentFont = cell.font || {};
+          cell.font = {
+            ...currentFont,
+            name: "Segoe UI",
+            size: 10,
+            color: currentFont.color || { argb: "FF334155" }, // slate-700
+          };
+        }
+      }
+    });
+  });
+}
+
 module.exports = {
   parseCSV,
   validateCSVData,
@@ -330,4 +383,5 @@ module.exports = {
   applyHeaderStyle,
   applyZebraStriping,
   freezePanes,
+  applyPremiumFormatting,
 };
