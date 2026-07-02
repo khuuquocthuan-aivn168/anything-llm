@@ -8,7 +8,8 @@ const { v4: uuidv4 } = require("uuid");
 class SubAgent {
   constructor(config) {
     this.config = config;
-    this.name = `@@subagent_${config.uuid || config.id}`;
+    const cleanUuid = (config.uuid || config.id).replace(/-/g, "_");
+    this.name = `subagent_${cleanUuid}`;
     this.agentName = config.name;
     this.description = config.description;
     this.system_prompt = config.system_prompt;
@@ -21,7 +22,7 @@ class SubAgent {
   static async activeSubAgents() {
     const { SubAgents } = require("../../models/subAgents");
     const subAgents = await SubAgents.get();
-    return subAgents.map((agent) => `@@subagent_${agent.uuid}`);
+    return subAgents.map((agent) => `subagent_${agent.uuid.replace(/-/g, "_")}`);
   }
 
   static async loadSubAgent(agentUuid, aibitat) {

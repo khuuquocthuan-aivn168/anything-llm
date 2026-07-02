@@ -638,9 +638,9 @@ class AgentHandler {
         continue;
       }
 
-      // Load sub-agent plugin. This is marked by `@@subagent_` in the array of functions to load.
-      if (name.startsWith("@@subagent_")) {
-        const agentId = name.replace("@@subagent_", "");
+      // Load sub-agent plugin. This is marked by `subagent_` in the array of functions to load.
+      if (name.startsWith("subagent_")) {
+        const agentId = name.replace("subagent_", "").replace(/_/g, "-");
         const SubAgent = require("./subAgents");
         const plugin = await SubAgent.loadSubAgent(agentId, this.aibitat);
         if (!plugin) {

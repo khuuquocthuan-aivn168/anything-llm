@@ -93,7 +93,7 @@ const WORKSPACE_AGENT = {
         const agentDescriptions = subAgentConfigs
           .map(
             (a) =>
-              `- **${a.name}** (tool: @@subagent_${a.uuid}): ${a.description}. Input: ${a.input_type || "text"}, Output: ${a.output_type || "text"}.`
+              `- **${a.name}** (tool: subagent_${a.uuid.replace(/-/g, "_")}): ${a.description}. Input: ${a.input_type || "text"}, Output: ${a.output_type || "text"}.`
           )
           .join("\n");
         role += `\n\n## Available Sub-Agents\nYou have access to the following specialized sub-agents. When a user's request matches a sub-agent's capability, you MUST delegate the task to that sub-agent by calling its tool. Do NOT refuse or say you cannot do something if a sub-agent can handle it.\n${agentDescriptions}`;
