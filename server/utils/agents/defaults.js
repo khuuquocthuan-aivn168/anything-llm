@@ -84,6 +84,26 @@ const WORKSPACE_AGENT = {
       role +=
         "\n\nWhen you need information from the user (URLs, file paths, preferences, choices, etc.), you MUST use the request-user-input tool. Do not ask questions in your text response - the user cannot reply to text. Only the tool can collect user input.";
 
+    // If sub-agents are configured, inject their descriptions into the system prompt
+    // so the LLM knows it can delegate specialized tasks to them.
+    if (subAgents.length > 0) {
+      const SubAgent = require("./subAgents");
+      const configStr = await SystemSettings.getValueOrFallback(
+        { label: "sub_agents" },
+        "[]"
+      );
+      const subAgentConfigs = safeJsonParse(configStr, []);
+      if (subAgentConfigs.length > 0) {
+        const agentDescriptions = subAgentConfigs
+          .map(
+            (a) =>
+              `- **${a.name}** (tool: @@subagent_${a.id}): ${a.description}. Input: ${a.input_type || "text"}, Output: ${a.output_type || "text"}.`
+          )
+          .join("\n");
+        role += `\n\n## Available Sub-Agents\nYou have access to the following specialized sub-agents. When a user's request matches a sub-agent's capability, you MUST delegate the task to that sub-agent by calling its tool. Do NOT refuse or say you cannot do something if a sub-agent can handle it.\n${agentDescriptions}`;
+      }
+    }
+
     return {
       role,
       functions: [

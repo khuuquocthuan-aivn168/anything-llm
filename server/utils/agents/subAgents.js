@@ -37,6 +37,7 @@ class SubAgent {
   }
 
   plugin() {
+    const self = this;
     return {
       name: this.name,
       setup: (aibitat) => {
@@ -59,61 +60,38 @@ class SubAgent {
           handler: async (args) => {
             const { task } = args;
             try {
-              aibitat?.handlerProps?.log?.(`[Sub-Agent ${this.agentName}] Executing task: ${task}`);
+              aibitat?.handlerProps?.log?.(`[Sub-Agent ${self.agentName}] Executing task: ${task}`);
               if (typeof aibitat?.introspect === "function") {
-                aibitat.introspect(`[Sub-Agent] Calling ${this.agentName} to perform task...`);
+                aibitat.introspect(`[Sub-Agent] Calling ${self.agentName} to perform task...`);
               }
               
               const aiProvider = aibitat.getProviderForConfig({
-                provider: this.provider,
-                model: this.model,
+                provider: self.provider,
+                model: self.model,
               });
 
-              // Construct proper input depending on input type
-              const attachments = this.input_type === 'image' && aibitat.handlerProps?.attachments
-                ? aibitat.handlerProps.attachments
-                : [];
+              // Build messages array in the standard OpenAI format
+              const messages = [
+                { role: "system", content: self.system_prompt },
+                { role: "user", content: task },
+              ];
 
-              const messages = aiProvider.constructPrompt({
-                systemPrompt: this.system_prompt,
-                userPrompt: task,
-                attachments,
-                chatHistory: [] // Keep history clean for sub-agents to focus on the task
-              });
+              // Call the provider's complete method (no tool functions for sub-agents)
+              const result = await aiProvider.complete(messages, []);
+              const textResult = result?.textResponse || "";
 
-              const result = await aiProvider.getChatCompletion(messages, { temperature: 0.7 });
-              let textResult = result.textResponse;
-
-              if (this.output_type === 'image' || this.output_type === 'audio') {
-                aibitat?.handlerProps?.log?.(`[Sub-Agent ${this.agentName}] Media generated, sending to UI.`);
-                if (typeof aibitat?.introspect === "function") {
-                  aibitat.introspect(`[Sub-Agent] ${this.agentName} generated media successfully.`);
-                }
-                const uuid = require('uuid').v4();
-                
-                // Construct the media markdown/html depending on output type
-                const content = this.output_type === 'audio' 
-                  ? `<audio controls autoplay src="${textResult}"></audio>`
-                  : `![${this.agentName} Output](${textResult})`;
-
-                aibitat?.socket?.send("reportStreamEvent", {
-                  type: "fullTextResponse",
-                  uuid,
-                  content: content,
-                });
-                
-                aibitat?.socket?.send("reportStreamEvent", {
-                  type: "chatId",
-                  uuid,
-                  chatId: aibitat.trackedChatId,
-                });
-
-                return `[SUCCESS: The requested ${this.output_type} was successfully generated and sent directly to the user. Do not try to output it again.]`;
+              if (!textResult || textResult.trim().length === 0) {
+                return `[ERROR: Sub-agent ${self.agentName} returned an empty response. The model may not support this task.]`;
               }
 
-              return `[Sub-Agent Result]:\n${textResult}`;
+              aibitat?.handlerProps?.log?.(`[Sub-Agent ${self.agentName}] Task completed successfully.`);
+              if (typeof aibitat?.introspect === "function") {
+                aibitat.introspect(`[Sub-Agent] ${self.agentName} completed the task.`);
+              }
+
+              return `[Sub-Agent ${self.agentName} Result]:\n${textResult}`;
             } catch (error) {
-              aibitat?.handlerProps?.log?.(`[Sub-Agent ${this.agentName}] Error: ${error.message}`);
+              aibitat?.handlerProps?.log?.(`[Sub-Agent ${self.agentName}] Error: ${error.message}`);
               return `[ERROR: The sub-agent encountered an error: ${error.message}]`;
             }
           },
