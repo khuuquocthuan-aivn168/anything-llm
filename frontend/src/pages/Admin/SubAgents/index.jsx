@@ -5,7 +5,7 @@ import { isMobile } from "react-device-detect";
 import Admin from "@/models/admin";
 import System from "@/models/system";
 import showToast from "@/utils/toast";
-import { Plus, Trash, PencilSimple, Robot, Brain, Image, MusicNotes, TextT, ArrowLeft } from "@phosphor-icons/react";
+import { Plus, Trash, PencilSimple, Robot, Brain, Image, MusicNotes, TextT, ArrowLeft, FilmStrip } from "@phosphor-icons/react";
 import * as Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
@@ -63,24 +63,54 @@ export default function SubAgents() {
   useEffect(() => {
     if (formData.provider === "openrouter") {
       const filtered = availableModels.filter((model) => {
-        const modality = model.architecture?.modality || "text->text";
+        const arch = model.architecture || {};
         
-        // Filter based on input_type (Vision/Image)
-        if (formData.input_type === "image" && !modality.startsWith("text+image")) {
-          return false;
+        let hasImageInput = false;
+        let hasImageOutput = false;
+        let hasAudioOutput = false;
+        let hasTextOutput = true; // Default most models to text output
+
+        let hasAudioInput = false;
+        let hasVideoInput = false;
+
+        // Determine input modalities
+        if (Array.isArray(arch.input_modalities)) {
+          hasImageInput = arch.input_modalities.includes("image");
+          hasAudioInput = arch.input_modalities.includes("audio");
+          hasVideoInput = arch.input_modalities.includes("video");
+        } else if (arch.modality) {
+          const inModality = arch.modality.split("->")[0] || "";
+          hasImageInput = inModality.includes("image");
+          hasAudioInput = inModality.includes("audio");
+          hasVideoInput = inModality.includes("video");
         }
 
-        // Filter based on output_type (Image/Audio)
-        if (formData.output_type === "image" && !modality.endsWith("->image")) {
-          return false;
+        let hasVideoOutput = false;
+
+        // Determine output modalities
+        if (Array.isArray(arch.output_modalities)) {
+          hasImageOutput = arch.output_modalities.includes("image");
+          hasAudioOutput = arch.output_modalities.includes("audio");
+          hasVideoOutput = arch.output_modalities.includes("video");
+          hasTextOutput = arch.output_modalities.includes("text");
+        } else if (arch.modality) {
+          const outModality = arch.modality.split("->")[1] || "";
+          hasImageOutput = outModality.includes("image");
+          hasAudioOutput = outModality.includes("audio");
+          hasVideoOutput = outModality.includes("video");
+          hasTextOutput = outModality.includes("text") || (!hasImageOutput && !hasAudioOutput && !hasVideoOutput);
         }
-        if (formData.output_type === "audio" && !modality.endsWith("->audio")) {
-          return false;
-        }
-        if (formData.output_type === "text" && modality.endsWith("->image")) {
-          // If expecting text output, filter out image generators
-          return false;
-        }
+        
+        // Filter based on requested input_type
+        if (formData.input_type === "text+image" && !hasImageInput) return false;
+        if (formData.input_type === "text+audio" && !hasAudioInput) return false;
+        if (formData.input_type === "video" && !hasVideoInput) return false;
+
+        // Filter based on requested output_type
+        if (formData.output_type === "image" && !hasImageOutput) return false;
+        if (formData.output_type === "audio" && !hasAudioOutput) return false;
+        if (formData.output_type === "video" && !hasVideoOutput) return false;
+        if (formData.output_type === "text" && !hasTextOutput) return false;
 
         return true;
       });
@@ -173,9 +203,13 @@ export default function SubAgents() {
   const getTypeIcon = (type) => {
     switch (type) {
       case "image":
+      case "text+image":
         return <Image className="w-5 h-5 text-purple-400" />;
       case "audio":
+      case "text+audio":
         return <MusicNotes className="w-5 h-5 text-blue-400" />;
+      case "video":
+        return <FilmStrip className="w-5 h-5 text-pink-400" />;
       default:
         return <TextT className="w-5 h-5 text-gray-400" />;
     }
@@ -327,7 +361,9 @@ export default function SubAgents() {
                       className="w-full bg-theme-bg-secondary border border-theme-sidebar-border rounded-lg px-3.5 py-2.5 text-white focus:outline-none focus:border-sky-500"
                     >
                       <option value="text">Text Only</option>
-                      <option value="image">Image (Vision)</option>
+                      <option value="text+image">Text + Image (Vision)</option>
+                      <option value="text+audio">Text + Audio</option>
+                      <option value="video">Video</option>
                     </select>
                   </div>
 
@@ -341,6 +377,7 @@ export default function SubAgents() {
                       <option value="text">Text/Analysis</option>
                       <option value="image">Generated Image</option>
                       <option value="audio">Synthesized Audio</option>
+                      <option value="video">Generated Video</option>
                     </select>
                   </div>
                 </div>
