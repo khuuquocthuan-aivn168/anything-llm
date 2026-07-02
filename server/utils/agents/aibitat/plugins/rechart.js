@@ -16,91 +16,127 @@ const rechart = {
           name: this.name,
           tracker: new Deduplicator(),
           description:
-            "Create a chart, graph, or data visualization. Generate bar charts, line graphs, pie charts, area charts, or scatter plots to visualize data, statistics, trends, or results. Use to display numbers and data visually.",
+            "Create up to 10 charts, graphs, or data visualizations. Generates bar charts, line graphs, pie charts, area charts, or scatter plots to visualize datasets, statistics, trends, or CSV/Excel results.",
           examples: [
             { prompt: "Create a chart from that data" },
             { prompt: "Make a bar graph of the results" },
-            { prompt: "Visualize these numbers" },
+            { prompt: "Visualize these numbers with three charts comparing sales, profit, and expenses" },
           ],
           parameters: {
             $schema: "http://json-schema.org/draft-07/schema#",
             type: "object",
             properties: {
+              charts: {
+                type: "array",
+                description: "An array of up to 10 charts to generate. Use this to display multiple metrics or trends dynamically.",
+                items: {
+                  type: "object",
+                  properties: {
+                    type: {
+                      type: "string",
+                      enum: [
+                        "area",
+                        "bar",
+                        "line",
+                        "composed",
+                        "scatter",
+                        "pie",
+                        "radar",
+                        "radialBar",
+                        "treemap",
+                        "funnel",
+                      ],
+                      description: "The type of chart to be generated.",
+                    },
+                    title: {
+                      type: "string",
+                      description: "Title of the chart. Do not leave it blank.",
+                    },
+                    dataset: {
+                      type: "string",
+                      description: "Valid JSON array of objects for Recharts/Tremor API. Each element must be an object with 'name' (for the X-axis label) and value keys representing metrics. E.g. [{\"name\": \"Q1\", \"Sales\": 100, \"Profit\": 20}]. Provide JSON string only.",
+                    }
+                  },
+                  required: ["type", "title", "dataset"]
+                },
+                minItems: 1,
+                maxItems: 10
+              },
+              // Keep old parameters for fallback
               type: {
                 type: "string",
-                enum: [
-                  "area",
-                  "bar",
-                  "line",
-                  "composed",
-                  "scatter",
-                  "pie",
-                  "radar",
-                  "radialBar",
-                  "treemap",
-                  "funnel",
-                ],
-                description: "The type of chart to be generated.",
+                description: "Deprecated: The type of chart to be generated. Use the 'charts' array instead.",
               },
               title: {
                 type: "string",
-                description:
-                  "Title of the chart. There MUST always be a title. Do not leave it blank.",
+                description: "Deprecated: Title of the chart. Use the 'charts' array instead.",
               },
               dataset: {
                 type: "string",
-                description: `Valid JSON in which each element is an object for Recharts API for the 'type' of chart defined WITHOUT new line characters. Strictly using this FORMAT and naming:
-{ "name": "a", "value": 12 }].
-Make sure field "name" always stays named "name". Instead of naming value field value in JSON, name it based on user metric and make it the same across every item.
-Make sure the format use double quotes and property names are string literals. Provide JSON data only.`,
-              },
+                description: "Deprecated: JSON dataset. Use the 'charts' array instead.",
+              }
             },
-            additionalProperties: false,
+            additionalProperties: true,
           },
-          required: ["type", "title", "dataset"],
-          handler: async function ({ type, dataset, title }) {
+          handler: async function (args) {
             try {
+              let charts = [];
+              if (Array.isArray(args.charts) && args.charts.length > 0) {
+                charts = args.charts;
+              } else if (args.type && args.dataset && args.title) {
+                // Backwards compatibility fallback
+                charts = [{ type: args.type, dataset: args.dataset, title: args.title }];
+              } else {
+                return "Error: Please provide a valid 'charts' array or the single chart parameters (type, title, dataset).";
+              }
+
               if (this.tracker.isMarkedUnique(this.name)) {
                 this.super.handlerProps.log(
                   `${this.name} has been called for this chat response already. It can only be called once per chat.`
                 );
-                return "The chart was generated and returned to the user. This function completed successfully. Do not call this function again.";
+                return "The charts were generated and returned to the user. This function completed successfully.";
               }
 
-              const data = safeJsonParse(dataset, null);
-              if (data === null) {
-                this.super.introspect(
-                  `${this.caller}: ${this.name} provided invalid JSON data - so we cant make a ${type} chart.`
-                );
-                return "Invalid JSON provided. Please only provide valid RechartJS JSON to generate a chart.";
+              const parsedCharts = [];
+              for (const chart of charts) {
+                const data = safeJsonParse(chart.dataset, null);
+                if (data === null) {
+                  this.super.introspect(
+                    `${this.caller}: ${this.name} provided invalid JSON data for chart "${chart.title}".`
+                  );
+                  return `Error: Invalid JSON dataset provided for chart "${chart.title}". Please only provide valid JSON.`;
+                }
+                parsedCharts.push({
+                  type: chart.type,
+                  dataset: data,
+                  title: chart.title,
+                });
               }
 
-              this.super.introspect(`${this.caller}: Rendering ${type} chart.`);
+              this.super.introspect(`${this.caller}: Rendering ${parsedCharts.length} chart(s).`);
+              
+              // We support sending the array of charts directly
               this.super.socket.send("rechartVisualize", {
-                type,
-                dataset,
-                title,
+                charts: parsedCharts
               });
 
               this.super._replySpecialAttributes = {
                 saveAsType: "rechartVisualize",
                 storedResponse: (additionalText = "") =>
                   JSON.stringify({
-                    type,
-                    dataset,
-                    title,
+                    charts: parsedCharts,
                     caption: additionalText,
                   }),
                 postSave: () => this.tracker.removeUniqueConstraint(this.name),
               };
 
               this.tracker.markUnique(this.name);
-              return "The chart was generated and returned to the user. This function completed successfully. Do not make another chart.";
+              return `Successfully generated ${parsedCharts.length} chart(s) and returned to the user. Do not call this tool again.`;
             } catch (error) {
               this.super.handlerProps.log(
                 `create-chart raised an error. ${error.message}`
               );
-              return `Let the user know this action was not successful. An error was raised while generating the chart. ${error.message}`;
+              return `An error was raised while generating the chart. ${error.message}`;
             }
           },
         });
