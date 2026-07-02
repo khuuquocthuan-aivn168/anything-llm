@@ -1,10 +1,7 @@
 const { SubAgents } = require("../models/subAgents");
 const { reqBody } = require("../utils/http");
-const {
-  validatedRequest,
-  strictMultiUserRoleValid,
-  flexUserRoleValid,
-} = require("../utils/middleware/validatedRequest");
+const { validatedRequest } = require("../utils/middleware/validatedRequest");
+const { flexUserRoleValid } = require("../utils/middleware/multiUserProtected");
 const { v4: uuidv4 } = require("uuid");
 
 function subAgentsEndpoints(app) {
