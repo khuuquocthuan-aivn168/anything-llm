@@ -60,7 +60,7 @@ const TRANSLATIONS = {
     "stopped": "Dừng",
     "loading": "Đang tải",
     "refresh": "Tái tạo",
-    "new-thread": "Luồng trò chuyện mới",
+    "new-thread": "Trò chuyện mới",
     "starting-thread": "Đang bắt đầu luồng..."
   },
   "settings": {
@@ -183,7 +183,7 @@ const TRANSLATIONS = {
       },
       "automatic": {
         "description": "sẽ tự động sử dụng các công cụ nếu mô hình và nhà cung cấp hỗ trợ gọi công cụ gốc. Nếu không hỗ trợ gọi công cụ gốc, bạn sẽ cần sử dụng lệnh `@agent` để sử dụng các công cụ.",
-        "title": "Đại lý"
+        "title": "Trợ lý AI"
       }
     },
     "history": {
@@ -279,16 +279,16 @@ const TRANSLATIONS = {
       },
       "web": {
         "title": "Tìm kiếm web trực tiếp và duyệt web",
-        "description": "Cho phép đại lý của bạn tìm kiếm trên web để trả lời các câu hỏi của bạn bằng cách kết nối với nhà cung cấp dịch vụ tìm kiếm trên web (SERP)."
+        "description": "Cho phép trợ lý AI của bạn tìm kiếm trên web để trả lời các câu hỏi của bạn bằng cách kết nối với nhà cung cấp dịch vụ tìm kiếm trên web (SERP)."
       },
       "sql": {
         "title": "Kết nối SQL",
-        "description": "Cho phép đại lý của bạn sử dụng SQL để trả lời các câu hỏi của bạn bằng cách kết nối với nhiều nhà cung cấp cơ sở dữ liệu SQL khác nhau."
+        "description": "Cho phép trợ lý AI của bạn sử dụng SQL để trả lời các câu hỏi của bạn bằng cách kết nối với nhiều nhà cung cấp cơ sở dữ liệu SQL khác nhau."
       },
       "default_skill": "Theo mặc định, kỹ năng này được kích hoạt, nhưng bạn có thể tắt nó nếu không muốn nó được sử dụng bởi người đại diện.",
       "filesystem": {
         "title": "Quyền truy cập hệ thống tệp",
-        "description": "Cho phép đại lý của bạn đọc, ghi, tìm kiếm và quản lý các tệp tin trong một thư mục được chỉ định. Hỗ trợ chỉnh sửa tệp, điều hướng thư mục và tìm kiếm nội dung.",
+        "description": "Cho phép trợ lý AI của bạn đọc, ghi, tìm kiếm và quản lý các tệp tin trong một thư mục được chỉ định. Hỗ trợ chỉnh sửa tệp, điều hướng thư mục và tìm kiếm nội dung.",
         "learnMore": "Tìm hiểu thêm về cách sử dụng kỹ năng này.",
         "configuration": "Cấu hình",
         "readActions": "Đọc hành động",
@@ -339,7 +339,7 @@ const TRANSLATIONS = {
       },
       "createFiles": {
         "title": "Tạo tài liệu",
-        "description": "Cho phép đại lý của bạn tạo các định dạng tài liệu nhị phân như bài thuyết trình PowerPoint, bảng tính Excel, tài liệu Word và PDF. Các tệp có thể tải xuống trực tiếp từ cửa sổ trò chuyện.",
+        "description": "Cho phép trợ lý AI của bạn tạo các định dạng tài liệu nhị phân như bài thuyết trình PowerPoint, bảng tính Excel, tài liệu Word và PDF. Các tệp có thể tải xuống trực tiếp từ cửa sổ trò chuyện.",
         "configuration": "Các loại tài liệu có sẵn",
         "skills": {
           "create-text-file": {
@@ -366,7 +366,7 @@ const TRANSLATIONS = {
       },
       "gmail": {
         "title": "Kết nối GMail",
-        "description": "Cho phép đại lý của bạn tương tác với Gmail – tìm kiếm email, đọc các cuộc trò chuyện, soạn thảo bản nháp, gửi email và quản lý hộp thư. Đọc tài liệu hướng dẫn<a>.",
+        "description": "Cho phép trợ lý AI của bạn tương tác với Gmail – tìm kiếm email, đọc các cuộc trò chuyện, soạn thảo bản nháp, gửi email và quản lý hộp thư. Đọc tài liệu hướng dẫn<a>.",
         "multiUserWarning": "Tính năng tích hợp với Gmail không khả dụng trong chế độ nhiều người dùng vì lý do bảo mật. Vui lòng tắt chế độ nhiều người dùng để sử dụng tính năng này.",
         "configuration": "Cấu hình Gmail",
         "deploymentId": "Mã triển khai",
@@ -476,7 +476,7 @@ const TRANSLATIONS = {
       },
       "outlook": {
         "title": "Kết nối Outlook",
-        "description": "Cho phép đại lý của bạn tương tác với Microsoft Outlook – tìm kiếm email, đọc các cuộc thảo luận, soạn thảo bản nháp, gửi email và quản lý hộp thư đến thông qua Microsoft Graph API. Đọc tài liệu hướng dẫn <a>.",
+        "description": "Cho phép trợ lý AI của bạn tương tác với Microsoft Outlook – tìm kiếm email, đọc các cuộc thảo luận, soạn thảo bản nháp, gửi email và quản lý hộp thư đến thông qua Microsoft Graph API. Đọc tài liệu hướng dẫn <a>.",
         "multiUserWarning": "Tính năng tích hợp với Outlook không khả dụng trong chế độ nhiều người dùng vì lý do bảo mật. Vui lòng tắt chế độ nhiều người dùng để sử dụng tính năng này.",
         "configuration": "Cấu hình Outlook",
         "authType": "Loại tài khoản",
@@ -561,7 +561,7 @@ const TRANSLATIONS = {
       },
       "googleCalendar": {
         "title": "Kết nối Google Calendar",
-        "description": "Cho phép đại lý của bạn tương tác với Google Calendar - xem lịch, lấy thông tin sự kiện, tạo và cập nhật sự kiện, và quản lý xác nhận tham dự. <a>Đọc tài liệu</a>.",
+        "description": "Cho phép trợ lý AI của bạn tương tác với Google Calendar - xem lịch, lấy thông tin sự kiện, tạo và cập nhật sự kiện, và quản lý xác nhận tham dự. <a>Đọc tài liệu</a>.",
         "multiUserWarning": "Tính năng tích hợp với Google Calendar không khả dụng ở chế độ nhiều người dùng vì lý do bảo mật. Vui lòng tắt chế độ nhiều người dùng để sử dụng tính năng này.",
         "configuration": "Cấu hình Google Calendar",
         "deploymentId": "Mã triển khai",
@@ -652,7 +652,7 @@ const TRANSLATIONS = {
       "tools-enabled": "các công cụ đã được kích hoạt"
     },
     "settings": {
-      "title": "Cài đặt kỹ năng của đại lý",
+      "title": "Cài đặt kỹ năng của trợ lý AI",
       "max-tool-calls": {
         "title": "Số lượng lệnh gọi công cụ tối đa cho mỗi phản hồi",
         "description": "Số lượng công cụ tối đa mà một người dùng có thể liên kết để tạo ra một phản hồi duy nhất. Điều này ngăn chặn việc gọi công cụ quá mức và tạo ra các vòng lặp vô hạn."
@@ -667,7 +667,7 @@ const TRANSLATIONS = {
         }
       },
       "clarifying-questions": {
-        "title": "Cho phép đại lý đặt câu hỏi để làm rõ",
+        "title": "Cho phép trợ lý AI đặt câu hỏi để làm rõ",
         "beta-badge": "Giai đoạn thử nghiệm",
         "description": "Khi được kích hoạt, các trợ lý có thể tạm dừng để đặt câu hỏi ngắn gọn để làm rõ nếu yêu cầu của bạn không rõ ràng.",
         "max-per-turn": {
@@ -1016,7 +1016,7 @@ const TRANSLATIONS = {
     "edit_info_assistant": "Các thay đổi của bạn sẽ được lưu trực tiếp vào phản hồi này.",
     "see_less": "Xem ít hơn",
     "see_more": "Xem thêm",
-    "tools": "Dụng cụ",
+    "tools": "Công cụ",
     "text_size_label": "Kích thước văn bản",
     "select_model": "Chọn mẫu",
     "sources": "Nguồn",
@@ -1029,21 +1029,21 @@ const TRANSLATIONS = {
     "publish": "Đăng tải",
     "stop_generating": "Dừng tạo ra phản hồi",
     "slash_commands": "Lệnh tắt/bật",
-    "agent_skills": "Kỹ năng của đại lý",
-    "manage_agent_skills": "Quản lý kỹ năng của đại lý",
+    "agent_skills": "Kỹ năng của trợ lý AI",
+    "manage_agent_skills": "Quản lý kỹ năng của trợ lý AI",
     "agent_skills_disabled_in_session": "Không thể thay đổi kỹ năng trong khi đang tham gia phiên làm việc. Trước tiên, hãy sử dụng lệnh /exit để kết thúc phiên làm việc.",
-    "start_agent_session": "Bắt đầu phiên làm việc với đại lý",
+    "start_agent_session": "Bắt đầu phiên làm việc với trợ lý AI",
     "use_agent_session_to_use_tools": "Bạn có thể sử dụng các công cụ trong cuộc trò chuyện bằng cách bắt đầu một phiên với trợ lý bằng cách sử dụng '@agent' ở đầu yêu cầu của bạn.",
     "agent_invocation": {
       "model_wants_to_call": "Người mẫu muốn gọi",
       "approve": "Chấp thuận",
       "reject": "Từ chối",
       "always_allow": "Luôn luôn đảm bảo {{skillName}}",
-      "tool_call_was_approved": "Đã được phê duyệt yêu cầu dụng cụ.",
+      "tool_call_was_approved": "Đã được phê duyệt yêu cầu công cụ.",
       "tool_call_was_rejected": "Yêu cầu gọi công cụ đã bị từ chối.",
-      "clarifying_skip": "Để đại lý quyết định",
+      "clarifying_skip": "Để trợ lý AI quyết định",
       "clarifying_submit": "Gửi",
-      "clarifying_skipped": "Bạn để đại lý quyết định.",
+      "clarifying_skipped": "Bạn để trợ lý AI quyết định.",
       "clarifying_timeout": "Không có phản hồi được gửi đúng thời hạn.",
       "clarifying_pagination": "{{current}} thuộc về {{total}}",
       "clarifying_prev_aria": "Câu hỏi trước",
@@ -1058,33 +1058,33 @@ const TRANSLATIONS = {
       "answer_skipped": "[người dùng bỏ qua]"
     },
     "custom_skills": "Kỹ năng tùy chỉnh",
-    "agent_flows": "Dòng chảy của đại lý",
+    "agent_flows": "Dòng chảy của trợ lý AI",
     "no_tools_found": "Không tìm thấy công cụ tương ứng.",
     "loading_mcp_servers": "Đang tải các máy chủ MCP...",
     "app_integrations": "Tích hợp ứng dụng",
     "sub_skills": "Kỹ năng chuyên môn",
     "memories": {
-      "title": "Những kỷ niệm",
+      "title": "Bộ nhớ",
       "empty": "Hiện tại chưa có thông tin nào. Sau khi bạn tương tác với chatbot, các thông tin sẽ dần được điền vào.",
-      "empty_cta": "tạo ra một ký ức mới",
+      "empty_cta": "tạo bộ nhớ mới",
       "tab_workspace": "Không gian làm việc",
-      "tab_global": "Toàn cầu",
+      "tab_global": "Áp dụng toàn bộ",
       "toggle": {
-        "label": "Kích hoạt tùy chỉnh",
-        "description": "Cho phép trợ lý của bạn nhớ lại thông tin về bạn hoặc không gian làm việc này và sử dụng chúng trong các cuộc trò chuyện."
+        "label": "Bật/Tắt tính năng ghi nhớ",
+        "description": "Cho phép trợ lý ghi nhớ thông tin về bạn hoặc không gian làm việc này để áp dụng vào các cuộc trò chuyện khác."
       },
       "auto_extraction": {
-        "label": "Nhớ ôtô",
-        "description": "Yêu cầu trợ lý của bạn tự động tạo ra các khoảnh khắc đáng nhớ trong nền."
+        "label": "Ghi nhớ tự động",
+        "description": "Cho phép trợ lý tự động ghi nhận và lưu trữ các thông tin quan trọng trong quá trình trò chuyện."
       },
       "menu": {
         "edit": "Chỉnh sửa",
         "delete": "Xóa",
-        "move_to_global": "Di chuyển sang cấp toàn cầu",
-        "move_to_workspace": "Di chuyển đến không gian làm việc"
+        "move_to_global": "Áp dụng cho toàn bộ không gian làm việc",
+        "move_to_workspace": "Di chuyển sang không gian làm việc của tôi"
       },
-      "modal": {
-        "create_title": "Tạo ra ký ức",
+      "modal": {  
+        "create_title": "Tạo bộ nhớ ",
         "edit_title": "Chỉnh sửa bộ nhớ",
         "create_description": "Những ghi nhớ nên là một câu ngắn gọn và rõ ràng. Ví dụ: \"Người dùng thích Python hơn JavaScript\".",
         "edit_description": "Cập nhật nội dung của bộ nhớ này.",
@@ -1132,8 +1132,8 @@ const TRANSLATIONS = {
       "title": "Trò chuyện",
       "description": "Đặt tùy chọn trò chuyện của bạn cho GOV AI VN168.",
       "auto_submit": {
-        "title": "Tự động Gửi Đầu vào Giọng nói",
-        "description": "Tự động gửi đầu vào giọng nói sau một khoảng thời gian im lặng"
+        "title": "Tự động gửi sau khi nói xong",
+        "description": "Tự động gửi tin nhắn sau khi bạn ngừng nói một lúc."
       },
       "auto_speak": {
         "title": "Tự động Đọc Phản hồi",
@@ -1199,7 +1199,7 @@ const TRANSLATIONS = {
   },
   "main-page": {
     "quickActions": {
-      "createAgent": "Tạo một đại lý",
+      "createAgent": "Tạo trợ lý AI",
       "editWorkspace": "Chỉnh sửa không gian làm việc",
       "uploadDocument": "Tải lên một tài liệu"
     },
@@ -1421,7 +1421,7 @@ const TRANSLATIONS = {
       "modeCustom": "Tùy chỉnh",
       "cronPlaceholder": "Biểu thức Cron (ví dụ: 0 9 * * *)",
       "currentSchedule": "Lịch trình hiện tại:",
-      "toolsLabel": "Dụng cụ (Tùy chọn)",
+      "toolsLabel": "Công cụ (Tùy chọn)",
       "toolsDescription": "Chọn các công cụ hỗ trợ mà công việc này có thể sử dụng. Nếu không chọn công cụ nào, công việc sẽ chạy mà không sử dụng bất kỳ công cụ nào.",
       "toolsSearch": "Tìm kiếm",
       "toolsNoResults": "Không có công cụ nào phù hợp",

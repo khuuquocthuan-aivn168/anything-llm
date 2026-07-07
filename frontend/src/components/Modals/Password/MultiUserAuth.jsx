@@ -120,11 +120,11 @@ const ResetPasswordForm = ({ onSubmit }) => {
         <div className="flex items-center flex-col gap-y-[18px] max-w-[300px]">
           <div className="flex gap-x-1">
             <h3 className="text-white light:text-slate-950 text-[38px] leading-[28px] font-medium text-center white-space-nowrap block">
-              Reset Password
+              Đặt lại mật khẩu
             </h3>
           </div>
           <p className="text-zinc-400 light:text-zinc-600 text-sm text-center">
-            Enter your new password.
+            Nhập mật khẩu mới của bạn.
           </p>
         </div>
       </div>
@@ -132,7 +132,7 @@ const ResetPasswordForm = ({ onSubmit }) => {
         <div className="w-full flex flex-col gap-y-3">
           <div className="w-full flex flex-col gap-y-2">
             <label className="text-zinc-300 light:text-slate-800 text-sm">
-              New Password
+              Mật khẩu mới
             </label>
             <input
               type="password"
