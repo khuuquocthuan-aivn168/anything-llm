@@ -452,7 +452,7 @@ export default function ChatContainer({
             workspace={workspace}
             threadSlug={activeThreadSlug}
           />
-          <div className="flex-1 min-w-0 transition-all duration-500 relative lg:rounded-[16px] bg-zinc-900 light:bg-white w-full h-full overflow-hidden border-none light:border-solid light:border light:border-theme-modal-border">
+          <div className="flex-1 min-w-0 transition-all duration-500 relative lg:rounded-[16px] bg-zinc-900 light:bg-white w-full h-full overflow-hidden border-none light:border-solid light:border light:border-theme-modal-border lg:pt-14">
             {isMobile && <SidebarMobileHeader />}
             <WorkspaceModelPicker workspaceSlug={workspace.slug} />
             <DnDFileUploaderWrapper>
@@ -509,7 +509,7 @@ export default function ChatContainer({
           workspace={workspace}
           threadSlug={activeThreadSlug}
         />
-        <div className="flex-1 min-w-0 transition-all duration-500 relative lg:rounded-[16px] bg-zinc-900 light:bg-white text-white light:text-slate-900 h-full overflow-hidden border-none light:border-solid light:border light:border-theme-modal-border">
+        <div className="flex-1 min-w-0 transition-all duration-500 relative lg:rounded-[16px] bg-zinc-900 light:bg-white text-white light:text-slate-900 h-full overflow-hidden border-none light:border-solid light:border light:border-theme-modal-border lg:pt-14">
           {isMobile && <SidebarMobileHeader />}
           <WorkspaceModelPicker workspaceSlug={workspace.slug} />
           <DnDFileUploaderWrapper>

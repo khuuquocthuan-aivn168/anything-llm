@@ -17,6 +17,7 @@ import SearchBox from "./SearchBox";
 import { Tooltip } from "react-tooltip";
 import { createPortal } from "react-dom";
 import { useVisibility } from "@/VisibilityContext";
+import UserButton from "@/components/UserMenu/UserButton";
 
 export default function Sidebar() {
   const { user } = useUser();
@@ -122,12 +123,14 @@ export function SidebarMobileHeader() {
         aria-label="Show sidebar"
         className="fixed top-0 left-0 right-0 z-10 flex justify-between items-center px-4 py-2 bg-theme-bg-sidebar light:bg-white text-slate-200 shadow-lg h-16"
       >
-        <button
-          onClick={() => setShowSidebar(true)}
-          className="rounded-md p-2 flex items-center justify-center text-theme-text-secondary"
-        >
-          <List className="h-6 w-6" />
-        </button>
+        <div className="w-[76px] flex justify-start items-center shrink-0">
+          <button
+            onClick={() => setShowSidebar(true)}
+            className="rounded-md p-2 flex items-center justify-center text-theme-text-secondary"
+          >
+            <List className="h-6 w-6" />
+          </button>
+        </div>
         <div className="flex items-center justify-center flex-grow">
           <img
             src={logo}
@@ -136,7 +139,15 @@ export function SidebarMobileHeader() {
             style={{ maxHeight: "40px", objectFit: "contain" }}
           />
         </div>
-        <div className="w-12"></div>
+        {/* Keep a fixed-width right slot so the logo stays centered,
+            but wide enough for settings + avatar on <1024px. */}
+        <div className="w-[76px] flex justify-end items-center shrink-0">
+          <div className="flex items-center gap-2">
+            {/* ChatSettingsMenu will portal its button here on mobile */}
+            <div id="mobile-header-actions" className="flex items-center" />
+            <UserButton placement="inline" />
+          </div>
+        </div>
       </div>
       <div
         style={{

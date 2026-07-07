@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { SlidersHorizontal } from "@phosphor-icons/react";
 import useLoginMode from "@/hooks/useLoginMode";
 import TextSizeRow from "./TextSize";
 import MemoriesRow from "./Memories";
 import CopyLinkToChatRow from "./CopyLinkToChat";
 import ExportRow from "./Export";
+import useMobile from "@/hooks/useMobile";
 
 export default function ChatSettingsMenu({
   history = [],
@@ -12,6 +14,7 @@ export default function ChatSettingsMenu({
   threadSlug = null,
 }) {
   const mode = useLoginMode();
+  const isMobile = useMobile();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
@@ -34,9 +37,13 @@ export default function ChatSettingsMenu({
 
   const hasUserIcon = mode !== null;
 
-  return (
+  const content = (
     <div
-      className={`absolute top-3 lg:top-5 z-30 ${hasUserIcon ? "right-[55px] lg:right-[67px]" : "right-4 lg:right-6"}`}
+      className={
+        isMobile
+          ? "relative z-[110] pointer-events-auto"
+          : `absolute top-3 lg:top-5 z-30 ${hasUserIcon ? "right-[55px] lg:right-[67px]" : "right-4 lg:right-6"}`
+      }
     >
       <button
         ref={buttonRef}
@@ -76,4 +83,18 @@ export default function ChatSettingsMenu({
       )}
     </div>
   );
+
+  if (isMobile) {
+    const host = document.getElementById("mobile-header-actions");
+    // Portal into the mobile header so the button always stays left of avatar.
+    if (host) return createPortal(content, host);
+    // Fallback (should be rare): keep it visible even if host not mounted yet.
+    return (
+      <div className="fixed top-4 right-[92px] z-[110] pointer-events-auto">
+        {content}
+      </div>
+    );
+  }
+
+  return content;
 }

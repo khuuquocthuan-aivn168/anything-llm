@@ -4,7 +4,7 @@ import useUser from "@/hooks/useUser";
 import System from "@/models/system";
 import paths from "@/utils/paths";
 import { userFromStorage } from "@/utils/request";
-import { Person } from "@phosphor-icons/react";
+import { CaretDown, Person } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 import AccountModal from "../AccountModal";
 import {
@@ -16,21 +16,25 @@ import {
 } from "@/utils/constants";
 import { useTranslation } from "react-i18next";
 
-export default function UserButton() {
+export default function UserButton({ placement = "floating" }) {
   const { t } = useTranslation();
   const mode = useLoginMode();
   const { user } = useUser();
   const menuRef = useRef();
   const buttonRef = useRef();
+  const chevronRef = useRef();
   const [showMenu, setShowMenu] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [supportEmail, setSupportEmail] = useState("");
+
+  const toggleMenu = () => setShowMenu((v) => !v);
 
   const handleClose = (event) => {
     if (
       menuRef.current &&
       !menuRef.current.contains(event.target) &&
-      !buttonRef.current.contains(event.target)
+      !buttonRef.current?.contains(event.target) &&
+      !chevronRef.current?.contains(event.target)
     ) {
       setShowMenu(false);
     }
@@ -60,16 +64,32 @@ export default function UserButton() {
     fetchSupportEmail();
   }, []);
 
-  if (mode === null) return null;
+  const wrapperClass =
+    placement === "inline"
+      ? "relative w-fit h-fit z-40 pointer-events-auto flex items-center gap-1 shrink-0"
+      : "absolute top-3 right-4 lg:top-9 lg:right-10 w-fit h-fit z-40 pointer-events-auto flex items-center gap-1";
+
   return (
-    <div className="absolute top-3 right-4 lg:top-9 lg:right-10 w-fit h-fit z-40">
+    <div className={wrapperClass}>
+      {/* Avatar */}
       <button
         ref={buttonRef}
-        onClick={() => setShowMenu(!showMenu)}
+        onClick={toggleMenu}
         type="button"
-        className="uppercase transition-all duration-300 w-[35px] h-[35px] text-base font-semibold rounded-full flex items-center bg-theme-action-menu-bg hover:bg-theme-action-menu-item-hover justify-center text-white p-2 hover:border-slate-100 hover:border-opacity-50 border-transparent border"
+        className="uppercase transition-all duration-300 w-[35px] h-[35px] text-base font-semibold rounded-full flex items-center bg-theme-action-menu-bg hover:bg-theme-action-menu-item-hover justify-center text-white p-2 hover:border-slate-100 hover:border-opacity-50 border-transparent border flex-shrink-0"
       >
         {mode === "multi" ? <UserDisplay /> : <Person size={14} />}
+      </button>
+
+      {/* Chevron trigger (required on <1024px) */}
+      <button
+        ref={chevronRef}
+        onClick={toggleMenu}
+        type="button"
+        aria-label="Open user menu"
+        className="lg:hidden transition-all duration-300 w-[28px] h-[28px] rounded-full flex items-center justify-center bg-theme-action-menu-bg hover:bg-theme-action-menu-item-hover text-white border border-transparent hover:border-slate-100 hover:border-opacity-50 flex-shrink-0"
+      >
+        <CaretDown size={14} weight="bold" />
       </button>
 
       {showMenu && (
