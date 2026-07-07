@@ -60,7 +60,7 @@ const TRANSLATIONS = {
     "stopped": "Dừng",
     "loading": "Đang tải",
     "refresh": "Tái tạo",
-    "new-thread": "Luồng trò chuyện mới",
+    "new-thread": "Trò chuyện mới",
     "starting-thread": "Đang bắt đầu luồng..."
   },
   "settings": {
@@ -1064,27 +1064,27 @@ const TRANSLATIONS = {
     "app_integrations": "Tích hợp ứng dụng",
     "sub_skills": "Kỹ năng chuyên môn",
     "memories": {
-      "title": "Những kỷ niệm",
+      "title": "Bộ nhớ",
       "empty": "Hiện tại chưa có thông tin nào. Sau khi bạn tương tác với chatbot, các thông tin sẽ dần được điền vào.",
-      "empty_cta": "tạo ra một ký ức mới",
+      "empty_cta": "tạo bộ nhớ mới",
       "tab_workspace": "Không gian làm việc",
-      "tab_global": "Toàn cầu",
+      "tab_global": "Áp dụng toàn bộ",
       "toggle": {
-        "label": "Kích hoạt tùy chỉnh",
-        "description": "Cho phép trợ lý của bạn nhớ lại thông tin về bạn hoặc không gian làm việc này và sử dụng chúng trong các cuộc trò chuyện."
+        "label": "Bật/Tắt tính năng ghi nhớ",
+        "description": "Cho phép trợ lý ghi nhớ thông tin về bạn hoặc không gian làm việc này để áp dụng vào các cuộc trò chuyện khác."
       },
       "auto_extraction": {
-        "label": "Nhớ ôtô",
-        "description": "Yêu cầu trợ lý của bạn tự động tạo ra các khoảnh khắc đáng nhớ trong nền."
+        "label": "Ghi nhớ tự động",
+        "description": "Cho phép trợ lý tự động ghi nhận và lưu trữ các thông tin quan trọng trong quá trình trò chuyện."
       },
       "menu": {
         "edit": "Chỉnh sửa",
         "delete": "Xóa",
-        "move_to_global": "Di chuyển sang cấp toàn cầu",
-        "move_to_workspace": "Di chuyển đến không gian làm việc"
+        "move_to_global": "Áp dụng cho toàn bộ không gian làm việc",
+        "move_to_workspace": "Di chuyển sang không gian làm việc của tôi"
       },
-      "modal": {
-        "create_title": "Tạo ra ký ức",
+      "modal": {  
+        "create_title": "Tạo bộ nhớ ",
         "edit_title": "Chỉnh sửa bộ nhớ",
         "create_description": "Những ghi nhớ nên là một câu ngắn gọn và rõ ràng. Ví dụ: \"Người dùng thích Python hơn JavaScript\".",
         "edit_description": "Cập nhật nội dung của bộ nhớ này.",
@@ -1132,8 +1132,8 @@ const TRANSLATIONS = {
       "title": "Trò chuyện",
       "description": "Đặt tùy chọn trò chuyện của bạn cho GOV AI VN168.",
       "auto_submit": {
-        "title": "Tự động Gửi Đầu vào Giọng nói",
-        "description": "Tự động gửi đầu vào giọng nói sau một khoảng thời gian im lặng"
+        "title": "Tự động gửi sau khi nói xong",
+        "description": "Tự động gửi nội dung giọng nói sau một khoảng thời gian im lặng."
       },
       "auto_speak": {
         "title": "Tự động Đọc Phản hồi",
@@ -1199,7 +1199,7 @@ const TRANSLATIONS = {
   },
   "main-page": {
     "quickActions": {
-      "createAgent": "Tạo một đại lý",
+      "createAgent": "Tạo trợ lý AI",
       "editWorkspace": "Chỉnh sửa không gian làm việc",
       "uploadDocument": "Tải lên một tài liệu"
     },

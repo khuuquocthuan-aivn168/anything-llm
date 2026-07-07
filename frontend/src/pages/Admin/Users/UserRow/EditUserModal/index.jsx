@@ -74,7 +74,7 @@ export default function EditUserModal({ currentUser, user, closeModal }) {
                   htmlFor="username"
                   className="block mb-2 text-sm font-medium text-white"
                 >
-                  Username
+                  Tên người dùng
                 </label>
                 <input
                   name="username"
@@ -97,18 +97,18 @@ export default function EditUserModal({ currentUser, user, closeModal }) {
                   htmlFor="password"
                   className="block mb-2 text-sm font-medium text-white"
                 >
-                  New Password
+                  Mật khẩu 
                 </label>
                 <input
                   name="password"
                   type="text"
                   className="border-none bg-theme-settings-input-bg w-full text-white placeholder:text-theme-settings-input-placeholder text-sm rounded-lg focus:outline-primary-button active:outline-primary-button outline-none block w-full p-2.5"
-                  placeholder={`${user.username}'s new password`}
+                  placeholder={`${user.username}'s mật khẩu mới`}
                   autoComplete="off"
                   minLength={8}
                 />
                 <p className="mt-2 text-xs text-white/60">
-                  Password must be at least 8 characters long
+                  Mật khẩu phải có ít nhất 8 ký tự.
                 </p>
               </div>
               <div>
@@ -116,7 +116,7 @@ export default function EditUserModal({ currentUser, user, closeModal }) {
                   htmlFor="bio"
                   className="block mb-2 text-sm font-medium text-white"
                 >
-                  Bio
+                  Giới thiệu
                 </label>
                 <textarea
                   name="bio"

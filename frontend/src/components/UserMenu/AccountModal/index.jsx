@@ -171,7 +171,7 @@ export default function AccountModal({ user, hideModal }) {
                   name="password"
                   type="text"
                   className="border-none bg-theme-settings-input-bg placeholder:text-theme-settings-input-placeholder border-gray-500 text-white text-sm rounded-lg focus:outline-primary-button active:outline-primary-button outline-none block w-full p-2.5"
-                  placeholder={`${user.username}'s new password`}
+                  placeholder={`${user.username} mật khẩu mới`}
                   minLength={8}
                 />
                 <p className="mt-2 text-xs text-white/60">
@@ -183,12 +183,12 @@ export default function AccountModal({ user, hideModal }) {
                   htmlFor="bio"
                   className="block mb-2 text-sm font-medium text-white"
                 >
-                  Bio
+                  Giới thiệu
                 </label>
                 <textarea
                   name="bio"
                   className="border-none bg-theme-settings-input-bg placeholder:text-theme-settings-input-placeholder border-gray-500 text-white text-sm rounded-lg focus:outline-primary-button active:outline-primary-button outline-none block w-full p-2.5 min-h-[100px] resize-y"
-                  placeholder="Tell us about yourself..."
+                  placeholder="Giới thiệu về bạn..."
                   defaultValue={user.bio}
                 />
               </div>
