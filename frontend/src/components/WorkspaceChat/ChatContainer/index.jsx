@@ -391,7 +391,7 @@ export default function ChatContainer({
               {
                 uuid: v4(),
                 type: "statusResponse",
-                content: "Agent session complete.",
+                content: "Đã hoàn thành phiên làm việc.",
                 role: "assistant",
                 sources: [],
                 closed: true,
