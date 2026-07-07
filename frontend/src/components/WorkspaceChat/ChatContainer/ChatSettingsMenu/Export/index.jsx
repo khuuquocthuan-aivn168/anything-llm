@@ -57,7 +57,7 @@ export default function ExportRow({
         }`}
       >
         <span className="text-sm font-normal text-zinc-50 light:text-slate-800">
-          {exporting ? t("chat_window.exporting") : t("chat_window.export")}
+          {exporting ? t("chat_window.exporting") : t("Xuất cuộc trò chuyện")}
         </span>
         <CaretRight
           size={14}
