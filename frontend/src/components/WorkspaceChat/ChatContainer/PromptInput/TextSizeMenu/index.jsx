@@ -78,7 +78,7 @@ function TextSizeMenu({ tooltipRef }) {
             : "hover:bg-theme-action-menu-item-hover"
         }`}
       >
-        <div className="text-theme-text-primary text-xs">
+        <div className="text-theme-text-primary text-xs whitespace-nowrap">
           {t("chat_window.small")}
         </div>
       </button>
@@ -94,7 +94,7 @@ function TextSizeMenu({ tooltipRef }) {
             : "hover:bg-theme-action-menu-item-hover"
         }`}
       >
-        <div className="text-theme-text-primary text-sm">
+        <div className="text-theme-text-primary text-sm whitespace-nowrap">
           {t("chat_window.normal")}
         </div>
       </button>
@@ -110,7 +110,7 @@ function TextSizeMenu({ tooltipRef }) {
             : "hover:bg-theme-action-menu-item-hover"
         }`}
       >
-        <div className="text-theme-text-primary text-[16px]">
+        <div className="text-theme-text-primary text-[16px] whitespace-nowrap">
           {t("chat_window.large")}
         </div>
       </button>
