@@ -14,10 +14,11 @@ import {
 import React, { useEffect, useState } from "react";
 import SettingsButton from "../SettingsButton";
 import TransferDocButton from "../TransferDocButton";
-import { isMobile } from "react-device-detect";
 import { Tooltip } from "react-tooltip";
 import { Link } from "react-router-dom";
 import { useVisibility } from "@/VisibilityContext";
+import { sidebarFooterActionButtonClasses } from "@/components/GlassSidebar";
+import cn from "@/utils/cn";
 
 export const MAX_ICONS = 3;
 export const ICON_COMPONENTS = {
@@ -32,7 +33,7 @@ export const ICON_COMPONENTS = {
   Info: Info,
 };
 
-export default function Footer() {
+export default function Footer({ hideActionButtons = false }) {
   const { isVisible } = useVisibility();
   const [footerData, setFooterData] = useState(false);
 
@@ -45,17 +46,16 @@ export default function Footer() {
   }, []);
 
   // wait for some kind of non-false response from footer data first
-  // to prevent pop-in.
-  if (footerData === false) return null;
-
+  // to prevent pop-in — but always show action buttons at the bottom.
   const showCustomIcons =
+    footerData !== false &&
     isVisible("footer-custom-icons") &&
     Array.isArray(footerData) &&
     footerData.length > 0;
 
   return (
-    <div className="flex justify-center mb-2">
-      <div className="flex space-x-4">
+    <div className="relative z-10 mb-1 flex justify-center py-1">
+      <div className="flex items-center gap-4">
         {showCustomIcons &&
           footerData.map((item, index) => (
             <a
@@ -63,20 +63,26 @@ export default function Footer() {
               href={item.url}
               target="_blank"
               rel="noreferrer"
-              className="transition-all duration-300 flex w-fit h-fit p-2 p-2 rounded-full bg-theme-sidebar-footer-icon hover:bg-theme-sidebar-footer-icon-hover hover:border-slate-100"
+              className={cn(
+                sidebarFooterActionButtonClasses,
+                "h-fit w-fit p-2"
+              )}
             >
               {React.createElement(
                 ICON_COMPONENTS?.[item.icon] ?? ICON_COMPONENTS.Info,
                 {
                   weight: "fill",
                   className: "h-5 w-5",
-                  color: "var(--theme-sidebar-footer-icon-fill)",
                 }
               )}
             </a>
           ))}
-        {!isMobile && <TransferDocButton />}
-        {!isMobile && <SettingsButton />}
+        {!hideActionButtons && (
+          <>
+            <TransferDocButton className={sidebarFooterActionButtonClasses} />
+            <SettingsButton className={sidebarFooterActionButtonClasses} />
+          </>
+        )}
       </div>
       <Tooltip
         id="footer-item"

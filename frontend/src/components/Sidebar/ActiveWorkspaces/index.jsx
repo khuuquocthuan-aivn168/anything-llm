@@ -15,6 +15,7 @@ import showToast from "@/utils/toast";
 import { LAST_VISITED_WORKSPACE } from "@/utils/constants";
 import { safeJsonParse } from "@/utils/request";
 import { useVisibility } from "@/VisibilityContext";
+import cn from "@/utils/cn";
 
 export default function ActiveWorkspaces() {
   const navigate = useNavigate();
@@ -96,7 +97,7 @@ export default function ActiveWorkspaces() {
           <div
             role="list"
             aria-label="Workspaces"
-            className="flex flex-col gap-y-2"
+            className="flex flex-col gap-y-[8px]"
             ref={provided.innerRef}
             {...provided.droppableProps}
           >
@@ -118,44 +119,47 @@ export default function ActiveWorkspaces() {
                       }`}
                       role="listitem"
                     >
-                      <div className="flex gap-x-2 items-center justify-between">
+                      <div className="flex w-full items-center justify-between gap-x-2">
                         <Link
                           to={paths.workspace.chat(workspace.slug)}
-                          aria-current={isActive ? "page" : ""}
-                          className={`
-                            transition-all duration-[200ms]
-                            flex flex-grow w-[75%] gap-x-2 py-[6px] pl-[4px] pr-[6px] rounded-[4px] text-white justify-start items-center
-                            bg-theme-sidebar-item-default
-                            ${isActive ? "light:bg-blue-200 font-bold" : "hover:bg-theme-sidebar-subitem-hover light:hover:bg-slate-300"}
-                          `}
+                          aria-current={isActive ? "page" : undefined}
+                          className={cn(
+                            "flex w-full min-w-0 flex-grow items-center gap-x-2 rounded-lg py-[6px] pl-1 pr-2",
+                            "transition-all duration-200",
+                            isActive
+                              ? "bg-[#EAF4FC] font-semibold text-[#3A6FB5]"
+                              : "bg-white/30 text-sidebar-muted hover:bg-white/45 hover:translate-x-1",
+                            "focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4F8CFF] focus-visible:outline-offset-2"
+                          )}
                         >
-                          <div className="flex flex-row justify-between w-full items-center">
+                          <div className="flex w-full min-w-0 flex-row items-center justify-between">
                             <div
                               {...provided.dragHandleProps}
-                              className="cursor-grab mr-[3px]"
+                              className="mr-[3px] shrink-0 cursor-grab"
                             >
                               <DotsSixVertical
                                 size={20}
-                                className={`${isActive ? "text-white light:text-blue-800" : ""}`}
+                                className={
+                                  isActive ? "text-[#5B8FD4]" : "text-sidebar-icon/80"
+                                }
                                 weight="bold"
                               />
                             </div>
                             <div
                               data-tooltip-id="workspace-name"
                               data-tooltip-content={workspace.name}
-                              className="flex items-center space-x-2 overflow-hidden flex-grow"
+                              className="flex min-w-0 flex-grow items-center overflow-hidden"
                             >
-                              <div className="w-[130px] overflow-hidden">
-                                <p
-                                  className={`
-                                  text-[14px] leading-loose whitespace-nowrap overflow-hidden
-                                  ${isActive ? "font-bold text-white light:text-blue-900" : "font-medium "} truncate
-                                  w-full group-hover:w-[130px] group-hover:duration-200
-                                `}
-                                >
-                                  {workspace.name}
-                                </p>
-                              </div>
+                              <p
+                                className={cn(
+                                  "w-full truncate text-[14px] leading-loose",
+                                  isActive
+                                    ? "font-semibold text-[#3A6FB5]"
+                                    : "font-medium text-sidebar-muted"
+                                )}
+                              >
+                                {workspace.name}
+                              </p>
                             </div>
                             {user?.role !== "default" && (
                               <div
@@ -165,15 +169,16 @@ export default function ActiveWorkspaces() {
                                   type="button"
                                   onClick={(e) => {
                                     e.preventDefault();
+                                    e.stopPropagation();
                                     setSelectedWs(workspace);
                                     showModal();
                                   }}
                                   data-tooltip-id="upload-workspace"
                                   data-tooltip-content="Upload documents to this workspace for RAG indexing"
-                                  className={`group/upload border-none rounded-md flex items-center justify-center ml-auto p-[2px] ${isActive ? "hover:bg-zinc-500 light:hover:bg-sky-800/30" : "hover:bg-zinc-500 light:hover:bg-slate-400"}`}
+                                  className={`group/upload border-none rounded-lg flex items-center justify-center ml-auto p-[2px] transition-colors duration-250 ${isActive ? "hover:bg-[#D6E9FA]" : "hover:bg-white/55"}`}
                                 >
                                   <UploadSimple
-                                    className={`h-[20px] w-[20px] ${isActive ? "text-zinc-400 hover:text-white light:text-blue-700 light:group-hover/upload:text-blue-900" : "text-zinc-400 hover:text-white light:text-slate-600 light:group-hover/upload:text-slate-950"}`}
+                                    className={`h-[20px] w-[20px] ${isActive ? "text-[#5B8FD4] hover:text-[#3A6FB5]" : "text-sidebar-icon/80 hover:text-[#4F8CFF]"}`}
                                   />
                                 </button>
                                 <button
@@ -188,19 +193,19 @@ export default function ActiveWorkspaces() {
                                           )
                                     );
                                   }}
-                                  className={`group/gear rounded-md flex items-center justify-center ml-auto p-[2px] ${isActive ? "hover:bg-zinc-500 light:hover:bg-sky-800/30" : "hover:bg-zinc-500 light:hover:bg-slate-400"}`}
-                                  aria-label="General appearance settings"
+                                  className={`group/gear rounded-lg flex items-center justify-center ml-auto p-[2px] transition-colors duration-250 ${isActive ? "hover:bg-[#D6E9FA]" : "hover:bg-white/55"}`}
+                                  aria-label="Cài đặt chung"
                                   data-tooltip-id="gear-workspace"
-                                  data-tooltip-content="General appearance settings"
+                                  data-tooltip-content="Cài đặt chung"
                                 >
                                   <GearSix
                                     color={
                                       isInWorkspaceSettings &&
                                       workspace.slug === slug
-                                        ? "#46C8FF"
+                                        ? "#4F8CFF"
                                         : undefined
                                     }
-                                    className={`h-[20px] w-[20px] ${isActive ? "text-zinc-400 hover:text-white light:text-blue-700 light:group-hover/gear:text-blue-900" : "text-zinc-400 hover:text-white light:text-slate-600 light:group-hover/gear:text-slate-950"}`}
+                                    className={`h-[20px] w-[20px] ${isActive ? "text-[#5B8FD4] hover:text-[#3A6FB5]" : "text-sidebar-icon/80 hover:text-[#4F8CFF]"}`}
                                   />
                                 </button>
                               </div>
@@ -221,15 +226,15 @@ export default function ActiveWorkspaces() {
               );
             })}
             {provided.placeholder}
-            {showing && (
-              <ManageWorkspace
-                hideModal={hideModal}
-                providedSlug={selectedWs ? selectedWs.slug : null}
-              />
-            )}
           </div>
         )}
       </Droppable>
+      {showing && (
+        <ManageWorkspace
+          hideModal={hideModal}
+          providedSlug={selectedWs ? selectedWs.slug : null}
+        />
+      )}
     </DragDropContext>
   );
 }

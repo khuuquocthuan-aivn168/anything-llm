@@ -153,6 +153,9 @@ export default {
             'delete-hover-text': 'var(--theme-button-delete-hover-text)',
             'delete-hover-bg': 'var(--theme-button-delete-hover-bg)',
           },
+          "sidebar-text": "#1F2937",
+          "sidebar-muted": "#6B7280",
+          "sidebar-icon": "#64748B",
         },
       },
       backgroundImage: {
@@ -174,10 +177,43 @@ export default {
           "linear-gradient(90deg, #3D4147 0%, #2C2F35 100%)",
         "workspace-item-selected-gradient":
           "linear-gradient(90deg, #5B616A 0%, #3F434B 100%)",
-        "switch-selected": "linear-gradient(146deg, #5B616A 0%, #3F434B 100%)"
+        "switch-selected": "linear-gradient(146deg, #5B616A 0%, #3F434B 100%)",
+        "sidebar-premium":
+          "radial-gradient(circle at 0% 0%, rgba(111,180,255,.18) 0%, transparent 38%), radial-gradient(circle at 100% 12%, rgba(147,197,253,.15) 0%, transparent 35%), radial-gradient(circle at 25% 100%, rgba(196,181,253,.12) 0%, transparent 45%), linear-gradient(180deg, #F8FCFF 0%, #F4FAFF 45%, #FFFFFF 100%)",
+        "sidebar-item-active":
+          "linear-gradient(135deg, #4F8CFF, #2F6BFF)"
+      },
+      width: {
+        "sidebar-desktop": "320px",
+        "sidebar-tablet": "280px",
+        "sidebar-collapsed": "80px"
+      },
+      minWidth: {
+        "sidebar-desktop": "320px",
+        "sidebar-tablet": "280px",
+        "sidebar-collapsed": "80px"
+      },
+      maxWidth: {
+        "sidebar-drawer": "320px"
+      },
+      borderRadius: {
+        sidebar: "30px",
+        "sidebar-card": "20px",
+        "sidebar-item": "14px"
+      },
+      boxShadow: {
+        "sidebar-shell":
+          "0 20px 60px rgba(115,155,255,.12), inset 0 1px 0 rgba(255,255,255,.7)",
+        "sidebar-item-active": "0 12px 30px rgba(79,140,255,.35)",
+        "sidebar-card": "0 10px 35px rgba(30,41,59,.05)"
+      },
+      backdropBlur: {
+        sidebar: "30px",
+        "sidebar-card": "18px"
       },
       fontFamily: {
         sans: [
+          "Inter",
           "plus-jakarta-sans",
           "ui-sans-serif",
           "system-ui",
@@ -193,6 +229,13 @@ export default {
           '"Segoe UI Emoji"',
           '"Segoe UI Symbol"',
           '"Noto Color Emoji"'
+        ],
+        sidebar: [
+          "Inter",
+          "plus-jakarta-sans",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif"
         ]
       },
       animation: {
@@ -200,7 +243,9 @@ export default {
         "pulse-glow": "pulse-glow 1.5s infinite",
         'fade-in': 'fade-in 0.3s ease-out',
         'slide-up': 'slide-up 0.4s ease-out forwards',
-        'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite'
+        'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite',
+        'sidebar-card-in': 'sidebar-card-in 0.35s ease-out forwards',
+        'sidebar-slide': 'sidebar-slide 0.25s ease-out'
       },
       keyframes: {
         sweep: {
@@ -246,6 +291,14 @@ export default {
         'bounce-subtle': {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-2px)' }
+        },
+        'sidebar-card-in': {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
+        },
+        'sidebar-slide': {
+          '0%': { opacity: '0', transform: 'translateX(-6px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' }
         }
       }
     }

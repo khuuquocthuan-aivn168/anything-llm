@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { CaretRight } from "@phosphor-icons/react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { safeJsonParse } from "@/utils/request";
 import { isPathMatch } from "@/utils/paths";
 import useScrollActiveItemIntoView from "@/hooks/useScrollActiveItemIntoView";
+import { SidebarItem } from "@/components/GlassSidebar";
 
 export default function MenuOption({
   btnText,
@@ -37,91 +37,52 @@ export default function MenuOption({
 
   const { ref } = useScrollActiveItemIntoView({
     isActive,
-    behavior: "instant",
-    block: "center",
+    behavior: "smooth",
+    block: "nearest",
   });
 
   if (hidden) return null;
 
-  // If this option is a parent level option
   if (!isChild) {
-    // and has no children then use its flex props and roles prop directly
     if (!hasChildren) {
       if (!flex && !roles.includes(user?.role)) return null;
       if (flex && !!user && !roles.includes(user?.role)) return null;
     }
-
-    // if has children and no visible children - remove it.
     if (hasChildren && !hasVisibleChildren) return null;
   } else {
-    // is a child so we use it's permissions
     if (!flex && !roles.includes(user?.role)) return null;
     if (flex && !!user && !roles.includes(user?.role)) return null;
   }
 
-  const handleClick = (e) => {
-    if (hasChildren) {
-      e.preventDefault();
-      const newExpandedState = !isExpanded;
-      setIsExpanded(newExpandedState);
-      localStorage.setItem(storageKey, JSON.stringify(newExpandedState));
-    }
+  const handleToggle = () => {
+    if (!hasChildren) return;
+    const next = !isExpanded;
+    setIsExpanded(next);
+    localStorage.setItem(storageKey, JSON.stringify(next));
   };
 
   return (
     <div>
-      <div
-        className={`
-          flex items-center justify-between w-full
-          transition-all duration-300
-          rounded-[6px]
-          ${
-            isActive
-              ? "bg-theme-sidebar-subitem-selected font-medium border-outline"
-              : "hover:bg-theme-sidebar-subitem-hover"
-          }
-        `}
-      >
-        <Link
-          ref={ref}
-          to={href}
-          className={`flex flex-grow items-center px-[12px] h-[32px] font-medium ${
-            isChild ? "hover:text-white" : "text-white light:text-black"
-          }`}
-          onClick={hasChildren ? handleClick : undefined}
-        >
-          {icon}
-          <p
-            className={`${
-              isChild ? "text-xs" : "text-sm"
-            } leading-loose whitespace-nowrap overflow-hidden ml-2 ${
-              isActive
-                ? "text-white font-semibold"
-                : "text-white light:text-black"
-            } ${!icon && "pl-5"}`}
-          >
-            {btnText}
-          </p>
-        </Link>
-        {hasChildren && (
-          <button onClick={handleClick} className="p-2 text-white">
-            <CaretRight
-              size={16}
-              weight="bold"
-              // color={isExpanded ? "#000000" : "var(--theme-sidebar-subitem-icon)"}
-              className={`transition-transform text-white light:text-black ${
-                isExpanded ? "rotate-90" : ""
-              }`}
-            />
-          </button>
-        )}
-      </div>
+      <SidebarItem
+        ref={ref}
+        label={btnText}
+        icon={icon}
+        href={href}
+        active={isActive}
+        isChild={isChild}
+        hasChildren={hasChildren}
+        expanded={isExpanded}
+        onToggle={handleToggle}
+      />
       {isExpanded && hasChildren && (
-        <div className="mt-1 rounded-r-lg w-full">
+        <div
+          className="mt-1 flex flex-col gap-0.5 pl-1 animate-sidebar-slide"
+          role="list"
+        >
           {childOptions.map((childOption, index) => (
             <MenuOption
               key={index}
-              {...childOption} // flex and roles go here.
+              {...childOption}
               user={user}
               isChild={true}
             />
@@ -164,15 +125,6 @@ function useIsExpanded({
   return { isExpanded, setIsExpanded };
 }
 
-/**
- * Checks if the child options are visible to the user.
- * This hides the top level options if the child options are not visible
- * for either the users permissions or the child options hidden prop is set to true by other means.
- * If all child options return false for `isVisible` then the parent option will not be visible as well.
- * @param {object} user - The user object.
- * @param {array} childOptions - The child options.
- * @returns {boolean} - True if the child options are visible, false otherwise.
- */
 function hasVisibleOptions(user = null, childOptions = []) {
   if (!Array.isArray(childOptions) || childOptions?.length === 0) return false;
 

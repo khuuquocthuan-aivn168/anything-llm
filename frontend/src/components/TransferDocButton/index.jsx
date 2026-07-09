@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { FileArrowUp } from "@phosphor-icons/react";
 import TransferDocModal from "../Modals/TransferDocModal";
+import cn from "@/utils/cn";
 
-export default function TransferDocButton() {
+export default function TransferDocButton({ className = "" }) {
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -10,15 +11,18 @@ export default function TransferDocButton() {
       <div className="flex w-fit">
         <button
           onClick={() => setShowModal(true)}
-          className="transition-all duration-300 p-2 rounded-full bg-theme-sidebar-footer-icon hover:bg-theme-sidebar-footer-icon-hover"
+          className={cn(
+            "transition-all duration-300 p-2 rounded-full",
+            "border border-white/[0.55] bg-white/90 text-[#4F8CFF] shadow-sm",
+            "hover:bg-white hover:text-[#2F6BFF] hover:shadow-md",
+            "focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4F8CFF]",
+            className
+          )}
           aria-label="Cấu hình xử lý văn bản"
           data-tooltip-id="footer-item"
           data-tooltip-content="Cấu hình xử lý văn bản"
         >
-          <FileArrowUp
-            className="h-5 w-5 text-white light:text-slate-800"
-            weight="fill"
-          />
+          <FileArrowUp className="h-5 w-5" weight="fill" />
         </button>
       </div>
       

@@ -108,35 +108,35 @@
 [data-theme="light"] {
   --theme-loader: #000000;
   --theme-bg-primary: #ffffff;
-  --theme-bg-secondary: #ffffff;
-  --theme-bg-sidebar: #edf2fa;
-  --theme-bg-container: #f9fbfd;
-  --theme-popup-menu-bg: #c2e7fe;
+  --theme-bg-secondary: #f7fafc;
+  --theme-bg-sidebar: #c8e0ec;
+  --theme-bg-container: #ffffff;
+  --theme-popup-menu-bg: #dbeafe;
 
   --theme-bg-chat: #ffffff;
   --theme-bg-chat-input: #eaeaea;
-  --theme-text-primary: #0e0f0f;
-  --theme-text-secondary: #7a7d7e;
+  --theme-text-primary: #1a202c;
+  --theme-text-secondary: #718096;
   --theme-placeholder: #9ca3af;
-  --theme-sidebar-item-default: #ffffff;
-  --theme-sidebar-item-selected: #ffffff;
-  --theme-sidebar-item-hover: #c8efff;
+  --theme-sidebar-item-default: rgba(255, 255, 255, 0.88);
+  --theme-sidebar-item-selected: rgba(59, 130, 246, 0.16);
+  --theme-sidebar-item-hover: rgba(59, 130, 246, 0.08);
 
-  --theme-sidebar-item-text-inactive: #7a7d7e;
-  --theme-sidebar-item-text-active: #184558;
+  --theme-sidebar-item-text-inactive: #718096;
+  --theme-sidebar-item-text-active: #1a202c;
 
-  --theme-sidebar-item-workspace-active: #000000;
-  --theme-sidebar-item-workspace-inactive: #7a7d7e;
+  --theme-sidebar-item-workspace-active: #1a202c;
+  --theme-sidebar-item-workspace-inactive: #718096;
 
   --theme-sidebar-subitem-default: transparent;
-  --theme-sidebar-subitem-selected: #e2e7ee;
-  --theme-sidebar-thread-selected: #ffffff;
-  --theme-sidebar-subitem-hover: #e2e7ee;
-  --theme-sidebar-border: #d3d4d4;
+  --theme-sidebar-subitem-selected: rgba(59, 130, 246, 0.12);
+  --theme-sidebar-thread-selected: rgba(255, 255, 255, 0.95);
+  --theme-sidebar-subitem-hover: rgba(59, 130, 246, 0.08);
+  --theme-sidebar-border: rgba(255, 255, 255, 0.55);
 
-  --theme-sidebar-footer-icon: #ffffff;
-  --theme-sidebar-footer-icon-fill: #6e6f6f;
-  --theme-sidebar-footer-icon-hover: #d8d6d6;
+  --theme-sidebar-footer-icon: rgba(255, 255, 255, 0.88);
+  --theme-sidebar-footer-icon-fill: #3b82f6;
+  --theme-sidebar-footer-icon-hover: rgba(59, 130, 246, 0.12);
 
   --theme-chat-input-border: #cccccc;
   --theme-action-menu-bg: #eaeaea;
@@ -222,6 +222,35 @@
 
 [data-theme="light"] .border-white\/10 {
   border-color: var(--theme-sidebar-border);
+}
+
+/* Sidebar background — preview image from public/sidebar3.jfif */
+.sidebar-bg-image {
+  background-image: url("/sidebar3.jfif");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.sidebar-bg-image-footer {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+/* Page shell: blue → white vertical wash (light theme) */
+.app-bg-blue-white,
+.light .light\:bg-slate-50 {
+  background: linear-gradient(
+    180deg,
+    #eaf4f8 0%,
+    #c8e0ec 35%,
+    #b5d5e4 50%,
+    #c8e0ec 65%,
+    #eaf4f8 100%
+  ) !important;
 }
 
 /*

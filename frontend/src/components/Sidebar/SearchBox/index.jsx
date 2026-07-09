@@ -53,8 +53,8 @@ export default function SearchBox({ user, showNewWsModal }) {
   }, []);
 
   return (
-    <div className="flex gap-x-[5px] w-full items-center h-[32px]">
-      <div className="relative h-full w-full flex">
+    <div className="relative flex h-8 w-full min-w-0 items-center gap-x-[5px]">
+      <div className="relative flex h-full min-w-0 flex-1">
         <input
           ref={searchRef}
           type="search"
@@ -62,11 +62,11 @@ export default function SearchBox({ user, showNewWsModal }) {
           onChange={handleSearch}
           onReset={handleReset}
           onFocus={(e) => e.target.select()}
-          className="border-none w-full h-full rounded-lg bg-theme-sidebar-item-default pl-9 focus:pl-4 pr-1 placeholder:text-white/50 light:placeholder:text-slate-500 placeholder:font-semibold outline-none text-theme-text-primary search-input peer text-sm"
+          className="search-input peer h-full w-full rounded-lg border-none bg-white/80 pl-9 pr-1 text-sm text-sidebar-text outline-none transition-all duration-200 placeholder:font-semibold placeholder:text-sidebar-muted/70 focus:pl-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4F8CFF]"
         />
         <MagnifyingGlass
           size={14}
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-settings-input-placeholder peer-focus:invisible"
+          className="absolute left-3 top-1/2 -translate-y-1/2 transform text-sidebar-icon peer-focus:invisible"
           weight="bold"
           hidden={!!searchTerm}
         />
@@ -200,13 +200,10 @@ function ShortWidthNewWorkspaceButton({ user, showNewWsModal }) {
         data-tooltip-id="new-workspace-tooltip"
         data-tooltip-content={t("new-workspace.title")}
         onClick={showNewWsModal}
-        className="border-none flex items-center justify-center bg-white  rounded-lg p-[8px] hover:bg-white/80 light:hover:bg-slate-300 transition-all duration-300"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border-none bg-white p-2 transition-all duration-200 hover:bg-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4F8CFF]"
+        aria-label={t("new-workspace.title")}
       >
-        <Plus
-          size={16}
-          weight="bold"
-          className="text-black light:text-slate-500"
-        />
+        <Plus size={16} weight="bold" className="text-[#4F8CFF]" />
       </button>
       <Tooltip
         id="new-workspace-tooltip"

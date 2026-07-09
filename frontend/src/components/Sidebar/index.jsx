@@ -18,11 +18,21 @@ import { Tooltip } from "react-tooltip";
 import { createPortal } from "react-dom";
 import { useVisibility } from "@/VisibilityContext";
 import UserButton from "@/components/UserMenu/UserButton";
+import cn from "@/utils/cn";
+import {
+  SidebarMenu,
+  SidebarFooter,
+  sidebarWorkspaceShellClasses,
+  sidebarWorkspaceCardClasses,
+  sidebarMobileOverlayClasses,
+  sidebarMobileDrawerClasses,
+  sidebarFooterStripClasses,
+} from "@/components/GlassSidebar";
 
 export default function Sidebar() {
   const { user } = useUser();
   const { isVisible } = useVisibility();
-  const { logo, isCustomLogo } = useLogo();
+  const { logo } = useLogo();
   const sidebarRef = useRef(null);
   const { showSidebar, setShowSidebar, canToggleSidebar } = useSidebarToggle();
   const {
@@ -38,7 +48,7 @@ export default function Sidebar() {
           width: showSidebar ? "292px" : "0px",
           paddingLeft: showSidebar ? "0px" : "16px",
         }}
-        className="relative transition-all duration-500"
+        className="sidebar-bg-image relative h-full shrink-0 transition-all duration-500"
       >
         {canToggleSidebar && (
           <ToggleSidebarButton
@@ -46,36 +56,51 @@ export default function Sidebar() {
             setShowSidebar={setShowSidebar}
           />
         )}
-        <div className="overflow-hidden h-full">
-          <div className="flex shrink-0 w-full justify-center my-[18px]">
+        <div className="flex h-full min-h-0 flex-col overflow-hidden">
+          <div className="my-[18px] flex w-full shrink-0 justify-center">
             <div className="flex w-[250px] min-w-[250px]">
               <Link to={paths.home()} aria-label="Home">
                 <img
                   src={logo}
                   alt="Logo"
-                  className={`rounded max-h-[24px] object-contain transition-opacity duration-500 ${showSidebar ? "opacity-100" : "opacity-0"}`}
+                  className={cn(
+                    "max-h-6 rounded object-contain transition-opacity duration-500",
+                    showSidebar ? "opacity-100" : "opacity-0"
+                  )}
                 />
               </Link>
             </div>
           </div>
-          <div
+          <nav
             ref={sidebarRef}
-            className="relative m-[16px] rounded-[16px] bg-theme-bg-sidebar light:bg-slate-200 border-[2px] border-theme-sidebar-border light:border-none min-w-[250px] p-[10px] h-[calc(100%-76px)]"
+            className={cn(
+              sidebarWorkspaceShellClasses,
+              "relative mx-4 mb-4 mt-0 flex min-h-0 flex-1 flex-col p-[10px]"
+            )}
+            aria-label="Workspace sidebar"
           >
-            <div className="flex flex-col h-full overflow-hidden">
-              <div className="flex-grow flex flex-col min-w-[235px] min-h-0">
-                <div className="relative h-[calc(100%-60px)] flex flex-col w-full justify-between pt-[10px] overflow-y-scroll no-scroll">
-                  <div className="flex flex-col gap-y-[14px]">
-                    {isVisible("search-box") && <SearchBox user={user} showNewWsModal={showNewWsModal} />}
-                    {isVisible("active-workspaces") && <ActiveWorkspaces />}
-                  </div>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 pb-3 rounded-b-[16px] bg-theme-bg-sidebar light:bg-slate-200 bg-opacity-80 backdrop-filter backdrop-blur-md z-10">
-                  <Footer />
-                </div>
+            <SidebarMenu className="min-h-0 flex-1 pt-[10px]">
+              <div className="flex min-w-[235px] flex-col gap-y-[14px]">
+                {isVisible("search-box") && (
+                  <section className={sidebarWorkspaceCardClasses}>
+                    <SearchBox user={user} showNewWsModal={showNewWsModal} />
+                  </section>
+                )}
+                {isVisible("active-workspaces") && (
+                  <section
+                    className={sidebarWorkspaceCardClasses}
+                    aria-label="Workspaces"
+                  >
+                    <ActiveWorkspaces />
+                  </section>
+                )}
               </div>
-            </div>
-          </div>
+            </SidebarMenu>
+
+            <SidebarFooter className="relative z-10 shrink-0 px-1 pb-1 pt-2">
+              <Footer />
+            </SidebarFooter>
+          </nav>
         </div>
         {showingNewWsModal && <NewWorkspaceModal hideModal={hideNewWsModal} />}
       </div>
@@ -85,7 +110,7 @@ export default function Sidebar() {
 }
 
 export function SidebarMobileHeader() {
-  const { logo, isCustomLogo } = useLogo();
+  const { logo } = useLogo();
   const sidebarRef = useRef(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showBgOverlay, setShowBgOverlay] = useState(false);
@@ -103,13 +128,9 @@ export function SidebarMobileHeader() {
   }, [location.pathname]);
 
   useEffect(() => {
-    // Darkens the rest of the screen
-    // when sidebar is open.
     function handleBg() {
       if (showSidebar) {
-        setTimeout(() => {
-          setShowBgOverlay(true);
-        }, 300);
+        setTimeout(() => setShowBgOverlay(true), 300);
       } else {
         setShowBgOverlay(false);
       }
@@ -117,74 +138,76 @@ export function SidebarMobileHeader() {
     handleBg();
   }, [showSidebar]);
 
+  const logoNode = (
+    <img
+      src={logo}
+      alt="Logo"
+      className="max-h-10 w-auto object-contain"
+    />
+  );
+
   return (
     <>
       <div
         aria-label="Show sidebar"
-        className="fixed top-0 left-0 right-0 z-10 flex justify-between items-center px-4 py-2 bg-theme-bg-sidebar light:bg-white text-slate-200 shadow-lg h-16"
+        className="fixed top-0 left-0 right-0 z-10 flex h-16 items-center justify-between border-b border-white/[0.55] bg-white/80 px-4 py-2 text-sidebar-muted shadow-sidebar-card backdrop-blur-xl"
       >
-        <div className="w-[76px] flex justify-start items-center shrink-0">
+        <div className="flex w-[76px] shrink-0 items-center justify-start">
           <button
             onClick={() => setShowSidebar(true)}
-            className="rounded-md p-2 flex items-center justify-center text-theme-text-secondary"
+            className="flex items-center justify-center rounded-xl p-2 text-sidebar-icon transition-all duration-250 hover:bg-white/70 hover:text-[#4F8CFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4F8CFF]"
+            aria-label="Open sidebar"
           >
             <List className="h-6 w-6" />
           </button>
         </div>
-        <div className="flex items-center justify-center flex-grow">
+        <div className="flex flex-grow items-center justify-center">
           <img
             src={logo}
             alt="Logo"
-            className="block mx-auto h-6 w-auto"
-            style={{ maxHeight: "40px", objectFit: "contain" }}
+            className="mx-auto block h-6 w-auto max-h-10 object-contain"
           />
         </div>
-        {/* Keep a fixed-width right slot so the logo stays centered,
-            but wide enough for settings + avatar on <1024px. */}
-        <div className="w-[76px] flex justify-end items-center shrink-0">
+        <div className="flex w-[76px] shrink-0 items-center justify-end">
           <div className="flex items-center gap-2">
-            {/* ChatSettingsMenu will portal its button here on mobile */}
             <div id="mobile-header-actions" className="flex items-center" />
             <UserButton placement="inline" />
           </div>
         </div>
       </div>
+
       <div
-        style={{
-          transform: showSidebar ? `translateX(0vw)` : `translateX(-100vw)`,
-        }}
-        className={`z-99 fixed top-0 left-0 transition-all duration-500 w-[100vw] h-[100vh]`}
+        className={cn(
+          "fixed left-0 top-0 z-99 h-screen w-screen transition-transform duration-500 ease-out",
+          showSidebar ? "translate-x-0" : "-translate-x-full"
+        )}
       >
         <div
-          className={`${
-            showBgOverlay
-              ? "transition-all opacity-1"
-              : "transition-none opacity-0"
-          }  duration-500 fixed top-0 left-0 bg-theme-bg-secondary bg-opacity-75 w-screen h-screen`}
+          className={sidebarMobileOverlayClasses(showBgOverlay && showSidebar)}
           onClick={() => setShowSidebar(false)}
+          aria-hidden={!showSidebar || !showBgOverlay}
         />
         <div
           ref={sidebarRef}
-          className="relative h-[100vh] fixed top-0 left-0  rounded-r-[26px] bg-theme-bg-sidebar w-[80%] max-w-[320px] p-[18px] "
+          className={cn(
+            sidebarMobileDrawerClasses,
+            sidebarWorkspaceShellClasses,
+            "sidebar-bg-image !rounded-l-none !rounded-r-[26px] p-[18px]"
+          )}
+          aria-label="Workspace sidebar"
         >
-          <div className="w-full h-full flex flex-col overflow-x-hidden items-between">
-            {/* Header Information */}
-            <div className="flex w-full items-center justify-between gap-x-4">
-              <div className="flex shrink-1 w-[60%] items-center justify-start">
-                <img
-                  src={logo}
-                  alt="Logo"
-                  className="rounded w-full max-h-[40px]"
-                  style={{ objectFit: "contain" }}
-                />
+          <div className="flex h-full w-full min-w-[235px] flex-col overflow-x-hidden">
+            <div className="mb-4 flex w-full items-center justify-between gap-x-4">
+              <div className="flex w-[60%] shrink items-center justify-start">
+                {logoNode}
               </div>
-              <div className="flex gap-x-3 items-center text-slate-500 shrink-0">
+              <div className="flex shrink-0 items-center gap-x-3 text-sidebar-icon">
                 {(!user || user?.role !== "default") && <TransferDocButton />}
                 {(!user || user?.role !== "default") && <SettingsButton />}
                 <button
                   type="button"
                   onClick={() => setShowSidebar(false)}
-                  className="p-1 rounded-md text-slate-500 hover:text-white transition-colors"
+                  className="rounded-lg p-1 text-sidebar-icon transition-colors duration-250 hover:bg-white/60 hover:text-sidebar-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4F8CFF]"
                   aria-label="Close sidebar"
                 >
                   <X className="h-6 w-6" />
@@ -192,23 +215,23 @@ export function SidebarMobileHeader() {
               </div>
             </div>
 
-            {/* Primary Body */}
-            <div className="h-full flex flex-col w-full justify-between pt-4 ">
-              <div className="h-auto md:sidebar-items">
-                <div className=" flex flex-col gap-y-4 overflow-y-scroll no-scroll pb-[60px]">
-                  {isVisible("new-workspace-button") && (
-                    <NewWorkspaceButton
-                      user={user}
-                      showNewWsModal={showNewWsModal}
-                    />
-                  )}
-                  {isVisible("active-workspaces") && <ActiveWorkspaces />}
-                </div>
-              </div>
-              <div className="z-99 absolute bottom-0 left-0 right-0 pt-2 pb-6 rounded-br-[26px] bg-theme-bg-sidebar bg-opacity-80 backdrop-filter backdrop-blur-md">
-                <Footer />
-              </div>
-            </div>
+            <SidebarMenu className="flex-1">
+              {isVisible("new-workspace-button") && (
+                <NewWorkspaceButton user={user} showNewWsModal={showNewWsModal} />
+              )}
+              {isVisible("active-workspaces") && (
+                <section
+                  className={sidebarWorkspaceCardClasses}
+                  aria-label="Workspaces"
+                >
+                  <ActiveWorkspaces />
+                </section>
+              )}
+            </SidebarMenu>
+
+            <footer className={cn("mt-auto pt-2 pb-6", sidebarFooterStripClasses)}>
+              <Footer hideActionButtons />
+            </footer>
           </div>
         </div>
         {showingNewWsModal && <NewWorkspaceModal hideModal={hideNewWsModal} />}
@@ -222,15 +245,19 @@ function NewWorkspaceButton({ user, showNewWsModal }) {
   if (!!user && user?.role === "default") return null;
 
   return (
-    <div className="flex gap-x-2 items-center justify-between">
+    <div className="flex items-center justify-between gap-x-2">
       <button
         onClick={showNewWsModal}
-        className="flex flex-grow w-[75%] h-[44px] gap-x-2 py-[5px] px-4 bg-white rounded-lg text-sidebar justify-center items-center hover:bg-opacity-80 transition-all duration-300"
+        className={cn(
+          "flex h-11 w-full max-w-[75%] flex-grow items-center justify-center gap-x-2 rounded-lg",
+          "border border-white/[0.55] bg-white/80 px-4 py-[5px]",
+          "text-sm font-semibold text-sidebar-text",
+          "transition-all duration-200 hover:bg-white/90 hover:translate-x-1",
+          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4F8CFF]"
+        )}
       >
-        <Plus className="h-5 w-5" />
-        <p className="text-sidebar text-sm font-semibold">
-          {t("new-workspace.title")}
-        </p>
+        <Plus className="h-5 w-5 text-[#4F8CFF]" />
+        <span>{t("new-workspace.title")}</span>
       </button>
     </div>
   );
