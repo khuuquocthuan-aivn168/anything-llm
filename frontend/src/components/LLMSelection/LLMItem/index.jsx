@@ -25,7 +25,7 @@ export default function LLMItem({
         <img
           src={image}
           alt={`${name} logo`}
-          className="w-10 h-10 rounded-md"
+          className="w-10 h-10 rounded-md object-contain"
         />
         <div className="flex flex-col">
           <div className="text-sm font-semibold text-white">{name}</div>

@@ -18,7 +18,6 @@ import TogetherAILogo from "@/media/llmprovider/togetherai.png";
 import FireworksAILogo from "@/media/llmprovider/fireworksai.jpeg";
 import MistralLogo from "@/media/llmprovider/mistral.jpeg";
 import PerplexityLogo from "@/media/llmprovider/perplexity.png";
-import OpenRouterLogo from "@/media/llmprovider/openrouter.jpeg";
 import GroqLogo from "@/media/llmprovider/groq.png";
 import KoboldCPPLogo from "@/media/llmprovider/koboldcpp.png";
 import TextGenWebUILogo from "@/media/llmprovider/text-generation-webui.png";
@@ -231,11 +230,11 @@ export const AVAILABLE_LLM_PROVIDERS = [
     requiredConfig: ["PerplexityApiKey"],
   },
   {
-    name: "OpenRouter",
+    name: "VN168",
     value: "openrouter",
-    logo: OpenRouterLogo,
+    logo: AnythingLLMIcon,
     options: (settings) => <OpenRouterOptions settings={settings} />,
-    description: "A unified interface for LLMs.",
+    description: "Cổng giao tiếp hợp nhất cho các mô hình LLM của VN168.",
     requiredConfig: ["OpenRouterApiKey"],
   },
   {
@@ -613,7 +612,7 @@ export default function GeneralLLMPreference() {
                       <img
                         src={selectedLLMObject?.logo || AnythingLLMIcon}
                         alt={`${selectedLLMObject?.name} logo`}
-                        className="w-10 h-10 rounded-md"
+                        className="w-10 h-10 rounded-md object-contain"
                       />
                       <div className="flex flex-col text-left">
                         <div className="text-sm font-semibold text-white">

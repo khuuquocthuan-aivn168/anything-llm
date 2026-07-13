@@ -12,6 +12,14 @@ RULES:
 - Be specific and data-driven when possible
 - Include speaker notes with key talking points
 - Do NOT add a title slide - only section content
+- ACTION TITLES: every slide "title" must state the takeaway as a short, complete
+  message, not a bare topic label. Write "Doanh thu số tăng 30% trong quý" not
+  "Doanh thu"; "Ba rào cản cần tháo gỡ trước 2026" not "Thách thức".
+- KEEP TEXT SPARSE (1-6-7 rule): a slide carries ONE idea, at most ~6 bullets, at
+  most ~7 words per bullet. Never write full paragraphs or sentences that wrap.
+  Push detail into the speaker "notes", not onto the slide.
+- PART NUMBERING: only set "sectionNumber" on the divider when the source text
+  explicitly numbers its parts (Phần I, Chương 1...). Otherwise omit it.
 
 VARY THE SLIDE FORM. A deck of nothing but bullet lists looks amateurish. Match the
 form to what the content actually is:
@@ -209,6 +217,11 @@ async function runSectionAgent({
                 type: "string",
                 description:
                   "Short ENGLISH stock-photo search phrase naming a concrete subject, e.g. 'vietnamese government office'. REQUIRED on every 'section' divider slide. Optional on at most one plain-bullet 'content' slide per section. Never on chart/stats/cards/chips/comparison/timeline/table slides.",
+              },
+              sectionNumber: {
+                type: "string",
+                description:
+                  "OPTIONAL, only on the 'section' divider, and only when the source explicitly numbers its parts. Roman numeral for a major part ('Phần I' -> 'I'), plain number for a sub-part ('1'). Omit it entirely otherwise — do not invent a running counter.",
               },
               cards: {
                 type: "array",

@@ -386,20 +386,33 @@ function renderSectionSlide(
   const textX = 0.62;
   const textW = panel ? PANEL_X - textX - 0.33 : 8.4;
 
-  // Oversized numeral, sunk into the surface as texture rather than read as a
-  // number - it marks position in the deck without competing with the title.
-  slide.addText(String(slideNumber).padStart(2, "0"), {
-    x: textX,
-    y: 0.55,
-    w: 2.2,
-    h: 1.5,
-    fontSize: 88,
-    bold: true,
-    color: accent,
-    transparency: 80,
-    fontFace: theme.fontTitle,
-    valign: "middle",
-  });
+  // Oversized part numeral, sunk into the surface as texture. Unlike the footer
+  // page number (always shown), this is OPTIONAL: a deck carries it only when the
+  // source document explicitly numbers its parts. `sectionNumber` arrives as a
+  // Roman numeral for a major part (Phần I -> "I") or a plain number for a
+  // sub-part; a bare number is zero-padded to the deck's 01..30 styling, a Roman
+  // numeral is left as written. Absent -> no numeral is drawn at all.
+  const rawSectionNumber =
+    slideData.sectionNumber != null
+      ? String(slideData.sectionNumber).trim()
+      : "";
+  if (rawSectionNumber) {
+    const numeral = /^\d+$/.test(rawSectionNumber)
+      ? rawSectionNumber.padStart(2, "0")
+      : rawSectionNumber;
+    slide.addText(numeral, {
+      x: textX,
+      y: 0.55,
+      w: 2.2,
+      h: 1.5,
+      fontSize: 88,
+      bold: true,
+      color: accent,
+      transparency: 80,
+      fontFace: theme.fontTitle,
+      valign: "middle",
+    });
+  }
 
   slide.addText(slideData.title || "", {
     x: textX,

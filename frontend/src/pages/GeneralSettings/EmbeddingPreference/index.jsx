@@ -15,7 +15,6 @@ import VoyageAiLogo from "@/media/embeddingprovider/voyageai.png";
 import LiteLLMLogo from "@/media/llmprovider/litellm.png";
 import GenericOpenAiLogo from "@/media/llmprovider/generic-openai.png";
 import MistralAiLogo from "@/media/llmprovider/mistral.jpeg";
-import OpenRouterLogo from "@/media/llmprovider/openrouter.jpeg";
 import LemonadeLogo from "@/media/llmprovider/lemonade.png";
 
 import PreLoader from "@/components/Preloader";
@@ -44,12 +43,12 @@ import { useTranslation } from "react-i18next";
 
 const EMBEDDERS = [
   {
-    name: "AnythingLLM Embedder",
+    name: "GOV AI VN168 Embedder",
     value: "native",
     logo: AnythingLLMIcon,
     options: (settings) => <NativeEmbeddingOptions settings={settings} />,
     description:
-      "Use the built-in embedding provider for AnythingLLM. Zero setup!",
+      "Sử dụng bộ nhúng tích hợp sẵn của GOV AI VN168. Không cần cài đặt!",
   },
   {
     name: "OpenAI",
@@ -103,11 +102,11 @@ const EMBEDDERS = [
       "Run embedding models locally on your own machine using Lemonade.",
   },
   {
-    name: "OpenRouter",
+    name: "VN168",
     value: "openrouter",
-    logo: OpenRouterLogo,
+    logo: AnythingLLMIcon,
     options: (settings) => <OpenRouterOptions settings={settings} />,
-    description: "Run embedding models from OpenRouter.",
+    description: "Chạy các mô hình nhúng qua cổng VN168.",
   },
   {
     name: "LiteLLM",
@@ -355,7 +354,7 @@ export default function GeneralEmbeddingPreference() {
                       <img
                         src={selectedEmbedderObject.logo}
                         alt={`${selectedEmbedderObject.name} logo`}
-                        className="w-10 h-10 rounded-md"
+                        className="w-10 h-10 rounded-md object-contain"
                       />
                       <div className="flex flex-col text-left">
                         <div className="text-sm font-semibold text-white">
