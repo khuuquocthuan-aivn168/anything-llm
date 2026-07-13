@@ -90,6 +90,14 @@ function ensureSectionDivider(slides, section) {
   const query =
     typeof section.imageQuery === "string" ? section.imageQuery.trim() : "";
   if (query) divider.imageQuery = query;
+
+  // Part numbering is a property of the source document, not of the sub-agent's
+  // compliance: if the outline carries an explicit `sectionNumber` (only set when
+  // the document numbers its parts), it is authoritative over anything the
+  // sub-agent guessed. Left untouched otherwise, so default decks stay unnumbered.
+  const number =
+    section.sectionNumber != null ? String(section.sectionNumber).trim() : "";
+  if (number) divider.sectionNumber = number;
 }
 
 /**
@@ -182,7 +190,13 @@ module.exports.CreatePptxPresentation = {
             "that can use web search and web scraping to gather data. " +
             "If the user asks for a specific number of slides, pass it as slideCount " +
             "(honored within 10-30; omit it for the default of 10). Each section " +
-            "becomes roughly two slides, so provide about slideCount/2 sections.",
+            "becomes roughly two slides, so provide about slideCount/2 sections. " +
+            "The deck automatically opens with a cover and an agenda (Mục lục) slide " +
+            "and ends with a closing slide — do not add sections for those. Write each " +
+            "section title as a concrete action message, not a bare topic label. Only " +
+            "set a section's sectionNumber when the SOURCE DOCUMENT itself numbers its " +
+            "parts (Roman numeral for a major 'Phần I', a plain number for a sub-part); " +
+            "otherwise leave it unset so no part numeral is shown.",
           examples: [
             {
               prompt: "Create a presentation about project updates",
@@ -304,6 +318,11 @@ module.exports.CreatePptxPresentation = {
                       description:
                         "ALWAYS provide this. A 2-4 word ENGLISH stock-photo search phrase naming a concrete, photographable subject for this section's divider slide (e.g. 'football stadium crowd', 'vietnamese government office'). Write it in English even for a Vietnamese presentation. Avoid abstractions like 'innovation' — name something a camera could point at.",
                     },
+                    sectionNumber: {
+                      type: "string",
+                      description:
+                        "OPTIONAL and OFF BY DEFAULT — omit it entirely unless the SOURCE DOCUMENT explicitly numbers its parts. When the document is organised into numbered parts (e.g. 'Phần I', 'Phần II', 'Chương 1'), set this to that part's number: a ROMAN numeral for a major part ('Phần I' -> 'I', 'Phần II' -> 'II') and a PLAIN arabic number for a sub-part ('1', '2', '3'). Do NOT invent a running 1,2,3 for ordinary sections — leave it unset so the deck shows no part numeral.",
+                    },
                   },
                   required: ["title", "imageQuery"],
                 },
@@ -362,10 +381,13 @@ module.exports.CreatePptxPresentation = {
               const totalSections = sections.length;
 
               // Size the deck to a slide count, not a section count. The deck
-              // always carries a cover slide and a closing slide (2 total), so
-              // the sections share the remaining budget.
+              // always carries a cover slide and a closing slide, and — when there
+              // is more than one section — an agenda/"Mục lục" slide right after
+              // the cover. The sections share whatever budget remains.
               const targetSlides = clampSlideCount(slideCount);
-              const sectionSlidesTarget = Math.max(1, targetSlides - 2);
+              const hasAgenda = totalSections > 1;
+              const fixedSlides = 2 + (hasAgenda ? 1 : 0); // cover + closing [+ agenda]
+              const sectionSlidesTarget = Math.max(1, targetSlides - fixedSlides);
               // Slides per section (its divider counts as one). Floored at 2 so a
               // section is never just a bare divider; capped at 8 so a deck with
               // very few sections still asks each sub-agent for enough slides to
@@ -450,10 +472,11 @@ module.exports.CreatePptxPresentation = {
               );
               const droppedForBudget = allSlides.length - budgetedSlides.length;
 
-              // Assemble the final PPTX from all section outputs. +2 accounts for
-              // the cover and closing slides wrapped around the section slides.
+              // Assemble the final PPTX from all section outputs. `fixedSlides`
+              // accounts for the cover and closing slides (and the agenda, when
+              // present) wrapped around the section slides.
               this.super.introspect(
-                `${this.caller}: Assembling final deck — ${budgetedSlides.length + 2} slides` +
+                `${this.caller}: Assembling final deck — ${budgetedSlides.length + fixedSlides} slides` +
                   (droppedForBudget > 0
                     ? ` (trimmed ${droppedForBudget} to stay within ${targetSlides})`
                     : "")
@@ -465,8 +488,6 @@ module.exports.CreatePptxPresentation = {
               pptx.title = title;
               if (author) pptx.author = author;
               pptx.company = "AnythingLLM";
-
-              const totalSlideCount = budgetedSlides.length;
 
               // Sub-agent output can carry XML 1.0 illegal control characters
               // (e.g. a form feed from a LaTeX `\frac`); strip them recursively
@@ -489,12 +510,31 @@ module.exports.CreatePptxPresentation = {
                 for (const s of cleanSlides) delete s.imageQuery;
               }
 
+              // Agenda / "Mục lục": a table-of-contents slide listing the section
+              // titles, inserted right after the cover so every multi-section deck
+              // opens cover -> agenda -> content regardless of what the section
+              // sub-agents returned. Built after photo resolution so it never
+              // receives a stock image; capped at 8 lines to respect the 1-6-7 rule.
+              if (hasAgenda) {
+                const agendaItems = sections
+                  .map((s) => s.title)
+                  .filter(Boolean)
+                  .slice(0, 8);
+                if (agendaItems.length > 1)
+                  cleanSlides.unshift({
+                    layout: "content",
+                    title: "Nội dung chính",
+                    content: agendaItems,
+                  });
+              }
+
               // Title slide
               const titleSlide = pptx.addSlide();
               renderTitleSlide(titleSlide, pptx, { title, author }, theme);
 
-              // Footer numbering spans the section slides plus the closing slide
-              // (the cover is unnumbered), so "n / total" stays honest.
+              // Footer numbering spans the agenda + section slides plus the closing
+              // slide (the cover is unnumbered), so "n / total" stays honest.
+              const totalSlideCount = cleanSlides.length;
               const numberedTotal = totalSlideCount + 1;
 
               // Render every slide produced by the section agents
