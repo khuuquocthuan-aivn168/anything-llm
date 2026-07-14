@@ -33,6 +33,9 @@ export {
   sidebarMobileDrawerClasses,
   sidebarFooterStripClasses,
   sidebarFooterActionButtonClasses,
+  sidebarGlassControlClasses,
+  sidebarLogoBoxClasses,
+  sidebarWorkspaceInnerPaddingClasses,
 } from "./shellClasses";
 
 /** @deprecated Use SidebarItem */

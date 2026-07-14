@@ -226,7 +226,7 @@
 
 /* Sidebar background — preview image from public/sidebar3.jfif */
 .sidebar-bg-image {
-  background-image: url("/sidebar3.jfif");
+  background-image: url("/sidebar9.png");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -238,6 +238,70 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+/* Gemini-style soft lavender glow behind chat greeting */
+.chat-greeting-wrap {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 2.75rem;
+  padding: 2.25rem 0.5rem;
+}
+
+.chat-greeting-wrap::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  width: min(100%, 920px);
+  height: 220px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(123, 143, 214, 0.28) 0%,
+    rgba(123, 143, 214, 0.12) 48%,
+    transparent 80%
+  );
+}
+
+[data-theme="light"] .chat-greeting-wrap::before,
+.light .chat-greeting-wrap::before {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(209, 228, 243, 0.95) 0%,
+    rgba(226, 232, 255, 0.62) 38%,
+    rgba(237, 242, 255, 0.28) 58%,
+    rgba(255, 255, 255, 0) 84%
+  );
+}
+
+.chat-greeting-text {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #d6ddf5;
+}
+
+[data-theme="light"] .chat-greeting-text,
+.light .chat-greeting-text {
+  color: #3c4043;
+}
+
+@media (min-width: 768px) {
+  .chat-greeting-text {
+    font-size: 1.5rem;
+  }
 }
 
 /* Page shell: blue → white vertical wash (light theme) */

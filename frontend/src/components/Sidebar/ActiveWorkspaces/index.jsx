@@ -124,7 +124,7 @@ export default function ActiveWorkspaces() {
                           to={paths.workspace.chat(workspace.slug)}
                           aria-current={isActive ? "page" : undefined}
                           className={cn(
-                            "flex w-full min-w-0 flex-grow items-center gap-x-2 rounded-lg py-[6px] pl-1 pr-2",
+                            "flex w-full min-w-0 flex-grow items-center gap-x-2 rounded-lg py-[6px] pl-1 pr-3",
                             "transition-all duration-200",
                             isActive
                               ? "bg-[#EAF4FC] font-semibold text-[#3A6FB5]"

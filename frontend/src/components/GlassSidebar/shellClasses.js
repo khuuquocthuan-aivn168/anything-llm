@@ -48,6 +48,9 @@ export const sidebarMobileDrawerClasses = cn(
   "relative z-[2] h-full w-[min(80vw,320px)] max-w-sidebar-drawer"
 );
 
+/** Balanced inner padding for workspace sidebar content */
+export const sidebarWorkspaceInnerPaddingClasses = "px-2.5 py-2.5";
+
 /** Footer glass strip */
 export const sidebarFooterStripClasses = cn(
   "bg-white/70 backdrop-blur-md border-t border-white/[0.45]"
@@ -60,4 +63,19 @@ export const sidebarFooterActionButtonClasses = cn(
   "transition-all duration-200",
   "hover:bg-white hover:text-[#2F6BFF] hover:shadow-md",
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4F8CFF]"
+);
+
+/** Glass control — matches sidebar hide/show toggle */
+export const sidebarGlassControlClasses = cn(
+  "inline-flex items-center justify-center",
+  "rounded-xl border border-white/[0.55] bg-white/[0.78] shadow-sidebar-card",
+  "outline-none transition-all duration-250",
+  "hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98]",
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4F8CFF]"
+);
+
+/** Logo box — same glass style as sidebar toggle */
+export const sidebarLogoBoxClasses = cn(
+  sidebarGlassControlClasses,
+  "px-3 py-2"
 );

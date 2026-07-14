@@ -292,7 +292,7 @@ export default function MultiUserAuth() {
         <div className="flex items-start justify-between pt-7 pb-9">
           <div className="flex items-center flex-col gap-y-[18px] max-w-[300px]">
             <div className="flex gap-x-1">
-              <h3 className="text-white light:text-slate-950 text-[38px] leading-[28px] font-medium text-center white-space-nowrap block">
+              <h3 className="text-white light:text-slate-950 text-[38px] leading-tight font-medium text-center whitespace-pre-line block">
                 {t("login.multi-user.welcome")}
               </h3>
             </div>

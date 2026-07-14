@@ -27,6 +27,7 @@ import GlassSidebar, {
   SidebarSection,
   sidebarMobileOverlayClasses,
   sidebarMobileDrawerClasses,
+  sidebarLogoBoxClasses,
 } from "@/components/GlassSidebar";
 import cn from "@/utils/cn";
 import { Home, X } from "lucide-react";
@@ -87,13 +88,15 @@ export default function SettingsSidebar() {
           >
             <List className="h-6 w-6" />
           </button>
-          <div className="flex items-center justify-center flex-grow">
-            <img
-              src={logo}
-              alt="Logo"
-              className="block mx-auto h-6 w-auto"
-              style={{ maxHeight: "40px", objectFit: "contain" }}
-            />
+          <div className="flex flex-grow items-center justify-center">
+            <div className={sidebarLogoBoxClasses}>
+              <img
+                src={logo}
+                alt="Logo"
+                className="mx-auto block h-6 w-auto object-contain"
+                style={{ maxHeight: "32px", objectFit: "contain" }}
+              />
+            </div>
           </div>
           <div className="w-12" />
         </div>
@@ -157,11 +160,13 @@ export default function SettingsSidebar() {
         to={paths.home()}
         className="mx-[20.5px] my-[18px] flex max-w-[55%] shrink-0 items-center justify-start"
       >
-        <img
-          src={logo}
-          alt="Logo"
-          className="max-h-6 rounded object-contain"
-        />
+        <div className={sidebarLogoBoxClasses}>
+          <img
+            src={logo}
+            alt="Logo"
+            className="max-h-6 object-contain"
+          />
+        </div>
       </Link>
       <div className="relative m-4 mt-0 h-[calc(100%-76px)] shrink-0">
         <GlassSidebar

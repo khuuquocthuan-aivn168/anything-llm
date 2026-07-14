@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { SidebarSimple } from "@phosphor-icons/react";
 import paths from "@/utils/paths";
 import { Tooltip } from "react-tooltip";
+import cn from "@/utils/cn";
+import { sidebarGlassControlClasses } from "@/components/GlassSidebar";
 const SIDEBAR_TOGGLE_STORAGE_KEY = "anythingllm_sidebar_toggle";
 export const SIDEBAR_TOGGLE_EVENT = "sidebar-toggle";
 
@@ -81,7 +83,11 @@ export function ToggleSidebarButton({ showSidebar, setShowSidebar }) {
     <>
       <button
         type="button"
-        className={`hidden md:flex items-center justify-center w-10 h-10 rounded-xl border border-white/[0.55] bg-white/[0.78] shadow-sidebar-card outline-none absolute transition-all duration-250 z-10 hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4F8CFF] ${showSidebar ? "top-[18px] left-[248px]" : "top-[20px] left-[30px]"}`}
+        className={cn(
+          sidebarGlassControlClasses,
+          "absolute z-10 hidden h-10 w-10 md:flex",
+          showSidebar ? "top-[18px] right-4" : "top-[20px] left-[30px]"
+        )}
         onClick={() => setShowSidebar((prev) => !prev)}
         data-tooltip-id="sidebar-toggle"
         data-tooltip-content={

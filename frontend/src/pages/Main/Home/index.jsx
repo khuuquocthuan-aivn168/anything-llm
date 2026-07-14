@@ -26,6 +26,7 @@ import ChatSettingsMenu from "@/components/WorkspaceChat/ChatContainer/ChatSetti
 import WorkspaceModelPicker from "@/components/WorkspaceChat/ChatContainer/WorkspaceModelPicker";
 import { ChatTooltips } from "@/components/WorkspaceChat/ChatContainer/ChatTooltips";
 import { ChatSidebarProvider } from "@/components/WorkspaceChat/ChatContainer/ChatSidebar";
+import ChatGreeting from "@/components/WorkspaceChat/ChatGreeting";
 import MemoriesSidebar from "@/components/WorkspaceChat/ChatContainer/MemoriesSidebar";
 
 async function getTargetWorkspace() {
@@ -296,9 +297,7 @@ function HomeContent({ workspace, setWorkspace, threadSlug, setThreadSlug }) {
           <DnDFileUploaderWrapper>
             <div className="flex flex-col h-full w-full items-center justify-center pt-16 lg:pt-0">
               <div className="flex flex-col items-center w-full max-w-[750px]">
-                <h1 className="text-white text-xl md:text-2xl mb-11 text-center">
-                  {t("main-page.greeting")}
-                </h1>
+                <ChatGreeting>{t("main-page.greeting")}</ChatGreeting>
                 <PromptInput
                   workspace={workspace}
                   submit={handleSubmit}

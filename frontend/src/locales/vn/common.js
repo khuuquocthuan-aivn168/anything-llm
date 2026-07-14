@@ -109,7 +109,7 @@ const TRANSLATIONS = {
   },
   "login": {
     "multi-user": {
-      "welcome": "Chào mừng đến với GOV AI",
+      "welcome": "Chào mừng đến\nvới GOV AI",
       "placeholder-username": "Tên người dùng",
       "placeholder-password": "Mật khẩu",
       "login": "Đăng nhập",

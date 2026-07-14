@@ -7,8 +7,6 @@ import ActiveWorkspaces from "./ActiveWorkspaces";
 import useLogo from "@/hooks/useLogo";
 import useUser from "@/hooks/useUser";
 import Footer from "../Footer";
-import SettingsButton from "../SettingsButton";
-import TransferDocButton from "../TransferDocButton";
 import { Link, useLocation } from "react-router-dom";
 import paths from "@/utils/paths";
 import { useTranslation } from "react-i18next";
@@ -26,7 +24,8 @@ import {
   sidebarWorkspaceCardClasses,
   sidebarMobileOverlayClasses,
   sidebarMobileDrawerClasses,
-  sidebarFooterStripClasses,
+  sidebarLogoBoxClasses,
+  sidebarWorkspaceInnerPaddingClasses,
 } from "@/components/GlassSidebar";
 
 export default function Sidebar() {
@@ -56,31 +55,35 @@ export default function Sidebar() {
             setShowSidebar={setShowSidebar}
           />
         )}
-        <div className="flex h-full min-h-0 flex-col overflow-hidden">
-          <div className="my-[18px] flex w-full shrink-0 justify-center">
-            <div className="flex w-[250px] min-w-[250px]">
-              <Link to={paths.home()} aria-label="Home">
-                <img
-                  src={logo}
-                  alt="Logo"
-                  className={cn(
-                    "max-h-6 rounded object-contain transition-opacity duration-500",
-                    showSidebar ? "opacity-100" : "opacity-0"
-                  )}
-                />
-              </Link>
-            </div>
+        <div className="flex h-full min-h-0 flex-col overflow-hidden px-4">
+          <div className="flex w-full shrink-0 justify-start pt-[18px]">
+            <Link
+              to={paths.home()}
+              aria-label="Home"
+              className={cn(
+                sidebarLogoBoxClasses,
+                "transition-opacity duration-500",
+                showSidebar ? "opacity-100" : "opacity-0"
+              )}
+            >
+              <img
+                src={logo}
+                alt="Logo"
+                className="max-h-6 object-contain"
+              />
+            </Link>
           </div>
           <nav
             ref={sidebarRef}
             className={cn(
               sidebarWorkspaceShellClasses,
-              "relative mx-4 mb-4 mt-0 flex min-h-0 flex-1 flex-col p-[10px]"
+              "relative mt-3 mb-4 flex min-h-0 w-full flex-1 flex-col",
+              sidebarWorkspaceInnerPaddingClasses
             )}
             aria-label="Workspace sidebar"
           >
-            <SidebarMenu className="min-h-0 flex-1 pt-[10px]">
-              <div className="flex min-w-[235px] flex-col gap-y-[14px]">
+            <SidebarMenu className="min-h-0 flex-1 pt-1">
+              <div className="flex w-full min-w-0 flex-col gap-y-[14px]">
                 {isVisible("search-box") && (
                   <section className={sidebarWorkspaceCardClasses}>
                     <SearchBox user={user} showNewWsModal={showNewWsModal} />
@@ -97,7 +100,7 @@ export default function Sidebar() {
               </div>
             </SidebarMenu>
 
-            <SidebarFooter className="relative z-10 shrink-0 px-1 pb-1 pt-2">
+            <SidebarFooter className="relative z-10 shrink-0 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
               <Footer />
             </SidebarFooter>
           </nav>
@@ -139,11 +142,13 @@ export function SidebarMobileHeader() {
   }, [showSidebar]);
 
   const logoNode = (
-    <img
-      src={logo}
-      alt="Logo"
-      className="max-h-10 w-auto object-contain"
-    />
+    <div className={sidebarLogoBoxClasses}>
+      <img
+        src={logo}
+        alt="Logo"
+        className="max-h-8 w-auto object-contain"
+      />
+    </div>
   );
 
   return (
@@ -162,11 +167,13 @@ export function SidebarMobileHeader() {
           </button>
         </div>
         <div className="flex flex-grow items-center justify-center">
-          <img
-            src={logo}
-            alt="Logo"
-            className="mx-auto block h-6 w-auto max-h-10 object-contain"
-          />
+          <div className={sidebarLogoBoxClasses}>
+            <img
+              src={logo}
+              alt="Logo"
+              className="mx-auto block h-6 w-auto max-h-8 object-contain"
+            />
+          </div>
         </div>
         <div className="flex w-[76px] shrink-0 items-center justify-end">
           <div className="flex items-center gap-2">
@@ -192,18 +199,18 @@ export function SidebarMobileHeader() {
           className={cn(
             sidebarMobileDrawerClasses,
             sidebarWorkspaceShellClasses,
-            "sidebar-bg-image !rounded-l-none !rounded-r-[26px] p-[18px]"
+            "sidebar-bg-image flex h-full min-h-0 flex-col !rounded-l-none !rounded-r-[26px]",
+            sidebarWorkspaceInnerPaddingClasses,
+            "py-4"
           )}
           aria-label="Workspace sidebar"
         >
-          <div className="flex h-full w-full min-w-[235px] flex-col overflow-x-hidden">
-            <div className="mb-4 flex w-full items-center justify-between gap-x-4">
-              <div className="flex w-[60%] shrink items-center justify-start">
+          <div className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden">
+            <div className="mb-4 flex w-full shrink-0 items-center justify-between gap-x-3">
+              <div className="flex min-w-0 flex-1 items-center justify-start">
                 {logoNode}
               </div>
-              <div className="flex shrink-0 items-center gap-x-3 text-sidebar-icon">
-                {(!user || user?.role !== "default") && <TransferDocButton />}
-                {(!user || user?.role !== "default") && <SettingsButton />}
+              <div className="flex shrink-0 items-center justify-end">
                 <button
                   type="button"
                   onClick={() => setShowSidebar(false)}
@@ -215,9 +222,14 @@ export function SidebarMobileHeader() {
               </div>
             </div>
 
-            <SidebarMenu className="flex-1">
+            <SidebarMenu className="min-h-0 flex-1">
               {isVisible("new-workspace-button") && (
                 <NewWorkspaceButton user={user} showNewWsModal={showNewWsModal} />
+              )}
+              {isVisible("search-box") && (
+                <section className={sidebarWorkspaceCardClasses}>
+                  <SearchBox user={user} showNewWsModal={showNewWsModal} />
+                </section>
               )}
               {isVisible("active-workspaces") && (
                 <section
@@ -229,9 +241,9 @@ export function SidebarMobileHeader() {
               )}
             </SidebarMenu>
 
-            <footer className={cn("mt-auto pt-2 pb-6", sidebarFooterStripClasses)}>
-              <Footer hideActionButtons />
-            </footer>
+            <SidebarFooter className="relative z-10 shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2">
+              <Footer />
+            </SidebarFooter>
           </div>
         </div>
         {showingNewWsModal && <NewWorkspaceModal hideModal={hideNewWsModal} />}
@@ -245,21 +257,20 @@ function NewWorkspaceButton({ user, showNewWsModal }) {
   if (!!user && user?.role === "default") return null;
 
   return (
-    <div className="flex items-center justify-between gap-x-2">
-      <button
-        onClick={showNewWsModal}
-        className={cn(
-          "flex h-11 w-full max-w-[75%] flex-grow items-center justify-center gap-x-2 rounded-lg",
-          "border border-white/[0.55] bg-white/80 px-4 py-[5px]",
-          "text-sm font-semibold text-sidebar-text",
-          "transition-all duration-200 hover:bg-white/90 hover:translate-x-1",
-          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4F8CFF]"
-        )}
-      >
-        <Plus className="h-5 w-5 text-[#4F8CFF]" />
-        <span>{t("new-workspace.title")}</span>
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={showNewWsModal}
+      className={cn(
+        "flex h-11 w-full items-center justify-center gap-x-2 rounded-lg",
+        "border border-white/[0.55] bg-white/80 px-3 py-[5px]",
+        "text-sm font-semibold text-sidebar-text",
+        "transition-all duration-200 hover:bg-white/90 hover:translate-x-1",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4F8CFF]"
+      )}
+    >
+      <Plus className="h-5 w-5 shrink-0 text-[#4F8CFF]" />
+      <span className="whitespace-nowrap">{t("new-workspace.title")}</span>
+    </button>
   );
 }
 
