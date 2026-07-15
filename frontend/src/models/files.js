@@ -41,6 +41,60 @@ const StorageFiles = {
         return null;
       });
   },
+
+  /**
+   * List the recent generated files visible to the current user (the "shelf").
+   * @returns {Promise<{files: Array, windowDays: number}>}
+   */
+  listRecent: async function () {
+    return await fetch(`${API_BASE}/agent-skills/generated-files`, {
+      method: "GET",
+      headers: baseHeaders(),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to list generated files");
+        return res.json();
+      })
+      .catch((e) => {
+        console.error(e);
+        return { files: [], windowDays: 7 };
+      });
+  },
+
+  /**
+   * Remove a single file from the shelf view (does not delete the file itself).
+   * @param {string} storageFilename
+   * @returns {Promise<boolean>}
+   */
+  dismiss: async function (storageFilename) {
+    return await fetch(
+      `${API_BASE}/agent-skills/generated-files/shelf/${encodeURIComponent(
+        storageFilename
+      )}`,
+      { method: "DELETE", headers: baseHeaders() }
+    )
+      .then((res) => res.ok)
+      .catch((e) => {
+        console.error(e);
+        return false;
+      });
+  },
+
+  /**
+   * Clear the whole shelf view for the current user (does not delete files).
+   * @returns {Promise<boolean>}
+   */
+  clearShelf: async function () {
+    return await fetch(`${API_BASE}/agent-skills/generated-files/shelf`, {
+      method: "DELETE",
+      headers: baseHeaders(),
+    })
+      .then((res) => res.ok)
+      .catch((e) => {
+        console.error(e);
+        return false;
+      });
+  },
 };
 
 export default StorageFiles;
