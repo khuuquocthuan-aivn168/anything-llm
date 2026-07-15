@@ -14,6 +14,7 @@ import {
 import React, { useEffect, useState } from "react";
 import SettingsButton from "../SettingsButton";
 import TransferDocButton from "../TransferDocButton";
+import GeneratedFilesButton from "../GeneratedFilesButton";
 import { isMobile } from "react-device-detect";
 import { Tooltip } from "react-tooltip";
 import { Link } from "react-router-dom";
@@ -76,6 +77,7 @@ export default function Footer() {
             </a>
           ))}
         {!isMobile && <TransferDocButton />}
+        {!isMobile && <GeneratedFilesButton />}
         {!isMobile && <SettingsButton />}
       </div>
       <Tooltip
