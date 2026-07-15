@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import Sidebar from "@/components/SettingsSidebar";
 import { isMobile } from "react-device-detect";
 import System from "@/models/system";
@@ -161,6 +161,7 @@ export default function GeneralEmbeddingPreference() {
   const searchInputRef = useRef(null);
   const { isOpen, openModal, closeModal } = useModal();
   const { t } = useTranslation();
+  const embedders = useMemo(() => getEmbedders(t), [t]);
 
   function embedderModelChanged(formEl) {
     try {
@@ -197,10 +198,10 @@ export default function GeneralEmbeddingPreference() {
 
     const { error } = await System.updateSystem(settingsData);
     if (error) {
-      showToast(`Failed to save embedding settings: ${error}`, "error");
+      showToast(t("embedding.messages.saveError", { error }), "error");
       setHasChanges(true);
     } else {
-      showToast("Embedding preferences saved successfully.", "success");
+      showToast(t("embedding.messages.saveSuccess"), "success");
       setHasChanges(false);
     }
     setSaving(false);
@@ -236,13 +237,13 @@ export default function GeneralEmbeddingPreference() {
   }, []);
 
   useEffect(() => {
-    const filtered = EMBEDDERS.filter((embedder) =>
+    const filtered = embedders.filter((embedder) =>
       embedder.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredEmbedders(filtered);
-  }, [searchQuery, selectedEmbedder]);
+  }, [searchQuery, selectedEmbedder, embedders]);
 
-  const selectedEmbedderObject = EMBEDDERS.find(
+  const selectedEmbedderObject = embedders.find(
     (embedder) => embedder.value === selectedEmbedder
   );
 
@@ -314,7 +315,7 @@ export default function GeneralEmbeddingPreference() {
                           type="text"
                           name="embedder-search"
                           autoComplete="off"
-                          placeholder="Search all embedding providers"
+                          placeholder={t("embedding.searchPlaceholder")}
                           className="border-none -ml-4 my-2 bg-transparent z-20 pl-12 h-[38px] w-full px-4 py-1 text-sm outline-none text-theme-text-primary placeholder:text-theme-text-primary placeholder:font-medium"
                           onChange={(e) => setSearchQuery(e.target.value)}
                           ref={searchInputRef}
@@ -378,7 +379,7 @@ export default function GeneralEmbeddingPreference() {
                 className="mt-4 flex flex-col gap-y-1"
               >
                 {selectedEmbedder &&
-                  EMBEDDERS.find(
+                  embedders.find(
                     (embedder) => embedder.value === selectedEmbedder
                   )?.options(settings)}
               </div>
@@ -388,7 +389,7 @@ export default function GeneralEmbeddingPreference() {
       )}
       <ModalWrapper isOpen={isOpen}>
         <ChangeWarningModal
-          warningText="Switching the embedding model will reset all previously embedded documents in all workspaces.\n\nConfirming will clear all embeddings from your vector database and remove all documents from your workspaces. Your uploaded documents will not be deleted, they will be available for re-embedding."
+          warningText={t("embedding.switchWarning")}
           onClose={closeModal}
           onConfirm={handleSaveSettings}
         />
