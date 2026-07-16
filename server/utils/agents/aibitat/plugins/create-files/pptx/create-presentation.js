@@ -5,8 +5,100 @@ const {
   renderSectionSlide,
   renderContentSlide,
   renderBlankSlide,
+  renderQuoteSlide,
+  renderClosingSlide,
 } = require("./utils.js");
 const { runSectionAgent } = require("./section-agent.js");
+const pexels = require("./pexels.js");
+
+/**
+ * Coerces the `sections` argument into an array of section objects.
+ *
+ * Smaller models routinely serialize an array-of-objects argument as a JSON
+ * *string* rather than a JSON array. Left alone that reaches `sections.length`
+ * as a character count and `sections.map` as undefined, so the tool dies with
+ * "sections.map is not a function" after the user has already waited through
+ * approval. Parsing here costs nothing and turns a hard failure into a retry
+ * the model can actually act on.
+ *
+ * @param {unknown} sections
+ * @returns {object[]}
+ */
+function normalizeSections(sections) {
+  let value = sections;
+
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value.trim());
+    } catch (e) {
+      throw new Error(
+        `The "sections" argument was a string that is not valid JSON (${e.message}). ` +
+          `Pass sections as a JSON array of objects, not as a quoted string.`
+      );
+    }
+  }
+
+  // Some models wrap the array in the property it was asked for.
+  if (value && !Array.isArray(value) && Array.isArray(value.sections))
+    value = value.sections;
+
+  if (!Array.isArray(value) || value.length === 0)
+    throw new Error(
+      `The "sections" argument must be a non-empty array of { title, keyPoints } objects.`
+    );
+
+  return value.map((raw, i) => {
+    const section = typeof raw === "string" ? { title: raw } : raw || {};
+    let keyPoints = section.keyPoints;
+    // A single key point sometimes arrives as a bare string, or as a JSON array
+    // string for the same reason `sections` does.
+    if (typeof keyPoints === "string") {
+      try {
+        const parsed = JSON.parse(keyPoints);
+        keyPoints = Array.isArray(parsed) ? parsed : [keyPoints];
+      } catch {
+        keyPoints = [keyPoints];
+      }
+    }
+    return {
+      ...section,
+      title: String(section.title || `Phần ${i + 1}`),
+      keyPoints: Array.isArray(keyPoints) ? keyPoints.map(String) : [],
+    };
+  });
+}
+
+/**
+ * Guarantees the section opens on a divider slide, and that the divider carries
+ * the section's photo query.
+ *
+ * The section sub-agent is told to set `imageQuery` on its divider, but smaller
+ * models skip optional fields, and a deck with no photos was the result. The
+ * query the *parent* model supplied is authoritative: applying it here makes the
+ * photo a property of the outline rather than of the sub-agent's compliance.
+ *
+ * @param {object[]} slides - The sub-agent's slides for one section, mutated.
+ * @param {object} section - The outline entry, possibly carrying `imageQuery`.
+ */
+function ensureSectionDivider(slides, section) {
+  let divider = slides.find((s) => s && s.layout === "section");
+  if (!divider) {
+    divider = { layout: "section", title: section.title };
+    slides.unshift(divider);
+  }
+
+  const query =
+    typeof section.imageQuery === "string" ? section.imageQuery.trim() : "";
+  if (query) divider.imageQuery = query;
+
+  // Part numbering is a property of the source document, not of the sub-agent's
+  // compliance: if the outline carries an explicit `sectionNumber` (only set when
+  // the document numbers its parts), it is authoritative over anything the
+  // sub-agent guessed. Left untouched otherwise, so default decks stay unnumbered.
+  const number =
+    section.sectionNumber != null ? String(section.sectionNumber).trim() : "";
+  if (number) divider.sectionNumber = number;
+}
 
 /**
  * Extracts recent conversation history from the parent AIbitat's chat log
@@ -33,34 +125,53 @@ function extractConversationContext(chats, maxMessages = 10) {
     .join("\n");
 }
 
+// Total-slide budget. The user thinks in finished slides, not in sections, so
+// the deck is sized to a slide count and the section fan-out is bent to fit it.
+const SLIDES_DEFAULT = 10;
+const SLIDES_MIN = 10;
+const SLIDES_MAX = 30;
+
 /**
- * Performs an image search on DuckDuckGo using its public JSON endpoint.
- * @param {string} query - The search query
- * @returns {Promise<string|null>} Resolves to the first valid image URL or null
+ * Resolves the requested total slide count to an honored value:
+ * unspecified -> 10, otherwise clamped into [10, 30]. Asking for more than 30
+ * still yields 30; asking for fewer than 10 (or garbage) yields 10.
+ * @param {unknown} requested
+ * @returns {number}
  */
-async function searchDuckDuckGoImage(query) {
-  try {
-    const url = `https://duckduckgo.com/i.js?q=${encodeURIComponent(query)}&o=json`;
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-        "Accept": "application/json",
-      }
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    if (json && Array.isArray(json.results) && json.results.length > 0) {
-      // Find the first result that starts with http and does not look like base64
-      const match = json.results.find(
-        (r) => r.image && r.image.startsWith("http") && !r.image.includes("data:image")
-      );
-      return match ? match.image : json.results[0].image;
-    }
-  } catch (error) {
-    console.error(`searchDuckDuckGoImage error for "${query}":`, error.message);
-  }
-  return null;
+function clampSlideCount(requested) {
+  let n = Number(requested);
+  if (!Number.isFinite(n) || n <= 0) n = SLIDES_DEFAULT;
+  n = Math.round(n);
+  return Math.max(SLIDES_MIN, Math.min(SLIDES_MAX, n));
 }
+
+/**
+ * Hard-trims the assembled section slides so the finished deck never exceeds the
+ * budget. `maxSectionSlides` excludes the always-present title/cover slide.
+ * Trimming happens from the end (whole trailing sections drop first); if the cut
+ * lands right after a bare "section" divider, that orphaned divider is dropped
+ * too so the deck never ends on an empty divider.
+ * @param {object[]} slides
+ * @param {number} maxSectionSlides
+ * @returns {object[]}
+ */
+function enforceSlideBudget(slides, maxSectionSlides) {
+  if (!Array.isArray(slides) || slides.length <= maxSectionSlides) return slides;
+  let trimmed = slides.slice(0, maxSectionSlides);
+  while (
+    trimmed.length > 0 &&
+    trimmed[trimmed.length - 1] &&
+    trimmed[trimmed.length - 1].layout === "section"
+  )
+    trimmed = trimmed.slice(0, -1);
+  return trimmed.length > 0 ? trimmed : slides.slice(0, maxSectionSlides);
+}
+
+// Exported for tests; the plugin itself calls these from the handler.
+module.exports.normalizeSections = normalizeSections;
+module.exports.ensureSectionDivider = ensureSectionDivider;
+module.exports.clampSlideCount = clampSlideCount;
+module.exports.enforceSlideBudget = enforceSlideBudget;
 
 module.exports.CreatePptxPresentation = {
   name: "create-pptx-presentation",
@@ -73,9 +184,19 @@ module.exports.CreatePptxPresentation = {
           name: this.name,
           description:
             "Create a professional PowerPoint presentation (PPTX). " +
-            "Provide a title, theme, and section outlines with key points. " +
+            "Provide a title, theme, and section outlines with key points and an " +
+            "English imageQuery per section for its illustrative photo. " +
             "Each section is independently researched and built by a focused sub-agent " +
-            "that can use web search and web scraping to gather data.",
+            "that can use web search and web scraping to gather data. " +
+            "If the user asks for a specific number of slides, pass it as slideCount " +
+            "(honored within 10-30; omit it for the default of 10). Each section " +
+            "becomes roughly two slides, so provide about slideCount/2 sections. " +
+            "The deck automatically opens with a cover and an agenda (Mục lục) slide " +
+            "and ends with a closing slide — do not add sections for those. Write each " +
+            "section title as a concrete action message, not a bare topic label. Only " +
+            "set a section's sectionNumber when the SOURCE DOCUMENT itself numbers its " +
+            "parts (Roman numeral for a major 'Phần I', a plain number for a sub-part); " +
+            "otherwise leave it unset so no part numeral is shown.",
           examples: [
             {
               prompt: "Create a presentation about project updates",
@@ -91,6 +212,7 @@ module.exports.CreatePptxPresentation = {
                       "Team expanded by 2 new members",
                       "Budget within expectations",
                     ],
+                    imageQuery: "team meeting whiteboard",
                   },
                   {
                     title: "Key Achievements",
@@ -101,6 +223,7 @@ module.exports.CreatePptxPresentation = {
                     ],
                     instructions:
                       "Include specific metrics and quarter-over-quarter comparisons",
+                    imageQuery: "developer typing laptop",
                   },
                 ],
               }),
@@ -120,10 +243,12 @@ module.exports.CreatePptxPresentation = {
                     ],
                     instructions:
                       "Research the latest developments and include recent data",
+                    imageQuery: "data center servers",
                   },
                   {
                     title: "AI in Enterprise",
                     keyPoints: ["Adoption rates", "Top use cases", "ROI data"],
+                    imageQuery: "office workers computers",
                   },
                 ],
               }),
@@ -155,10 +280,21 @@ module.exports.CreatePptxPresentation = {
                   "Color theme for the presentation. Options: " +
                   getAvailableThemes().join(", "),
               },
+              slideCount: {
+                type: "integer",
+                minimum: SLIDES_MIN,
+                maximum: SLIDES_MAX,
+                description:
+                  "Desired total number of slides in the finished deck (including the cover). " +
+                  "Set this from the user's request. Honored within 10-30: a larger number is " +
+                  "capped at 30, a smaller one raised to 10. Omit it to use the default of 10.",
+              },
               sections: {
                 type: "array",
                 description:
-                  "Section outlines for the presentation. Each section is independently researched and built by a focused sub-agent.",
+                  "Section outlines for the presentation. Each section is independently researched and built by a focused sub-agent and becomes about two slides. " +
+                  "Provide ENOUGH sections to fill the deck: roughly slideCount/2 (e.g. ~5 sections for a 10-slide deck, ~10 for a 20-slide deck). " +
+                  "Never submit a whole presentation as a single section - break the topic into several distinct sections so the deck is not just 3-4 slides.",
                 items: {
                   type: "object",
                   properties: {
@@ -177,8 +313,18 @@ module.exports.CreatePptxPresentation = {
                       description:
                         "Optional guidance for the section builder (e.g. 'research recent statistics', 'compare with competitors', 'include a data table').",
                     },
+                    imageQuery: {
+                      type: "string",
+                      description:
+                        "ALWAYS provide this. A 2-4 word ENGLISH stock-photo search phrase naming a concrete, photographable subject for this section's divider slide (e.g. 'football stadium crowd', 'vietnamese government office'). Write it in English even for a Vietnamese presentation. Avoid abstractions like 'innovation' — name something a camera could point at.",
+                    },
+                    sectionNumber: {
+                      type: "string",
+                      description:
+                        "OPTIONAL and OFF BY DEFAULT — omit it entirely unless the SOURCE DOCUMENT explicitly numbers its parts. When the document is organised into numbered parts (e.g. 'Phần I', 'Phần II', 'Chương 1'), set this to that part's number: a ROMAN numeral for a major part ('Phần I' -> 'I', 'Phần II' -> 'II') and a PLAIN arabic number for a sub-part ('1', '2', '3'). Do NOT invent a running 1,2,3 for ordinary sections — leave it unset so the deck shows no part numeral.",
+                    },
                   },
-                  required: ["title"],
+                  required: ["title", "imageQuery"],
                 },
               },
             },
@@ -192,11 +338,33 @@ module.exports.CreatePptxPresentation = {
             author = "",
             theme: themeName = "default",
             sections = [],
+            slideCount,
           }) {
             try {
               this.super.handlerProps.log(
                 `Using the create-pptx-presentation tool.`
               );
+
+              // One deck per user request. A single agent run (this.super lives
+              // for exactly one user prompt, then the session closes) must never
+              // yield a second PPTX: when the user asks for a large deck the model
+              // is prone to fan the work out into two tool calls of ~30 slides
+              // each, producing two files. The deck is already capped at 30 slides
+              // in a single file, so a second call is redundant - short-circuit it
+              // and point the model back at the file it already produced.
+              if (this.super.__pptxPresentationCreated) {
+                const prior = this.super.__pptxPresentationCreated;
+                this.super.introspect(
+                  `${this.caller}: A presentation was already created in this request — skipping the duplicate.`
+                );
+                return (
+                  `A presentation ("${prior.filename}", ${prior.slideCount} slides) was already ` +
+                  `created in this request and is ready for download. Only one presentation file ` +
+                  `is produced per request (a single deck, max 30 slides). Do NOT create another — ` +
+                  `report the existing file to the user instead of calling this tool again.`
+                );
+              }
+
               await createFilesLib.initializeLogo();
 
               // Strip XML 1.0 illegal control characters so PowerPoint can open
@@ -207,11 +375,32 @@ module.exports.CreatePptxPresentation = {
               if (!filename.toLowerCase().endsWith(".pptx"))
                 filename += ".pptx";
 
+              sections = normalizeSections(sections);
+
               const theme = getTheme(themeName);
               const totalSections = sections.length;
 
+              // Size the deck to a slide count, not a section count. The deck
+              // always carries a cover slide and a closing slide, and — when there
+              // is more than one section — an agenda/"Mục lục" slide right after
+              // the cover. The sections share whatever budget remains.
+              const targetSlides = clampSlideCount(slideCount);
+              const hasAgenda = totalSections > 1;
+              const fixedSlides = 2 + (hasAgenda ? 1 : 0); // cover + closing [+ agenda]
+              const sectionSlidesTarget = Math.max(1, targetSlides - fixedSlides);
+              // Slides per section (its divider counts as one). Floored at 2 so a
+              // section is never just a bare divider; capped at 8 so a deck with
+              // very few sections still asks each sub-agent for enough slides to
+              // approach the target (a lone section otherwise yields a 3-4 slide
+              // deck). ceil rounds up so the budget fills rather than falls short.
+              // The final trim below still enforces the hard ceiling.
+              const budgetPerSection = Math.max(
+                2,
+                Math.min(8, Math.ceil(sectionSlidesTarget / Math.max(1, totalSections)))
+              );
+
               this.super.introspect(
-                `${this.caller}: Planning presentation "${title}" — ${totalSections} section${totalSections !== 1 ? "s" : ""}, ${theme.name} theme`
+                `${this.caller}: Planning presentation "${title}" — ${totalSections} section${totalSections !== 1 ? "s" : ""}, target ${targetSlides} slides, ${theme.name} theme`
               );
 
               // Ask for approval BEFORE kicking off the expensive sub-agent work
@@ -255,15 +444,18 @@ module.exports.CreatePptxPresentation = {
                   presentationTitle: title,
                   conversationContext,
                   sectionPrefix: `${i + 1}/${totalSections}`,
+                  slideBudget: budgetPerSection,
                 });
 
-                const slideCount = sectionResult.slides?.length || 0;
-                allSlides.push(...(sectionResult.slides || []));
+                const sectionSlides = sectionResult.slides || [];
+                ensureSectionDivider(sectionSlides, section);
+                const sectionSlideCount = sectionSlides.length;
+                allSlides.push(...sectionSlides);
                 if (sectionResult.citations?.length > 0)
                   allCitations.push(...sectionResult.citations);
 
                 this.super.introspect(
-                  `${this.caller}: [${i + 1}/${totalSections}] Section "${section.title}" complete — ${slideCount} slide${slideCount !== 1 ? "s" : ""}`
+                  `${this.caller}: [${i + 1}/${totalSections}] Section "${section.title}" complete — ${sectionSlideCount} slide${sectionSlideCount !== 1 ? "s" : ""}`
                 );
               }
 
@@ -271,9 +463,23 @@ module.exports.CreatePptxPresentation = {
               // appear as sources on the final assistant message.
               if (allCitations.length > 0) this.super.addCitation(allCitations);
 
-              // Assemble the final PPTX from all section outputs
+              // Enforce the hard ceiling: the sub-agents can overshoot the budget
+              // (each floored at two slides), so trim before assembly so the deck
+              // never exceeds the requested count. +1 accounts for the title slide.
+              const budgetedSlides = enforceSlideBudget(
+                allSlides,
+                sectionSlidesTarget
+              );
+              const droppedForBudget = allSlides.length - budgetedSlides.length;
+
+              // Assemble the final PPTX from all section outputs. `fixedSlides`
+              // accounts for the cover and closing slides (and the agenda, when
+              // present) wrapped around the section slides.
               this.super.introspect(
-                `${this.caller}: Assembling final deck — ${allSlides.length} slides total`
+                `${this.caller}: Assembling final deck — ${budgetedSlides.length + fixedSlides} slides` +
+                  (droppedForBudget > 0
+                    ? ` (trimmed ${droppedForBudget} to stay within ${targetSlides})`
+                    : "")
               );
 
               const PptxGenJS = require("pptxgenjs");
@@ -283,37 +489,53 @@ module.exports.CreatePptxPresentation = {
               if (author) pptx.author = author;
               pptx.company = "AnythingLLM";
 
-              const totalSlideCount = allSlides.length;
-
               // Sub-agent output can carry XML 1.0 illegal control characters
               // (e.g. a form feed from a LaTeX `\frac`); strip them recursively
               // from every slide so PowerPoint can open the generated deck.
               const cleanSlides =
-                createFilesLib.stripInvalidXmlChars(allSlides);
+                createFilesLib.stripInvalidXmlChars(budgetedSlides);
 
-              // Pre-fetch DuckDuckGo images for slides that request them
-              for (const slideData of cleanSlides) {
-                if (slideData.image && slideData.image.query) {
-                  this.super.introspect(
-                    `${this.caller}: Searching DuckDuckGo for image matching "${slideData.image.query}"…`
-                  );
-                  const imageUrl = await searchDuckDuckGoImage(slideData.image.query);
-                  if (imageUrl) {
-                    slideData.image.url = imageUrl;
-                    this.super.introspect(
-                      `${this.caller}: Found image URL: ${imageUrl}`
-                    );
-                  } else {
-                    this.super.introspect(
-                      `${this.caller}: No image found for query "${slideData.image.query}"`
-                    );
-                  }
-                }
+              // Resolve any requested stock photography. No-op without a
+              // PEXELS_API_KEY, and any fetch failure leaves the slide to render
+              // with its vector layout - a deck never fails over a photo.
+              if (pexels.isEnabled()) {
+                this.super.introspect(
+                  `${this.caller}: Fetching illustrative photos…`
+                );
+                await pexels.attachImages(
+                  cleanSlides,
+                  this.super.handlerProps.log
+                );
+              } else {
+                for (const s of cleanSlides) delete s.imageQuery;
+              }
+
+              // Agenda / "Mục lục": a table-of-contents slide listing the section
+              // titles, inserted right after the cover so every multi-section deck
+              // opens cover -> agenda -> content regardless of what the section
+              // sub-agents returned. Built after photo resolution so it never
+              // receives a stock image; capped at 8 lines to respect the 1-6-7 rule.
+              if (hasAgenda) {
+                const agendaItems = sections
+                  .map((s) => s.title)
+                  .filter(Boolean)
+                  .slice(0, 8);
+                if (agendaItems.length > 1)
+                  cleanSlides.unshift({
+                    layout: "content",
+                    title: "Nội dung chính",
+                    content: agendaItems,
+                  });
               }
 
               // Title slide
               const titleSlide = pptx.addSlide();
               renderTitleSlide(titleSlide, pptx, { title, author }, theme);
+
+              // Footer numbering spans the agenda + section slides plus the closing
+              // slide (the cover is unnumbered), so "n / total" stays honest.
+              const totalSlideCount = cleanSlides.length;
+              const numberedTotal = totalSlideCount + 1;
 
               // Render every slide produced by the section agents
               cleanSlides.forEach((slideData, index) => {
@@ -330,7 +552,17 @@ module.exports.CreatePptxPresentation = {
                       slideData,
                       theme,
                       slideNumber,
-                      totalSlideCount
+                      numberedTotal
+                    );
+                    break;
+                  case "quote":
+                    renderQuoteSlide(
+                      slide,
+                      pptx,
+                      slideData,
+                      theme,
+                      slideNumber,
+                      numberedTotal
                     );
                     break;
                   case "blank":
@@ -339,7 +571,7 @@ module.exports.CreatePptxPresentation = {
                       pptx,
                       theme,
                       slideNumber,
-                      totalSlideCount
+                      numberedTotal
                     );
                     break;
                   default:
@@ -349,11 +581,22 @@ module.exports.CreatePptxPresentation = {
                       slideData,
                       theme,
                       slideNumber,
-                      totalSlideCount
+                      numberedTotal
                     );
                     break;
                 }
               });
+
+              // Closing slide — the deck's sign-off, always the final slide.
+              const closingSlide = pptx.addSlide();
+              renderClosingSlide(
+                closingSlide,
+                pptx,
+                { headline: "Cảm ơn!", subtitle: title },
+                theme,
+                numberedTotal,
+                numberedTotal
+              );
 
               const buffer = await pptx.write({ outputType: "nodebuffer" });
               const bufferSizeKB = (buffer.length / 1024).toFixed(2);
@@ -388,7 +631,18 @@ module.exports.CreatePptxPresentation = {
                 `${this.caller}: Successfully created presentation "${title}"`
               );
 
-              return `Successfully created presentation "${title}" with ${totalSlideCount} slides across ${totalSections} sections using the ${theme.name} theme.`;
+              // Include the cover and closing slides so the reported count
+              // matches the file exactly.
+              const finalSlideCount = totalSlideCount + 2;
+
+              // Latch the one-deck-per-request guard now that a file exists, so
+              // any further create-pptx-presentation call this run is refused.
+              this.super.__pptxPresentationCreated = {
+                filename: savedFile.displayFilename,
+                slideCount: finalSlideCount,
+              };
+
+              return `Successfully created presentation "${title}" with ${finalSlideCount} slides across ${totalSections} sections using the ${theme.name} theme.`;
             } catch (e) {
               this.super.handlerProps.log(
                 `create-pptx-presentation error: ${e.message}`

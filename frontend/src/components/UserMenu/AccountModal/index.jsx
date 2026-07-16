@@ -110,7 +110,7 @@ export default function AccountModal({ user, hideModal }) {
                   {pfp ? (
                     <img
                       src={pfp}
-                      alt="User profile picture"
+                      alt={t("profile_settings.profile_picture_alt")}
                       className="w-48 h-48 rounded-full object-cover bg-white"
                     />
                   ) : (
@@ -148,7 +148,7 @@ export default function AccountModal({ user, hideModal }) {
                   name="username"
                   type="text"
                   className="border-none bg-theme-settings-input-bg placeholder:text-theme-settings-input-placeholder border-gray-500 text-white text-sm rounded-lg focus:outline-primary-button active:outline-primary-button outline-none block w-full p-2.5"
-                  placeholder="User's username"
+                  placeholder={t("profile_settings.username_placeholder")}
                   minLength={USERNAME_MIN_LENGTH}
                   maxLength={USERNAME_MAX_LENGTH}
                   pattern={USERNAME_PATTERN}

@@ -55,6 +55,15 @@ const router = createBrowserRouter([
         children: [{ path: "t/:threadSlug" }],
       },
       {
+        path: "/generated-files",
+        lazy: async () => {
+          const { default: GeneratedFiles } = await import(
+            "@/pages/GeneratedFiles"
+          );
+          return { element: <PrivateRoute Component={GeneratedFiles} /> };
+        },
+      },
+      {
         path: "/accept-invite/:code",
         lazy: async () => {
           const { default: InvitePage } = await import("@/pages/Invite");

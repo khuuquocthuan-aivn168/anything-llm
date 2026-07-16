@@ -23,6 +23,9 @@ export default {
   home: () => {
     return "/";
   },
+  generatedFiles: () => {
+    return "/generated-files";
+  },
   login: (noTry = false) => {
     return `/login${noTry ? "?nt=1" : ""}`;
   },

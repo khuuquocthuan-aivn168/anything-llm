@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import Sidebar from "@/components/SettingsSidebar";
 import { isMobile } from "react-device-detect";
 import System from "@/models/system";
@@ -15,7 +15,6 @@ import VoyageAiLogo from "@/media/embeddingprovider/voyageai.png";
 import LiteLLMLogo from "@/media/llmprovider/litellm.png";
 import GenericOpenAiLogo from "@/media/llmprovider/generic-openai.png";
 import MistralAiLogo from "@/media/llmprovider/mistral.jpeg";
-import OpenRouterLogo from "@/media/llmprovider/openrouter.jpeg";
 import LemonadeLogo from "@/media/llmprovider/lemonade.png";
 
 import PreLoader from "@/components/Preloader";
@@ -44,12 +43,12 @@ import { useTranslation } from "react-i18next";
 
 const EMBEDDERS = [
   {
-    name: "AnythingLLM Embedder",
+    name: "GOV AI VN168 Embedder",
     value: "native",
     logo: AnythingLLMIcon,
     options: (settings) => <NativeEmbeddingOptions settings={settings} />,
     description:
-      "Use the built-in embedding provider for AnythingLLM. Zero setup!",
+      "Sử dụng bộ nhúng tích hợp sẵn của GOV AI VN168. Không cần cài đặt!",
   },
   {
     name: "OpenAI",
@@ -103,11 +102,11 @@ const EMBEDDERS = [
       "Run embedding models locally on your own machine using Lemonade.",
   },
   {
-    name: "OpenRouter",
+    name: "VN168",
     value: "openrouter",
-    logo: OpenRouterLogo,
+    logo: AnythingLLMIcon,
     options: (settings) => <OpenRouterOptions settings={settings} />,
-    description: "Run embedding models from OpenRouter.",
+    description: "Chạy các mô hình nhúng qua cổng VN168.",
   },
   {
     name: "LiteLLM",
@@ -162,6 +161,7 @@ export default function GeneralEmbeddingPreference() {
   const searchInputRef = useRef(null);
   const { isOpen, openModal, closeModal } = useModal();
   const { t } = useTranslation();
+  const embedders = useMemo(() => getEmbedders(t), [t]);
 
   function embedderModelChanged(formEl) {
     try {
@@ -198,10 +198,10 @@ export default function GeneralEmbeddingPreference() {
 
     const { error } = await System.updateSystem(settingsData);
     if (error) {
-      showToast(`Failed to save embedding settings: ${error}`, "error");
+      showToast(t("embedding.messages.saveError", { error }), "error");
       setHasChanges(true);
     } else {
-      showToast("Embedding preferences saved successfully.", "success");
+      showToast(t("embedding.messages.saveSuccess"), "success");
       setHasChanges(false);
     }
     setSaving(false);
@@ -237,13 +237,13 @@ export default function GeneralEmbeddingPreference() {
   }, []);
 
   useEffect(() => {
-    const filtered = EMBEDDERS.filter((embedder) =>
+    const filtered = embedders.filter((embedder) =>
       embedder.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredEmbedders(filtered);
-  }, [searchQuery, selectedEmbedder]);
+  }, [searchQuery, selectedEmbedder, embedders]);
 
-  const selectedEmbedderObject = EMBEDDERS.find(
+  const selectedEmbedderObject = embedders.find(
     (embedder) => embedder.value === selectedEmbedder
   );
 
@@ -315,7 +315,7 @@ export default function GeneralEmbeddingPreference() {
                           type="text"
                           name="embedder-search"
                           autoComplete="off"
-                          placeholder="Search all embedding providers"
+                          placeholder={t("embedding.searchPlaceholder")}
                           className="border-none -ml-4 my-2 bg-transparent z-20 pl-12 h-[38px] w-full px-4 py-1 text-sm outline-none text-theme-text-primary placeholder:text-theme-text-primary placeholder:font-medium"
                           onChange={(e) => setSearchQuery(e.target.value)}
                           ref={searchInputRef}
@@ -355,7 +355,7 @@ export default function GeneralEmbeddingPreference() {
                       <img
                         src={selectedEmbedderObject.logo}
                         alt={`${selectedEmbedderObject.name} logo`}
-                        className="w-10 h-10 rounded-md"
+                        className="w-10 h-10 rounded-md object-contain"
                       />
                       <div className="flex flex-col text-left">
                         <div className="text-sm font-semibold text-white">
@@ -379,7 +379,7 @@ export default function GeneralEmbeddingPreference() {
                 className="mt-4 flex flex-col gap-y-1"
               >
                 {selectedEmbedder &&
-                  EMBEDDERS.find(
+                  embedders.find(
                     (embedder) => embedder.value === selectedEmbedder
                   )?.options(settings)}
               </div>
@@ -389,7 +389,7 @@ export default function GeneralEmbeddingPreference() {
       )}
       <ModalWrapper isOpen={isOpen}>
         <ChangeWarningModal
-          warningText="Switching the embedding model will reset all previously embedded documents in all workspaces.\n\nConfirming will clear all embeddings from your vector database and remove all documents from your workspaces. Your uploaded documents will not be deleted, they will be available for re-embedding."
+          warningText={t("embedding.switchWarning")}
           onClose={closeModal}
           onConfirm={handleSaveSettings}
         />

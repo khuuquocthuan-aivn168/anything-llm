@@ -28,7 +28,8 @@ module.exports.CreateVnAdminDocx = {
           name: this.name,
           description:
             "Tạo văn bản hành chính Việt Nam (.docx) theo đúng văn phong, thể thức trình bày văn bản hành chính (Nghị định 30/2020/NĐ-CP của Bộ Nội vụ). " +
-            "SỬ DỤNG TOOL NÀY NGAY LẬP TỨC nếu user nhắc đến 'Nghị định 30', 'văn bản hành chính', 'công văn', 'quyết định', hoặc yêu cầu 'thể thức Bộ Nội vụ'. " +
+            "SỬ DỤNG TOOL NÀY NGAY LẬP TỨC, KHÔNG dùng 'create-docx-file', nếu yêu cầu của user chứa cụm 'soạn thảo văn bản' hoặc 'soan thao van ban' (viết không dấu) — dù chỉ là 'soạn thảo văn bản' chung chung, không nêu loại văn bản. " +
+            "Cũng dùng tool này khi user nhắc đến 'Nghị định 30', 'văn bản hành chính', 'công văn', 'quyết định', 'tờ trình', 'thông báo', hoặc yêu cầu 'thể thức Bộ Nội vụ'. " +
             "Tool sẽ tự động tạo file Word chuẩn chỉ với đầy đủ Quốc hiệu, Tiêu ngữ, số ký hiệu, nơi nhận... " +
             "Tool cũng sẽ tự động tra cứu internet để tìm căn cứ pháp lý và tham mưu nội dung. " +
             "Hỗ trợ tất cả 29 loại văn bản hành chính: Công văn, Quyết định, Tờ trình, Báo cáo, Kế hoạch, Thông báo, v.v. " +
@@ -42,6 +43,23 @@ module.exports.CreateVnAdminDocx = {
             "SỐ LIỆU: Sử dụng bảng markdown khi có danh sách, phân loại, hoặc so sánh số liệu. " +
             "Tuyệt đối KHÔNG đưa Tiêu đề chính (Tên loại văn bản, Trích yếu, Số ký hiệu, Quốc hiệu, Tiêu ngữ) vào phần content vì hệ thống đã tự động xử lý. Chỉ bắt đầu content từ phần 'Kính gửi' hoặc 'Điều 1...' trở đi.",
           examples: [
+            {
+              prompt:
+                "Soạn thảo văn bản kế hoạch tổ chức hội nghị tổng kết năm 2026",
+              call: JSON.stringify({
+                filename: "ke-hoach-to-chuc-hoi-nghi-tong-ket.docx",
+                documentType: "ke-hoach",
+                issuingAgency: "Sở Nội vụ",
+                parentAgency: "Ủy ban nhân dân tỉnh",
+                location: "Hà Nội",
+                title: "Kế hoạch tổ chức Hội nghị tổng kết công tác năm 2026",
+                content:
+                  "## I. MỤC ĐÍCH, YÊU CẦU\n\nĐánh giá toàn diện kết quả thực hiện nhiệm vụ công tác năm 2026, chỉ rõ những kết quả đạt được, hạn chế và nguyên nhân.\n\n## II. NỘI DUNG, THỜI GIAN, ĐỊA ĐIỂM\n\n### 1. Nội dung\n\nBáo cáo tổng kết công tác năm 2026 và phương hướng nhiệm vụ năm 2027.\n\n### 2. Thời gian, địa điểm\n\nHội nghị dự kiến tổ chức trong 01 buổi tại Hội trường cơ quan.\n\n## III. TỔ CHỨC THỰC HIỆN\n\nVăn phòng Sở chủ trì, phối hợp các phòng chuyên môn chuẩn bị nội dung và điều kiện phục vụ Hội nghị.",
+                signerTitle: "Giám đốc",
+                signerName: "Trần Văn B",
+                recipients: ["Như trên;", "Lưu: VT."],
+              }),
+            },
             {
               prompt:
                 "Tạo công văn đề nghị hỗ trợ kinh phí mua sắm thiết bị",
@@ -216,6 +234,20 @@ module.exports.CreateVnAdminDocx = {
               this.super.handlerProps.log(
                 `Using the create-vn-admin-docx tool.`
               );
+
+              // Guard against the agent looping on file creation: if a Word file
+              // was already produced in this same turn, return it instead of
+              // generating another near-identical duplicate.
+              const alreadyCreated = createFilesLib.findPendingOutput(
+                this.super,
+                "DocxFileDownload"
+              );
+              if (alreadyCreated) {
+                this.super.handlerProps.log(
+                  `create-vn-admin-docx: A Word file was already created this turn (${alreadyCreated.storageFilename}); skipping duplicate generation.`
+                );
+                return `⚠️ Văn bản Word "${alreadyCreated.filename}" đã được tạo ở bước trước trong lượt này. Không tạo lại để tránh trùng lặp. Nếu cần chỉnh sửa, hãy nêu rõ thay đổi thay vì tạo file mới.`;
+              }
 
               // Sanitize inputs
               content = createFilesLib.stripInvalidXmlChars(content);
